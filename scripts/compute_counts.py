@@ -25,7 +25,7 @@ def count_add_eft():
     sum_, error = eft.add_eft(val1, val2)
     assert sum_.value == 2.0
     assert error.value == 0.5 ** 52
-    print("     add_eft(): {} flops".format(parent.count))
+    print("     add_eft(): {}".format(parent.display))
 
 
 def count__split():
@@ -34,7 +34,7 @@ def count__split():
     high, low = eft._split(val)
     assert high.value == 1.0
     assert low.value == 0.5 ** 27
-    print("      _split(): {} flops".format(parent.count))
+    print("      _split(): {}".format(parent.display))
 
 
 def count_multiply_eft():
@@ -44,7 +44,7 @@ def count_multiply_eft():
     product, error = eft.multiply_eft(val1, val2)
     assert product.value == 1.0
     assert error.value == -0.5 ** 80
-    print("multiply_eft(): {} flops".format(parent.count))
+    print("multiply_eft(): {}".format(parent.display))
 
 
 def main():

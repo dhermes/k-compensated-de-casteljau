@@ -17,7 +17,19 @@ class Computation(object):
     """Stateful manager of the number of flops."""
 
     def __init__(self):
-        self.count = 0
+        self.add_count = 0
+        self.sub_count = 0
+        self.mul_count = 0
+
+    @property
+    def count(self):
+        return self.add_count + self.sub_count + self.mul_count
+
+    @property
+    def display(self):
+        return "{:2d} flops ({:2d} add, {:2d} sub, {:2d} multiply)".format(
+            self.count, self.add_count, self.sub_count, self.mul_count
+        )
 
 
 class Float(object):
@@ -51,7 +63,7 @@ class Float(object):
         if value is None:
             return NotImplemented
 
-        self.computation.count += 1
+        self.computation.add_count += 1
         return Float(self.value + value, self.computation)
 
     def __sub__(self, other):
@@ -59,7 +71,7 @@ class Float(object):
         if value is None:
             return NotImplemented
 
-        self.computation.count += 1
+        self.computation.sub_count += 1
         return Float(self.value - value, self.computation)
 
     def __mul__(self, other):
@@ -67,5 +79,5 @@ class Float(object):
         if value is None:
             return NotImplemented
 
-        self.computation.count += 1
+        self.computation.mul_count += 1
         return Float(self.value * value, self.computation)
