@@ -73,3 +73,13 @@ def build_tex(session):
         "F092359D979FDC08931DA1922F3E123E",
         extensions=("aux", "log", "out", "toc"),
     )
+
+
+@nox.session
+def flop_counts(session):
+    # No need to create a virtualenv.
+    session.virtualenv = False
+
+    env = {"PYTHONPATH": get_path("src")}
+    compute_counts = get_path("scripts", "compute_counts.py")
+    session.run("python", compute_counts, env=env)
