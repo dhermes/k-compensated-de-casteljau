@@ -1,0 +1,44 @@
+\documentclass[letterpaper,10pt]{article}
+
+\usepackage[margin=1in]{geometry}
+
+\usepackage{amsthm,amssymb,amsmath}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  urlcolor=blue,
+  citecolor=ForestGreen,
+  pdfinfo={
+    CreationDate={D:20180425160342},
+    ModDate={D:20180425160342},
+  },
+}
+
+\usepackage{embedfile}
+\embedfile{\jobname.tex}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{\(K\)-compensated de Casteljau}
+\rhead{Danny Hermes}
+
+\renewcommand{\headrulewidth}{0pt}
+\newcommand{\fl}{\operatorname{fl}}
+\newcommand{\eps}{\varepsilon}
+
+\begin{document}
+
+\tableofcontents
+
+\section{de Casteljau's Method}
+
+Consider de Casteljau's method to evaluate a degree \(n\)
+polynomial in Bernstein-B\'{e}zier form with control points \(p_j\):
+\begin{align*}
+    b_j^{(0)} &= p_j \\
+    b_j^{(k)} &= (1 - x) b_j^{(k - 1)} + x b_{j + 1}^{(k - 1)} \\
+    b(x) &= b_0^{(n)}.
+\end{align*}
+
+\end{document}
