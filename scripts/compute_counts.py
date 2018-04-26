@@ -168,6 +168,20 @@ def count_de_casteljau_compensated3():
         print("  degree {}:     {}".format(degree, parent.display))
 
 
+def count_de_casteljau_compensated4():
+    print("de_casteljau.compensated4() (65n^2 + 65n + 9 = 130 T_n + 9):")
+    for degree in range(1, 5 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.25, parent)
+        coeffs = tuple(
+            operation_count.Float((-1.0) ** k, parent)
+            for k in range(degree + 1)
+        )
+        p = de_casteljau.compensated4(x, coeffs)
+        assert p.value == 0.5 ** degree
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
 def main():
     count_add_eft()
     print(SEPARATOR)
@@ -192,6 +206,8 @@ def main():
     count_de_casteljau_compensated()
     print(SEPARATOR)
     count_de_casteljau_compensated3()
+    print(SEPARATOR)
+    count_de_casteljau_compensated4()
 
 
 if __name__ == "__main__":
