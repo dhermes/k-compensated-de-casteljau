@@ -27,7 +27,8 @@
 \rhead{Danny Hermes}
 
 \renewcommand{\headrulewidth}{0pt}
-\newcommand{\fl}{\operatorname{fl}}
+\newcommand{\cond}[1]{\operatorname{cond}\left(#1\right)}
+\newcommand{\fl}[1]{\operatorname{fl}\left(#1\right)}
 \newcommand{\eps}{\varepsilon}
 
 \begin{document}
@@ -43,6 +44,39 @@ polynomial in Bernstein-B\'{e}zier form with control points \(p_j\):
     b_j^{(k)} &= (1 - s) b_j^{(k - 1)} + s b_{j + 1}^{(k - 1)} \\
     b(s) &= b_0^{(n)}.
 \end{align*}
+
+\subsection{Condition Number}
+
+For a polynomial \(p(x)\) in the power basis, we have
+(\cite{langlois_et_al:DSP:2006:442}):
+\[\cond{p(x)} = \frac{\widetilde{p}\left(\left|x\right|\right)}{
+  \left|p(x)\right|} = \frac{\sum_j \left|a_j\right| \left|x\right|^j}{
+  \left|p(x)\right|}.\]
+In particular, this means that if \(x \geq 0\) and each \(a_j \geq 0\)
+we must necessarily have \(\cond{p(x)} = 1\). To see an example in use,
+consider \(p(x) = (x - 1)^n\) and input values of the form \(x = 1 + \delta\)
+(with \(\left|\delta\right| \ll 1\)). Since \(a_j = \binom{n}{j} (-1)^{n - j}\)
+we have \(\widetilde{p}(x) = (x + 1)^n\) hence
+\[\cond{p\left(1 + \delta\right)} = \frac{(2 + \delta)^n}{
+  \left|\delta\right|^n} = \left|1 + \frac{2}{\delta}\right|^n.\]
+As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
+
+For a polynomial \(p(s)\) in Bernstein form, we have (\cite{Jiang2010}):
+\[\cond{p(s)} = \frac{\widetilde{p}\left(s\right)}{
+  \left|p(s)\right|} = \frac{\sum_j \left|p_j\right| \left|b_{j, n}(s)\right|}{
+  \left|p(s)\right|}.\]
+The Bernstein form is suited for \(s \in \left[0, 1\right]\), which means
+\(b_{j, n}(s) \geq 0\) typically. If \(s \in \left[0, 1\right]\) and each
+\(p_j \geq 0\) we must necessarily have \(\cond{p(s)} = 1\). To see an
+example in use, consider
+\[p(s) = (1 - 2s)^n = \left[(1 - s) - s\right]^n = \sum_j \binom{n}{j}
+(1 - s)^{n - j} (-s)^j = \sum_j (-1)^j b_{j, n}(s)\]
+and input values of the form \(x = \frac{1}{2} + \delta\)
+(with \(\left|\delta\right| \ll \frac{1}{2}\)). Since \(p_j = (-1)^j\)
+we have \(\widetilde{p}(s) = \left[(1 - s) + s\right]^n = 1\)
+\[\cond{p\left(\frac{1}{2} + \delta\right)} = \frac{1}{
+  \left|2\delta\right|^n}.\]
+As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
 
 \subsection{Selection of Test Cases}
 
