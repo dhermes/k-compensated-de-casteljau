@@ -17,7 +17,7 @@ import fractions
 
 
 _DISPLAY_TEMPLATE = (
-    "{:4d} flops ({:3d} add, {:3d} sub, {:3d} multiply, {:3d} FMA)"
+    "{:4d} flops ({:4d} add, {:4d} sub, {:3d} multiply, {:3d} FMA)"
 )
 
 

@@ -66,7 +66,7 @@ def count__vec_sum():
         eft._vec_sum(p)
 
         assert p[size_p - 1].value == float(size_p)
-        print("  |p| = {}:     {}".format(size_p, parent.display))
+        print("  |p| = {}:      {}".format(size_p, parent.display))
 
 
 def count_sum_k():
@@ -182,6 +182,24 @@ def count_de_casteljau_compensated4():
         print("  degree {}:     {}".format(degree, parent.display))
 
 
+def count_de_casteljau_compensated5():
+    msg = (
+        "de_casteljau.compensated5() ((231n^2 + 231n + 20) / 2 "
+        "= 231 T_n + 10):"
+    )
+    print(msg)
+    for degree in range(1, 5 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.25, parent)
+        coeffs = tuple(
+            operation_count.Float((-1.0) ** k, parent)
+            for k in range(degree + 1)
+        )
+        p = de_casteljau.compensated5(x, coeffs)
+        assert p.value == 0.5 ** degree
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
 def main():
     count_add_eft()
     print(SEPARATOR)
@@ -208,6 +226,8 @@ def main():
     count_de_casteljau_compensated3()
     print(SEPARATOR)
     count_de_casteljau_compensated4()
+    print(SEPARATOR)
+    count_de_casteljau_compensated5()
 
 
 if __name__ == "__main__":
