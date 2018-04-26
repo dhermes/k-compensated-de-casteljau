@@ -59,9 +59,10 @@ def count_horner_basic():
     print("horner.basic() (2n):")
     for degree in range(1, 9 + 1):
         parent = operation_count.Computation()
-        x = operation_count.Float(0.0, parent)
-        coeffs = (operation_count.Float(0.0, parent),) * (degree + 1)
-        horner.basic(x, coeffs)
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.basic(x, coeffs)
+        assert p.value == 2.0 ** (degree + 1) - 1
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -69,9 +70,10 @@ def count_horner_compensated():
     print("horner.compensated() (11n + 1):")
     for degree in range(1, 9 + 1):
         parent = operation_count.Computation()
-        x = operation_count.Float(0.0, parent)
-        coeffs = (operation_count.Float(0.0, parent),) * (degree + 1)
-        horner.compensated(x, coeffs)
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated(x, coeffs)
+        assert p.value == 2.0 ** (degree + 1) - 1
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -79,9 +81,13 @@ def count_de_casteljau_basic():
     print("de_casteljau.basic() ((3n^2 + 9n + 8)/2):")
     for degree in range(1, 9 + 1):
         parent = operation_count.Computation()
-        x = operation_count.Float(0.0, parent)
-        coeffs = (operation_count.Float(0.0, parent),) * (degree + 1)
-        de_casteljau.basic(x, coeffs)
+        x = operation_count.Float(0.25, parent)
+        coeffs = tuple(
+            operation_count.Float((-1.0) ** k, parent)
+            for k in range(degree + 1)
+        )
+        p = de_casteljau.basic(x, coeffs)
+        assert p.value == 0.5 ** degree
         print("  degree {}:     {}".format(degree, parent.display))
 
 
