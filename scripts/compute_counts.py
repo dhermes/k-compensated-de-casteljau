@@ -60,7 +60,7 @@ def count_multiply_eft():
 
 def count__vec_sum():
     print("_vec_sum() (6(|p| - 1)):")
-    for size_p in range(1, 9 + 1):
+    for size_p in range(1, 5 + 1):
         parent = operation_count.Computation()
         p = [operation_count.Float(1.0, parent)] * size_p
         eft._vec_sum(p)
@@ -73,7 +73,7 @@ def count_sum_k():
     print("sum_k() ((6K - 5)(|p| - 1)):")
     for k in (2, 3, 4, 5):
         print("  K = {}".format(k))
-        for size_p in range(1, 9 + 1):
+        for size_p in range(1, 5 + 1):
             parent = operation_count.Computation()
             p = [operation_count.Float(1.0, parent)] * size_p
             total = eft.sum_k(p, k)
@@ -84,7 +84,7 @@ def count_sum_k():
 
 def count_horner_basic():
     print("horner.basic() (2n):")
-    for degree in range(1, 9 + 1):
+    for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(2.0, parent)
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
@@ -95,7 +95,7 @@ def count_horner_basic():
 
 def count_horner_compensated():
     print("horner.compensated() (11n + 1):")
-    for degree in range(1, 9 + 1):
+    for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(2.0, parent)
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
@@ -106,7 +106,7 @@ def count_horner_compensated():
 
 def count_de_casteljau_basic():
     print("de_casteljau.basic() ((3n^2 + 3n + 2) / 2 = 3 T_n + 1):")
-    for degree in range(1, 9 + 1):
+    for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
         coeffs = tuple(
@@ -120,7 +120,7 @@ def count_de_casteljau_basic():
 
 def count_de_casteljau_compensated():
     print("de_casteljau.compensated() (9n^2 + 9n + 7 = 18 T_n + 7):")
-    for degree in range(1, 9 + 1):
+    for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
         coeffs = tuple(
@@ -134,7 +134,7 @@ def count_de_casteljau_compensated():
 
 def count_de_casteljau_compensated3():
     print("de_casteljau.compensated3() ((59n^2 + 59n + 16) / 2 = 59 T_n + 8):")
-    for degree in range(1, 9 + 1):
+    for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
         coeffs = tuple(
