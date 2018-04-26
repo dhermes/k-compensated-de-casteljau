@@ -17,7 +17,7 @@ import fractions
 
 
 _DISPLAY_TEMPLATE = (
-    "{:3d} flops ({:2d} add, {:2d} sub, {:2d} multiply, {:2d} FMA)"
+    "{:3d} flops ({:3d} add, {:3d} sub, {:3d} multiply, {:2d} FMA)"
 )
 
 
@@ -80,6 +80,14 @@ class Float(object):
 
         self.computation.add_count += 1
         return Float(self.value + value, self.computation)
+
+    def __radd__(self, other):
+        value = self._get_value(other)
+        if value is None:
+            return NotImplemented
+
+        self.computation.add_count += 1
+        return Float(value + self.value, self.computation)
 
     def __sub__(self, other):
         value = self._get_value(other)

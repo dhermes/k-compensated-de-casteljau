@@ -38,16 +38,50 @@ This module provides both the standard version and a compensated version.
 """
 
 
+import eft
+
+
 def basic(s, coeffs):
     r = 1.0 - s
 
     degree = len(coeffs) - 1
     pk = list(coeffs)
-    for d in range(degree, 0, -1):
+    for k in range(degree):
         new_pk = []
-        for i in range(d):
-            new_pk.append(r * pk[i] + s * pk[i + 1])
+        for j in range(degree - k):
+            new_pk.append(r * pk[j] + s * pk[j + 1])
         # Update the "current" values.
         pk = new_pk
 
     return pk[0]
+
+
+def _compensated(s, coeffs):
+    r, rho = eft.add_eft(1.0, -s)
+
+    degree = len(coeffs) - 1
+    pk = list(coeffs)
+    ek = [0.0] * (degree + 1)
+    for k in range(degree):
+        new_pk = []
+        new_ek = []
+
+        for j in range(degree - k):
+            prod1, pi = eft.multiply_eft(r, pk[j])
+            prod2, sigma = eft.multiply_eft(s, pk[j + 1])
+            sum_, beta = eft.add_eft(prod1, prod2)
+            new_pk.append(sum_)
+            # Now update the error.
+            w = pi + sigma + beta + pk[j] * rho
+            new_ek.append(w + s * ek[j + 1] + r * ek[j])
+
+        # Update the "current" values.
+        pk = new_pk
+        ek = new_ek
+
+    return pk[0], ek[0]
+
+
+def compensated(x, coeffs):
+    p, e = _compensated(x, coeffs)
+    return p + e

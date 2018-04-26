@@ -20,6 +20,9 @@ import horner
 import operation_count
 
 
+SEPARATOR = "-" * 80
+
+
 def count_add_eft():
     parent = operation_count.Computation()
     val1 = operation_count.Float(1.5, parent)
@@ -91,13 +94,34 @@ def count_de_casteljau_basic():
         print("  degree {}:     {}".format(degree, parent.display))
 
 
+def count_de_casteljau_compensated():
+    print("de_casteljau.compensated() (9n^2 + 9n + 7):")
+    for degree in range(1, 9 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.25, parent)
+        coeffs = tuple(
+            operation_count.Float((-1.0) ** k, parent)
+            for k in range(degree + 1)
+        )
+        p = de_casteljau.compensated(x, coeffs)
+        assert p.value == 0.5 ** degree
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
 def main():
     count_add_eft()
+    print(SEPARATOR)
     count__split()
+    print(SEPARATOR)
     count_multiply_eft()
+    print(SEPARATOR)
     count_horner_basic()
+    print(SEPARATOR)
     count_horner_compensated()
+    print(SEPARATOR)
     count_de_casteljau_basic()
+    print(SEPARATOR)
+    count_de_casteljau_compensated()
 
 
 if __name__ == "__main__":
