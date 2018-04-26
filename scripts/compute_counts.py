@@ -58,6 +58,30 @@ def count_multiply_eft():
         print("  {} {}".format(description, parent.display))
 
 
+def count__vec_sum():
+    print("_vec_sum() (6(|p| - 1)):")
+    for size_p in range(1, 9 + 1):
+        parent = operation_count.Computation()
+        p = [operation_count.Float(1.0, parent)] * size_p
+        eft._vec_sum(p)
+
+        assert p[size_p - 1].value == float(size_p)
+        print("  |p| = {}:     {}".format(size_p, parent.display))
+
+
+def count_sum_k():
+    print("sum_k() ((6K - 5)(|p| - 1)):")
+    for k in (2, 3, 4, 5):
+        print("  K = {}".format(k))
+        for size_p in range(1, 9 + 1):
+            parent = operation_count.Computation()
+            p = [operation_count.Float(1.0, parent)] * size_p
+            total = eft.sum_k(p, k)
+
+            assert total.value == float(size_p)
+            print("    |p| = {}:    {}".format(size_p, parent.display))
+
+
 def count_horner_basic():
     print("horner.basic() (2n):")
     for degree in range(1, 9 + 1):
@@ -128,6 +152,10 @@ def main():
     count__split()
     print(SEPARATOR)
     count_multiply_eft()
+    print(SEPARATOR)
+    count__vec_sum()
+    print(SEPARATOR)
+    count_sum_k()
     print(SEPARATOR)
     count_horner_basic()
     print(SEPARATOR)

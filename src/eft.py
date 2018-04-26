@@ -44,3 +44,26 @@ def multiply_eft(val1, val2, use_fma=True):
         )
 
     return product, error
+
+
+def _vec_sum(p):
+    # See: https://doi.org/10.1137/030601818
+    # Helper for ``sum_k``.
+    # NOTE: This modifies ``p`` in place.
+    n = len(p)
+    for i in range(1, n):
+        p[i], p[i - 1] = add_eft(p[i], p[i - 1])
+
+
+def sum_k(p, k):
+    # See: https://doi.org/10.1137/030601818
+    p = list(p)  # Make a copy to be modified.
+
+    for _ in range(k - 1):
+        _vec_sum(p)
+
+    result = p[0]
+    for p_val in p[1:]:
+        result += p_val
+
+    return result
