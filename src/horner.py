@@ -93,25 +93,20 @@ def compensated3(x, coeffs):
     return eft.sum_k(p, 3)
 
 
-def compensated4(x, coeffs):
-    h1, p2, p3 = _compensated(x, coeffs)
-    h2, p4, p5 = _compensated(x, p2)
-    h3, p6, p7 = _compensated(x, p3)
-    h4, p8, p9 = _compensated(x, p4)
-    h5, p10, p11 = _compensated(x, p5)
-    h6, p12, p13 = _compensated(x, p6)
-    h7, p14, p15 = _compensated(x, p7)
+def compensated_k(x, coeffs, k):
+    h = {}
+    p = {1: coeffs}
 
-    # Use standard Horner from here.
-    h8 = basic(x, p8)
-    h9 = basic(x, p9)
-    h10 = basic(x, p10)
-    h11 = basic(x, p11)
-    h12 = basic(x, p12)
-    h13 = basic(x, p13)
-    h14 = basic(x, p14)
-    h15 = basic(x, p15)
+    # First, "filter" off the errors from the interior
+    # polynomials.
+    for i in range(1, 2 ** (k - 1)):
+        h[i], p[2 * i], p[2 * i + 1] = _compensated(x, p[i])
 
-    # Now use 4-fold summation.
-    p = [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15]
-    return eft.sum_k(p, 4)
+    # Then use standard Horner for the leaf polynomials.
+    for i in range(2 ** (k - 1), 2 ** k):
+        h[i] = basic(x, p[i])
+
+    # Now use K-fold summation on everything in ``h`` (but keep the
+    # order).
+    to_sum = [h[i] for i in range(1, 2 ** k)]
+    return eft.sum_k(to_sum, k)

@@ -103,6 +103,17 @@ def count_horner_compensated():
         assert p.value == 2.0 ** (degree + 1) - 1
         print("  degree {}:     {}".format(degree, parent.display))
 
+    # NOTE: This is **the same** as ``horner.compensated()`` but uses
+    #       a different algorithm.
+    print("horner.compensated_k(..., 2) (12n + 10):")
+    for degree in range(1, 5 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated_k(x, coeffs, 2)
+        assert p.value == 2.0 ** (degree + 1) - 1
+        print("  degree {}:     {}".format(degree, parent.display))
+
 
 def count_horner_compensated3():
     print("horner.compensated3() (32n + 46, n >= 2):")
@@ -114,14 +125,45 @@ def count_horner_compensated3():
         assert p.value == 2.0 ** (degree + 1) - 1
         print("  degree {}:     {}".format(degree, parent.display))
 
+    print("horner.compensated_k(..., 3) (32n + 46, n >= 2):")
+    for degree in range(2, 6 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated_k(x, coeffs, 3)
+        assert p.value == 2.0 ** (degree + 1) - 1
+        print("  degree {}:     {}".format(degree, parent.display))
+
 
 def count_horner_compensated4():
-    print("horner.compensated4() (72n + 138, n >= 3):")
+    print("horner.compensated_k(..., 4) (72n + 138, n >= 3):")
     for degree in range(3, 7 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(2.0, parent)
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
-        p = horner.compensated4(x, coeffs)
+        p = horner.compensated_k(x, coeffs, 4)
+        assert p.value == 2.0 ** (degree + 1) - 1
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
+def count_horner_compensated5():
+    print("horner.compensated_k(..., 5) (152n + 350, n >= 4):")
+    for degree in range(4, 8 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated_k(x, coeffs, 5)
+        assert p.value == 2.0 ** (degree + 1) - 1
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
+def count_horner_compensated6():
+    print("horner.compensated_k(..., 6) (312n + 818, n >= 5):")
+    for degree in range(5, 9 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated_k(x, coeffs, 6)
         assert p.value == 2.0 ** (degree + 1) - 1
         print("  degree {}:     {}".format(degree, parent.display))
 
@@ -218,6 +260,10 @@ def main():
     count_horner_compensated3()
     print(SEPARATOR)
     count_horner_compensated4()
+    print(SEPARATOR)
+    count_horner_compensated5()
+    print(SEPARATOR)
+    count_horner_compensated6()
     print(SEPARATOR)
     count_de_casteljau_basic()
     print(SEPARATOR)
