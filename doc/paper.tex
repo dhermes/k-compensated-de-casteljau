@@ -93,7 +93,8 @@
   \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{deCasteljau}\)}{$p, s$}
+    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$p, s$}
+      \State \(n = \texttt{length}(p) - 1\)
       \State \(r = 1 \ominus s\)
       \\
       \For{\(j = 0, \ldots, n\)}
@@ -102,10 +103,45 @@
       \\
       \For{\(k = n - 1, \ldots, 0\)}
         \For{\(j = 0, \ldots, k\)}
-          \State \(b_j^{(k)} = r \otimes b_j^{(k + 1)} \oplus
-              s \otimes b_{j + 1}^{(k + 1)}\)
+          \State \(b_j^{(k)} = \left(r \otimes b_j^{(k + 1)}\right) \oplus
+              \left(s \otimes b_{j + 1}^{(k + 1)}\right)\)
         \EndFor
       \EndFor
+      \\
+      \State \(\mathtt{res} = b_0^{(0)}\)
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \caption{\textit{Compensated de Casteljau algorithm for polynomial evaluation.}}
+
+  \begin{algorithmic}
+    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$p, s$}
+      \State \(n = \texttt{length}(p) - 1\)
+      \State \(\left[r, \rho\right] = \mathtt{TwoSum}(1, -s)\)
+      \\
+      \For{\(j = 0, \ldots, n\)}
+        \State \(b_j^{(n)} = p_j\)
+        \State \(e_j^{(n)} = 0\)
+      \EndFor
+      \\
+      \For{\(k = n - 1, \ldots, 0\)}
+        \For{\(j = 0, \ldots, k\)}
+          \State \(\left[P_1, \pi_1\right] = \mathtt{TwoProd}\left(
+              r, b_j^{(k + 1)}\right)\)
+          \State \(\left[P_2, \pi_2\right] = \mathtt{TwoProd}\left(
+              s, b_{j + 1}^{(k + 1)}\right)\)
+          \State \(\left[b_j^{(k)}, \sigma_3\right] = \mathtt{TwoSum}(
+              P_1, P_2)\)
+          \State \(w = \pi_1 \oplus \pi_2 \oplus \sigma_3 \oplus
+              \left(\rho \otimes b_j^{(k + 1)}\right)\)
+          \State \(e_j^{(k)} = w \oplus \left(s \otimes e_{j + 1}^{(k + 1)}
+              \right) \oplus \left(r \otimes e_j^{(k + 1)}\right)\)
+        \EndFor
+      \EndFor
+      \\
+      \State \(\mathtt{res} = b_0^{(0)} \oplus e_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
