@@ -3,7 +3,10 @@
 \usepackage[margin=1in]{geometry}
 
 \usepackage{amsthm,amssymb,amsmath}
+%% H/T: https://tex.stackexchange.com/a/202168/32270
+\usepackage{textcomp}
 
+\usepackage[usenames, dvipsnames]{color}
 \usepackage{hyperref}
 \hypersetup{
   colorlinks=true,
@@ -37,15 +40,58 @@ Consider de Casteljau's method to evaluate a degree \(n\)
 polynomial in Bernstein-B\'{e}zier form with control points \(p_j\):
 \begin{align*}
     b_j^{(0)} &= p_j \\
-    b_j^{(k)} &= (1 - x) b_j^{(k - 1)} + x b_{j + 1}^{(k - 1)} \\
-    b(x) &= b_0^{(n)}.
+    b_j^{(k)} &= (1 - s) b_j^{(k - 1)} + s b_{j + 1}^{(k - 1)} \\
+    b(s) &= b_0^{(n)}.
 \end{align*}
 
-\subsection{\(K\)-Fold Error Filtering}
+\subsection{Selection of Test Cases}
+
+From \cite{Delgado2015}
+
+\begin{quote}
+  We can observe that, in this case, the algorithm with a good
+  behavior everywhere is the de Casteljau algorithm
+\end{quote}
+
+\noindent In the same paper (when referring to \cite{Bezerra2013}):
+
+\begin{quote}
+  assuming that all control points are positive. This assumption avoided
+  ill-conditioned polynomials. In this section, we shall show that this is
+  a natural assumption in Computer Aided Geometric Design (from now on,
+  C.A.G.D.) and that it permits to assure high relative precision for the
+  evaluation through a large family of representations in C.A.G.D.
+\end{quote}
+
+\noindent From the same author, in \cite{Mainar2005}:
+
+\begin{quote}
+  Let us observe that in this case, the de Casteljau algorithm presents
+  better stability properties for the evaluation near the roots. In fact,
+  the de Casteljau algorithm has good behaviour even when using simple
+  precision, although the running error bound is not so accurate in points
+  close to the roots.
+\end{quote}
+
+\subsection{\texorpdfstring{\(K\)}{K}-Fold Error Filtering}
 
 Empirically, it seems the process takes
 \[(15K^2 - 34K + 26)T_n + K + 5\]
 flops to evaluate a degree \(n\) polynomial. (Here \(T_n\) is the
 \(n\)th triangular number.)
+
+\section{Bogus Section for Refs}
+
+Here they are, for now
+\begin{itemize}
+  \item Compensated Horner (\(K = 2\)) (\cite{langlois_et_al:DSP:2006:442})
+  \item Compensated de Casteljau (\cite{Jiang2010})
+  \item Newton with compensated Horner (\cite{Graillat2008})
+  \item \(K\)-fold Sum (\cite{Ogita2005})
+  \item \(K\)-fold Horner (\cite{Graillat2009})
+\end{itemize}
+
+\bibliography{paper}
+\bibliographystyle{alpha}
 
 \end{document}

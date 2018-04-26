@@ -41,15 +41,22 @@ class Remove(object):
             os.remove(path)
 
 
-def build_tex_file(session, base, new_id, extensions=()):
+def build_tex_file(session, base, new_id, extensions=(), with_bibtex=False):
     # NOTE: This assumes that ``session.chdir(get_path('doc'))``
     #       has been called.
     modify_id = get_path("scripts", "modify_pdf_id.py")
 
-    # Run ``pdflatex`` thrice.
-    session.run("pdflatex", base)
-    session.run("pdflatex", base)
-    session.run("pdflatex", base)
+    if with_bibtex:
+        session.run("pdflatex", base)
+        session.run("bibtex", base)
+        session.run("pdflatex", base)
+        session.run("bibtex", base)
+        session.run("pdflatex", base)
+    else:
+        # Run ``pdflatex`` thrice.
+        session.run("pdflatex", base)
+        session.run("pdflatex", base)
+        session.run("pdflatex", base)
 
     path = get_path("doc", base)
     remove = Remove(path, extensions)
@@ -62,6 +69,9 @@ def build_tex(session):
     if py.path.local.sysfind("pdflatex") is None:
         session.skip("`pdflatex` must be installed")
 
+    if py.path.local.sysfind("bibtex") is None:
+        session.skip("`bibtex` must be installed")
+
     # No need to create a virtualenv.
     session.virtualenv = False
 
@@ -72,6 +82,7 @@ def build_tex(session):
         "paper",
         "F092359D979FDC08931DA1922F3E123E",
         extensions=("aux", "log", "out", "toc"),
+        with_bibtex=True,
     )
 
 
