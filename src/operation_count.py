@@ -17,7 +17,7 @@ import fractions
 
 
 _DISPLAY_TEMPLATE = (
-    "{:3d} flops ({:3d} add, {:3d} sub, {:3d} multiply, {:2d} FMA)"
+    "{:4d} flops ({:3d} add, {:4d} sub, {:3d} multiply, {:3d} FMA)"
 )
 
 
@@ -117,13 +117,15 @@ class Float(object):
         return Float(self.value * value, self.computation)
 
     def fma(self, val1, val2, val3):
-        for val in (val1, val2, val3):
-            if not isinstance(val, Float):
-                raise TypeError("Only `Float` allowed in fma", val)
+        float1 = self._get_value(val1)
+        float2 = self._get_value(val2)
+        float3 = self._get_value(val3)
+        if None in (float1, float2, float3):
+            raise TypeError("Only `Float` or `float` allowed in fma")
 
         self.computation.fma_count += 1
-        frac1 = fractions.Fraction(val1.value)
-        frac2 = fractions.Fraction(val2.value)
-        frac3 = fractions.Fraction(val3.value)
+        frac1 = fractions.Fraction(float1)
+        frac2 = fractions.Fraction(float2)
+        frac3 = fractions.Fraction(float3)
         result = float(frac1 * frac2 + frac3)
         return Float(result, self.computation)

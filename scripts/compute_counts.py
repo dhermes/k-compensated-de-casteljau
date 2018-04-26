@@ -81,7 +81,7 @@ def count_horner_compensated():
 
 
 def count_de_casteljau_basic():
-    print("de_casteljau.basic() ((3n^2 + 3n + 2)/2):")
+    print("de_casteljau.basic() ((3n^2 + 3n + 2) / 2 = 3 T_n + 1):")
     for degree in range(1, 9 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
@@ -95,7 +95,7 @@ def count_de_casteljau_basic():
 
 
 def count_de_casteljau_compensated():
-    print("de_casteljau.compensated() (9n^2 + 9n + 7):")
+    print("de_casteljau.compensated() (9n^2 + 9n + 7 = 18 T_n + 7):")
     for degree in range(1, 9 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
@@ -104,6 +104,20 @@ def count_de_casteljau_compensated():
             for k in range(degree + 1)
         )
         p = de_casteljau.compensated(x, coeffs)
+        assert p.value == 0.5 ** degree
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
+def count_de_casteljau_compensated3():
+    print("de_casteljau.compensated3() ((59n^2 + 59n + 16) / 2 = 59 T_n + 8):")
+    for degree in range(1, 9 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.25, parent)
+        coeffs = tuple(
+            operation_count.Float((-1.0) ** k, parent)
+            for k in range(degree + 1)
+        )
+        p = de_casteljau.compensated3(x, coeffs)
         assert p.value == 0.5 ** degree
         print("  degree {}:     {}".format(degree, parent.display))
 
@@ -122,6 +136,8 @@ def main():
     count_de_casteljau_basic()
     print(SEPARATOR)
     count_de_casteljau_compensated()
+    print(SEPARATOR)
+    count_de_casteljau_compensated3()
 
 
 if __name__ == "__main__":

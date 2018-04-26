@@ -82,6 +82,62 @@ def _compensated(s, coeffs):
     return pk[0], ek[0]
 
 
-def compensated(x, coeffs):
-    p, e = _compensated(x, coeffs)
+def compensated(s, coeffs):
+    p, e = _compensated(s, coeffs)
     return p + e
+
+
+def _compensated3(s, coeffs):
+    r, rho = eft.add_eft(1.0, -s)
+
+    degree = len(coeffs) - 1
+    pk = list(coeffs)
+    eAk = [0.0] * (degree + 1)
+    eBk = [0.0] * (degree + 1)
+    for k in range(degree):
+        new_pk = []
+        new_eAk = []
+        new_eBk = []
+
+        for j in range(degree - k):
+            # Update the "level 0" stuff.
+            P1, pi1 = eft.multiply_eft(r, pk[j])
+            P2, pi2 = eft.multiply_eft(s, pk[j + 1])
+            S3, sigma3 = eft.add_eft(P1, P2)
+            new_pk.append(S3)
+            # Update the "level 1" stuff.
+            S4, sigma4 = eft.add_eft(pi1, pi2)
+            S5, sigma5 = eft.add_eft(S4, sigma3)
+            P6, pi6 = eft.multiply_eft(rho, pk[j])
+            wA, sigma7 = eft.add_eft(S5, P6)
+            P8, pi8 = eft.multiply_eft(s, eAk[j + 1])
+            S9, sigma9 = eft.add_eft(P8, wA)
+            P10, pi10 = eft.multiply_eft(r, eAk[j])
+            S11, sigma11 = eft.add_eft(S9, P10)
+            new_eAk.append(S11)
+            # Update the "level 2" stuff.
+            wB = (
+                sigma4
+                + sigma5
+                + pi6
+                + sigma7
+                + pi8
+                + sigma9
+                + pi10
+                + sigma11
+                + rho
+                * eAk[j]
+            )
+            new_eBk.append(wB + s * eBk[j + 1] + r * eBk[j])
+
+        # Update the "current" values.
+        pk = new_pk
+        eAk = new_eAk
+        eBk = new_eBk
+
+    return pk[0], eAk[0], eBk[0]
+
+
+def compensated3(s, coeffs):
+    p, eA, eB = _compensated3(s, coeffs)
+    return (p + eA) + eB
