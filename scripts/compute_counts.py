@@ -15,6 +15,7 @@
 from __future__ import print_function
 
 import eft
+import horner
 import operation_count
 
 
@@ -38,19 +39,47 @@ def count__split():
 
 
 def count_multiply_eft():
-    parent = operation_count.Computation()
-    val1 = operation_count.Float(1.0 + 0.5 ** 40, parent)
-    val2 = operation_count.Float(1.0 - 0.5 ** 40, parent)
-    product, error = eft.multiply_eft(val1, val2)
-    assert product.value == 1.0
-    assert error.value == -0.5 ** 80
-    print("multiply_eft(): {}".format(parent.display))
+    print("multiply_eft():")
+    for use_fma in (True, False):
+        parent = operation_count.Computation()
+        val1 = operation_count.Float(1.0 + 0.5 ** 40, parent)
+        val2 = operation_count.Float(1.0 - 0.5 ** 40, parent)
+        product, error = eft.multiply_eft(val1, val2, use_fma=use_fma)
+        assert product.value == 1.0
+        assert error.value == -0.5 ** 80
+        if use_fma:
+            description = "with FMA:    "
+        else:
+            description = "w / out FMA: "
+        print("  {} {}".format(description, parent.display))
+
+
+def count_horner_basic():
+    print("horner.basic() (2n):")
+    for degree in range(1, 9 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.0, parent)
+        coeffs = (operation_count.Float(0.0, parent),) * (degree + 1)
+        horner.basic(x, coeffs)
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
+def count_horner_compensated():
+    print("horner.compensated() (11n + 1):")
+    for degree in range(1, 9 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.0, parent)
+        coeffs = (operation_count.Float(0.0, parent),) * (degree + 1)
+        horner.compensated(x, coeffs)
+        print("  degree {}:     {}".format(degree, parent.display))
 
 
 def main():
     count_add_eft()
     count__split()
     count_multiply_eft()
+    count_horner_basic()
+    count_horner_compensated()
 
 
 if __name__ == "__main__":

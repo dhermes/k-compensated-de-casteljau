@@ -29,14 +29,18 @@ def _split(val):
     return high_bits, low_bits
 
 
-def multiply_eft(val1, val2):
+def multiply_eft(val1, val2, use_fma=True):
     # See: https://doi.org/10.1109/TC.2008.215
     product = val1 * val2
-    high1, low1 = _split(val1)
-    high2, low2 = _split(val2)
-    error = (
-        low1
-        * low2
-        - (((product - high1 * high2) - low1 * high2) - high1 * low2)
-    )
+    if use_fma:
+        error = val1.fma(val1, val2, -product)
+    else:
+        high1, low1 = _split(val1)
+        high2, low2 = _split(val2)
+        error = (
+            low1
+            * low2
+            - (((product - high1 * high2) - low1 * high2) - high1 * low2)
+        )
+
     return product, error
