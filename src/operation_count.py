@@ -89,6 +89,14 @@ class Float(object):
         self.computation.sub_count += 1
         return Float(self.value - value, self.computation)
 
+    def __rsub__(self, other):
+        value = self._get_value(other)
+        if value is None:
+            return NotImplemented
+
+        self.computation.sub_count += 1
+        return Float(value - self.value, self.computation)
+
     def __neg__(self):
         return Float(-self.value, self.computation)
 

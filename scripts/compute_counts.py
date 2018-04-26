@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 
+import de_casteljau
 import eft
 import horner
 import operation_count
@@ -74,12 +75,23 @@ def count_horner_compensated():
         print("  degree {}:     {}".format(degree, parent.display))
 
 
+def count_de_casteljau_basic():
+    print("de_casteljau.basic() ((3n^2 + 9n + 8)/2):")
+    for degree in range(1, 9 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.0, parent)
+        coeffs = (operation_count.Float(0.0, parent),) * (degree + 1)
+        de_casteljau.basic(x, coeffs)
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
 def main():
     count_add_eft()
     count__split()
     count_multiply_eft()
     count_horner_basic()
     count_horner_compensated()
+    count_de_casteljau_basic()
 
 
 if __name__ == "__main__":
