@@ -5,6 +5,8 @@
 \usepackage{amsthm,amssymb,amsmath}
 %% H/T: https://tex.stackexchange.com/a/202168/32270
 \usepackage{textcomp}
+%% H/T: https://tex.stackexchange.com/a/215651/32270
+\usepackage[ruled]{algorithm2e}
 
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{hyperref}
@@ -34,6 +36,45 @@
 \begin{document}
 
 \tableofcontents
+
+\section{IEEE Stuff}
+
+\begin{algorithm}[H]
+  \textit{function} \(\left[x, y\right] = \mathtt{TwoSum}(a, b)\) \\
+  \quad \(x = a \oplus b\) \\
+  \quad \(z = x \ominus a\) \\
+  \quad \(y = (a \ominus (x \ominus z)) \oplus (b \ominus z)\)
+
+  \caption{\textit{EFT of the sum of two floating point numbers.}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \textit{function} \(\left[x, y\right] = \mathtt{Split}(a)\) \\
+  \quad \(z = a \otimes (2^r + 1)\) \\
+  \quad \(x = z \ominus (z \ominus a)\) \\
+  \quad \(y = a \ominus x\)
+
+  \caption{\textit{Splitting of a floating point number into two parts.}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \textit{function} \(\left[x, y\right] = \mathtt{TwoProd}(a, b)\) \\
+  \quad \(x = a \otimes b\) \\
+  \quad \(\left[a_h, a_l\right] = \mathtt{Split}(a)\) \\
+  \quad \(\left[b_h, b_l\right] = \mathtt{Split}(b)\) \\
+  \quad \(y = a_l \otimes b_l \ominus (((x \ominus a_h \otimes b_h)
+      \ominus a_l \otimes b_h) \ominus a_h \otimes b_l)\)
+
+  \caption{\textit{EFT of the product of two floating point numbers.}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+  \textit{function} \(\left[x, y\right] = \mathtt{TwoProdFMA}(a, b)\) \\
+  \quad \(x = a \otimes b\) \\
+  \quad \(y = \mathtt{FMA}(a, b, -x)\)
+
+  \caption{\textit{EFT of the sum of two floating point numbers with a FMA.}}
+\end{algorithm}
 
 \section{de Casteljau's Method}
 
