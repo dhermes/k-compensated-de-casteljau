@@ -104,6 +104,28 @@ def count_horner_compensated():
         print("  degree {}:     {}".format(degree, parent.display))
 
 
+def count_horner_compensated3():
+    print("horner.compensated3() (32n + 46, n >= 2):")
+    for degree in range(2, 6 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated3(x, coeffs)
+        assert p.value == 2.0 ** (degree + 1) - 1
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
+def count_horner_compensated4():
+    print("horner.compensated4() (72n + 138, n >= 3):")
+    for degree in range(3, 7 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(2.0, parent)
+        coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
+        p = horner.compensated4(x, coeffs)
+        assert p.value == 2.0 ** (degree + 1) - 1
+        print("  degree {}:     {}".format(degree, parent.display))
+
+
 def count_de_casteljau_basic():
     print("de_casteljau.basic() ((3n^2 + 3n + 2) / 2 = 3 T_n + 1):")
     for degree in range(1, 5 + 1):
@@ -160,6 +182,10 @@ def main():
     count_horner_basic()
     print(SEPARATOR)
     count_horner_compensated()
+    print(SEPARATOR)
+    count_horner_compensated3()
+    print(SEPARATOR)
+    count_horner_compensated4()
     print(SEPARATOR)
     count_de_casteljau_basic()
     print(SEPARATOR)

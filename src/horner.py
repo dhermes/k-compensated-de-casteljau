@@ -40,6 +40,9 @@ import eft
 
 
 def basic(x, coeffs):
+    if not coeffs:
+        return 0.0
+
     p = coeffs[0]
     for coeff in coeffs[1:]:
         p = p * x + coeff
@@ -48,16 +51,67 @@ def basic(x, coeffs):
 
 
 def _compensated(x, coeffs):
+    if not coeffs:
+        return 0.0, [], []
+
     p = coeffs[0]
-    e = 0.0
+    e_pi = []
+    e_sigma = []
     for coeff in coeffs[1:]:
         prod, e1 = eft.multiply_eft(p, x)
         p, e2 = eft.add_eft(prod, coeff)
-        e = x * e + (e1 + e2)
+        e_pi.append(e1)
+        e_sigma.append(e2)
 
-    return p, e
+    return p, e_pi, e_sigma
 
 
 def compensated(x, coeffs):
-    p, e = _compensated(x, coeffs)
+    p, e_pi, e_sigma = _compensated(x, coeffs)
+
+    # Compute the error via standard Horner's.
+    e = 0.0
+    for e1, e2 in zip(e_pi, e_sigma):
+        e = x * e + (e1 + e2)
+
     return p + e
+
+
+def compensated3(x, coeffs):
+    h1, p2, p3 = _compensated(x, coeffs)
+    h2, p4, p5 = _compensated(x, p2)
+    h3, p6, p7 = _compensated(x, p3)
+
+    # Use standard Horner from here.
+    h4 = basic(x, p4)
+    h5 = basic(x, p5)
+    h6 = basic(x, p6)
+    h7 = basic(x, p7)
+
+    # Now use 3-fold summation.
+    p = [h1, h2, h3, h4, h5, h6, h7]
+    return eft.sum_k(p, 3)
+
+
+def compensated4(x, coeffs):
+    h1, p2, p3 = _compensated(x, coeffs)
+    h2, p4, p5 = _compensated(x, p2)
+    h3, p6, p7 = _compensated(x, p3)
+    h4, p8, p9 = _compensated(x, p4)
+    h5, p10, p11 = _compensated(x, p5)
+    h6, p12, p13 = _compensated(x, p6)
+    h7, p14, p15 = _compensated(x, p7)
+
+    # Use standard Horner from here.
+    h8 = basic(x, p8)
+    h9 = basic(x, p9)
+    h10 = basic(x, p10)
+    h11 = basic(x, p11)
+    h12 = basic(x, p12)
+    h13 = basic(x, p13)
+    h14 = basic(x, p14)
+    h15 = basic(x, p15)
+
+    # Now use 4-fold summation.
+    p = [h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15]
+    return eft.sum_k(p, 4)
