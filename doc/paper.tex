@@ -113,15 +113,18 @@ end of Section 5, at the bottom of page 109):
 
 After implementing for \(K = 2, 3, \ldots, 12\) and instrumenting all
 relevant floating point operations, the \(K\)-fold Horner requires
-\[(5 \cdot 2^K - 8)n + \left((K + 8) 2^K - 12K - 6\right)\]
-flops to evaluate a degree \(n\) polynomial. As a comparison, the
+\[(5 \cdot 2^K - 8)n + \left((K + 8) 2^K - 12K - 6\right) =
+\mathcal{O}\left((n + K)2^K\right)\]
+flops to evaluate a degree \(n\) polynomial (this only applies when
+\(n \geq K - 1\)). As a comparison, the
 non-compensated form of Horner requires \(2n\) flops. Of these,
 \(\left(2^{K - 1} - 1\right)n - 2^{K - 1}(K - 3) - 2\) are
 FMA (fused-multiply-add) instructions.
 
 After implementing for \(K = 2, 3, 4, 5\) and instrumenting all relevant
 floating point operations, the \(K\)-fold de Casteljau requires
-\[(15K^2 - 34K + 26)T_n + K + 5\]
+\[(15K^2 - 34K + 26)T_n + K + 5 =
+\mathcal{O}\left(n^2 K^2\right)\]
 flops to evaluate a degree \(n\) polynomial. (Here \(T_n\) is the
 \(n\)th triangular number.) As a comparison, the non-compensated form of
 de Casteljau requires \(3 T_n + 1\) flops. Of these, \((3K - 4)T_n\) are
