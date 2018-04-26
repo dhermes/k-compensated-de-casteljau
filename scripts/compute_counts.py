@@ -78,7 +78,7 @@ def count_horner_compensated():
 
 
 def count_de_casteljau_basic():
-    print("de_casteljau.basic() ((3n^2 + 9n + 8)/2):")
+    print("de_casteljau.basic() ((3n^2 + 3n + 2)/2):")
     for degree in range(1, 9 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
