@@ -218,31 +218,26 @@ However, using the compensated de Casteljau algorithm results in
 \(b_0^{(0)} + \Delta b_0^{(0)} = 0\):
 
 \begin{center}
-  \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
+  \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
     \toprule
-    k & j & b_j^{(k)} & \Delta b_j^{(k)} \\
+    k & j & b_j^{(k)} & \Delta b_j^{(k)} & \Delta^2 b_j^{(k)} & \Delta^3 b_j^{(k)} \\
     \midrule
-    3 & 0 & -87\frac{3}{4} + 108032u & -32u \\
-    3 & 1 & 29\frac{1}{4} + 88768u & 32u \\
-    3 & 2 & -9\frac{3}{4} - 71200u & 0 \\
-    3 & 3 & 3\frac{1}{4} + 37600u & 0 \\
+    3 & 0 & -87\frac{3}{4} + 108032u & -32u & 0 & 0 \\
+    3 & 1 & 29\frac{1}{4} + 88768u & 32u & 0 & 0 \\
+    3 & 2 & -9\frac{3}{4} - 71200u & 0 & 0 & 0 \\
+    3 & 3 & 3\frac{1}{4} + 37600u & 0 & 0 & 0 \\
     \midrule
-    2 & 0 & 187200u & -15360000u^2 \\
-    2 & 1 & -62408u & 8u - 128000000u^2 \\
-    2 & 2 & 20800u & 87040000u^2 \\
+    2 & 0 & 187200u & -15360000u^2 & 0 & 0 \\
+    2 & 1 & -62408u & 8u - 128000000u^2 & 0 & 0 \\
+    2 & 2 & 20800u & 87040000u^2 & 0 & 0 \\
     \midrule
-    1 & 0 & -6u - 199688192u^2 & \boxed{6u - 99831808u^2} \\
-    1 & 1 & -2u + 66568192u^2  & \boxed{2u + 33271808u^2} \\
+    1 & 0 & -6u - 199688192u^2 & 6u - 99831808u^2 & -90112000000u^3 & 0 \\
+    1 & 1 & -2u + 66568192u^2  & 2u + 33271808u^2 & 172032000000u^3 & 0 \\
     \midrule
-    0 & 0 & -3u + 7296u^2 & \boxed{3u - 7296u^2} \\
+    0 & 0 & -3u + 7296u^2 & 3u - 7296u^2 & 13 (3200u)^3 + 3048(512u)^4 & 962(128u)^4 \\
     \bottomrule
   \end{tabular}
 \end{center}
-This is due to dropped terms: \(\Delta b_0^{(1)}\) drops \(-90112000000u^3\),
-\(\Delta b_1^{(1)}\) drops \(172032000000u^3\), \(\Delta b_0^{(0)}\) drops
-\(319488000000u^3\) (that's relative to the \textbf{incorrect}
-\(\Delta b_j^{(1)}\) terms, if compared to the correct terms there'd also
-be a \(u^4\) term dropped).
 
 \subsection{Selection of Test Cases}
 
