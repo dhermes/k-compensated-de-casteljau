@@ -58,10 +58,10 @@ of algorithms.
   \caption{\textit{EFT of the sum of two floating point numbers.}}
 
   \begin{algorithmic}
-    \Function{\(\left[x, y\right] = \mathtt{TwoSum}\)}{$a, b$}
-      \State \(x = a \oplus b\)
-      \State \(z = x \ominus a\)
-      \State \(y = (a \ominus (x \ominus z)) \oplus (b \ominus z)\)
+    \Function{\(\left[S, \sigma\right] = \mathtt{TwoSum}\)}{$a, b$}
+      \State \(S = a \oplus b\)
+      \State \(z = S \ominus a\)
+      \State \(\sigma = (a \ominus (S \ominus z)) \oplus (b \ominus z)\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
@@ -70,10 +70,10 @@ of algorithms.
   \caption{\textit{Splitting of a floating point number into two parts.}}
 
   \begin{algorithmic}
-    \Function{\(\left[x, y\right] = \mathtt{Split}\)}{$a$}
+    \Function{\(\left[h, \ell\right] = \mathtt{Split}\)}{$a$}
       \State \(z = a \otimes (2^r + 1)\)
-      \State \(x = z \ominus (z \ominus a)\)
-      \State \(y = a \ominus x\)
+      \State \(h = z \ominus (z \ominus a)\)
+      \State \(\ell = a \ominus h\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
@@ -82,12 +82,13 @@ of algorithms.
   \caption{\textit{EFT of the product of two floating point numbers.}}
 
   \begin{algorithmic}
-    \Function{\(\left[x, y\right] = \mathtt{TwoProd}\)}{$a, b$}
-      \State \(x = a \otimes b\)
-      \State \(\left[a_h, a_l\right] = \mathtt{Split}(a)\)
-      \State \(\left[b_h, b_l\right] = \mathtt{Split}(b)\)
-      \State \(y = a_l \otimes b_l \ominus (((x \ominus a_h \otimes b_h)
-          \ominus a_l \otimes b_h) \ominus a_h \otimes b_l)\)
+    \Function{\(\left[P, \pi\right] = \mathtt{TwoProd}\)}{$a, b$}
+      \State \(P = a \otimes b\)
+      \State \(\left[a_h, a_{\ell}\right] = \mathtt{Split}(a)\)
+      \State \(\left[b_h, b_{\ell}\right] = \mathtt{Split}(b)\)
+      \State \(\pi = a_{\ell} \otimes b_{\ell} \ominus (((P \ominus
+          a_h \otimes b_h)
+          \ominus a_{\ell} \otimes b_h) \ominus a_h \otimes b_{\ell})\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
@@ -96,9 +97,9 @@ of algorithms.
   \caption{\textit{EFT of the sum of two floating point numbers with a FMA.}}
 
   \begin{algorithmic}
-    \Function{\(\left[x, y\right] = \mathtt{TwoProdFMA}\)}{$a, b$}
-      \State \(x = a \otimes b\)
-      \State \(y = \mathtt{FMA}(a, b, -x)\)
+    \Function{\(\left[P, \pi\right] = \mathtt{TwoProdFMA}\)}{$a, b$}
+      \State \(P = a \otimes b\)
+      \State \(\pi = \mathtt{FMA}(a, b, -P)\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
