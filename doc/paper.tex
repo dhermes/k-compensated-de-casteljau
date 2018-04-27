@@ -239,8 +239,9 @@ However, using the compensated de Casteljau algorithm results in
 \end{center}
 This is due to dropped terms: \(e_0^{(1)}\) drops \(-90112000000u^3\),
 \(e_1^{(1)}\) drops \(172032000000u^3\), \(e_0^{(0)}\) drops
-\(319488000000u^3\) (that's \textbf{after} the \(e_j^{(1)}\) terms are
-incorrect).
+\(319488000000u^3\) (that's relative to the \textbf{incorrect} \(e_j^{(1)}\)
+terms, if compared to the correct terms there'd also be a \(u^4\) term
+dropped).
 
 \subsection{Selection of Test Cases}
 
