@@ -110,12 +110,12 @@ of algorithms.
   \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$p, s$}
-      \State \(n = \texttt{length}(p) - 1\)
+    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$\mathbf{b}, s$}
+      \State \(n = \texttt{length}(b) - 1\)
       \State \(r = 1 \ominus s\)
       \\
       \For{\(j = 0, \ldots, n\)}
-        \State \(b_j^{(n)} = p_j\)
+        \State \(b_j^{(n)} = b_j\)
       \EndFor
       \\
       \For{\(k = n - 1, \ldots, 0\)}
@@ -134,13 +134,13 @@ of algorithms.
   \caption{\textit{Compensated de Casteljau algorithm for polynomial evaluation.}}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$p, s$}
-      \State \(n = \texttt{length}(p) - 1\)
+    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$\mathbf{b}, s$}
+      \State \(n = \texttt{length}(\mathbf{b}) - 1\)
       \State \(\left[r, \rho\right] = \mathtt{TwoSum}(1, -s)\)
       \\
       \For{\(j = 0, \ldots, n\)}
-        \State \(b_j^{(n)} = p_j\)
-        \State \(e_j^{(n)} = 0\)
+        \State \(b_j^{(n)} = b_j\)
+        \State \(\Delta b_j^{(n)} = 0\)
       \EndFor
       \\
       \For{\(k = n - 1, \ldots, 0\)}
@@ -153,12 +153,13 @@ of algorithms.
               P_1, P_2)\)
           \State \(w = \pi_1 \oplus \pi_2 \oplus \sigma_3 \oplus
               \left(\rho \otimes b_j^{(k + 1)}\right)\)
-          \State \(e_j^{(k)} = w \oplus \left(s \otimes e_{j + 1}^{(k + 1)}
-              \right) \oplus \left(r \otimes e_j^{(k + 1)}\right)\)
+          \State \(\Delta b_j^{(k)} = w \oplus \left(s \otimes
+              \Delta b_{j + 1}^{(k + 1)}
+              \right) \oplus \left(r \otimes \Delta b_j^{(k + 1)}\right)\)
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = b_0^{(0)} \oplus e_0^{(0)}\)
+      \State \(\mathtt{res} = b_0^{(0)} \oplus \Delta b_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
@@ -166,9 +167,9 @@ of algorithms.
 \section{de Casteljau's Method}
 
 Consider de Casteljau's method to evaluate a degree \(n\)
-polynomial in Bernstein-B\'{e}zier form with control points \(p_j\):
+polynomial in Bernstein-B\'{e}zier form with control points \(b_j\):
 \begin{align*}
-    b_j^{(n)} &= p_j \\
+    b_j^{(n)} &= b_j \\
     b_j^{(k)} &= (1 - s) b_j^{(k + 1)} + s b_{j + 1}^{(k + 1)} \\
     b(s) &= b_0^{(0)}.
 \end{align*}
@@ -191,16 +192,16 @@ As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
 
 For a polynomial \(p(s)\) in Bernstein form, we have (\cite{Jiang2010}):
 \[\cond{p(s)} = \frac{\widetilde{p}\left(s\right)}{
-  \left|p(s)\right|} = \frac{\sum_j \left|p_j\right| \left|b_{j, n}(s)\right|}{
+  \left|p(s)\right|} = \frac{\sum_j \left|b_j\right| \left|B_{j, n}(s)\right|}{
   \left|p(s)\right|}.\]
 The Bernstein form is suited for \(s \in \left[0, 1\right]\), which means
-\(b_{j, n}(s) \geq 0\) typically. If \(s \in \left[0, 1\right]\) and each
-\(p_j \geq 0\) we must necessarily have \(\cond{p(s)} = 1\). To see an
+\(B_{j, n}(s) \geq 0\) typically. If \(s \in \left[0, 1\right]\) and each
+\(b_j \geq 0\) we must necessarily have \(\cond{p(s)} = 1\). To see an
 example in use, consider
 \[p(s) = (1 - 2s)^n = \left[(1 - s) - s\right]^n = \sum_j \binom{n}{j}
-(1 - s)^{n - j} (-s)^j = \sum_j (-1)^j b_{j, n}(s)\]
+(1 - s)^{n - j} (-s)^j = \sum_j (-1)^j B_{j, n}(s)\]
 and input values of the form \(x = \frac{1}{2} + \delta\)
-(with \(\left|\delta\right| \ll \frac{1}{2}\)). Since \(p_j = (-1)^j\)
+(with \(\left|\delta\right| \ll \frac{1}{2}\)). Since \(b_j = (-1)^j\)
 we have \(\widetilde{p}(s) = \left[(1 - s) + s\right]^n = 1\)
 \[\cond{p\left(\frac{1}{2} + \delta\right)} = \frac{1}{
   \left|2\delta\right|^n}.\]
@@ -209,17 +210,17 @@ As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
 \subsection{Example of Compensated de Casteljau Failing}
 
 Consider
-\[p(s) = (4s - 3)^3 (8s + 7) = (-189) b_{0, 4}(s) + (-54) b_{1, 4}(s) +
-57 b_{2, 4}(s) + (-32) b_{3, 4}(s) + 15 b_{4, 4}(s)\]
+\[p(s) = (4s - 3)^3 (8s + 7) = (-189) B_{0, 4}(s) + (-54) B_{1, 4}(s) +
+57 B_{2, 4}(s) + (-32) B_{3, 4}(s) + 15 B_{4, 4}(s)\]
 at the point \(s = \frac{3}{4} + 800 u\). In exact arithmetic, we
 have \(p(s) = 2^{38.6} u^3 + \mathcal{O}\left(u^4\right)\).
 However, using the compensated de Casteljau algorithm results in
-\(\widehat{p} + \widehat{e} = 0\):
+\(b_0^{(0)} + \Delta b_0^{(0)} = 0\):
 
 \begin{center}
   \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
     \toprule
-    k & j & b_j^{(k)} & e_j^{(k)} \\
+    k & j & b_j^{(k)} & \Delta b_j^{(k)} \\
     \midrule
     3 & 0 & -87\frac{3}{4} + 108032u & -32u \\
     3 & 1 & 29\frac{1}{4} + 88768u & 32u \\
@@ -237,11 +238,11 @@ However, using the compensated de Casteljau algorithm results in
     \bottomrule
   \end{tabular}
 \end{center}
-This is due to dropped terms: \(e_0^{(1)}\) drops \(-90112000000u^3\),
-\(e_1^{(1)}\) drops \(172032000000u^3\), \(e_0^{(0)}\) drops
-\(319488000000u^3\) (that's relative to the \textbf{incorrect} \(e_j^{(1)}\)
-terms, if compared to the correct terms there'd also be a \(u^4\) term
-dropped).
+This is due to dropped terms: \(\Delta b_0^{(1)}\) drops \(-90112000000u^3\),
+\(\Delta b_1^{(1)}\) drops \(172032000000u^3\), \(\Delta b_0^{(0)}\) drops
+\(319488000000u^3\) (that's relative to the \textbf{incorrect}
+\(\Delta b_j^{(1)}\) terms, if compared to the correct terms there'd also
+be a \(u^4\) term dropped).
 
 \subsection{Selection of Test Cases}
 
