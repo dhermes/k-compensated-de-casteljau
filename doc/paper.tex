@@ -140,7 +140,7 @@ of algorithms.
       \\
       \For{\(j = 0, \ldots, n\)}
         \State \(b_j^{(n)} = b_j\)
-        \State \(\Delta b_j^{(n)} = 0\)
+        \State \(\partial b_j^{(n)} = 0\)
       \EndFor
       \\
       \For{\(k = n - 1, \ldots, 0\)}
@@ -153,13 +153,13 @@ of algorithms.
               P_1, P_2)\)
           \State \(w = \pi_1 \oplus \pi_2 \oplus \sigma_3 \oplus
               \left(\rho \otimes b_j^{(k + 1)}\right)\)
-          \State \(\Delta b_j^{(k)} = w \oplus \left(s \otimes
-              \Delta b_{j + 1}^{(k + 1)}
-              \right) \oplus \left(r \otimes \Delta b_j^{(k + 1)}\right)\)
+          \State \(\partial b_j^{(k)} = w \oplus \left(s \otimes
+              \partial b_{j + 1}^{(k + 1)}
+              \right) \oplus \left(r \otimes \partial b_j^{(k + 1)}\right)\)
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = b_0^{(0)} \oplus \Delta b_0^{(0)}\)
+      \State \(\mathtt{res} = b_0^{(0)} \oplus \partial b_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
@@ -215,12 +215,12 @@ Consider
 at the point \(s = \frac{3}{4} + 800 u\). In exact arithmetic, we
 have \(p(s) = 13(3200u)^3 + \mathcal{O}\left(u^4\right)\).
 However, using the compensated de Casteljau algorithm results in
-\(b_0^{(0)} + \Delta b_0^{(0)} = 0\):
+\(b_0^{(0)} + \partial b_0^{(0)} = 0\):
 
 \begin{center}
   \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
     \toprule
-    k & j & b_j^{(k)} & \Delta b_j^{(k)} & \Delta^2 b_j^{(k)} & \Delta^3 b_j^{(k)} \\
+    k & j & b_j^{(k)} & \partial b_j^{(k)} & \partial^2 b_j^{(k)} & \partial^3 b_j^{(k)} \\
     \midrule
     3 & 0 & -87\frac{3}{4} + 108032u & -32u & 0 & 0 \\
     3 & 1 & 29\frac{1}{4} + 88768u & 32u & 0 & 0 \\
@@ -271,6 +271,10 @@ end of Section 5, at the bottom of page 109):
 \end{quote}
 
 \subsection{\texorpdfstring{\(K\)}{K}-Fold Error Filtering}
+
+Picture coming soon
+
+\subsection{Operation Counts}
 
 After implementing for \(K = 2, 3, \ldots, 12\) and instrumenting all
 relevant floating point operations, the \(K\)-fold Horner requires
