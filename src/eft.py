@@ -13,6 +13,9 @@
 """Collection of error-free transforms."""
 
 
+import fractions
+
+
 def add_eft(val1, val2):
     # See: https://doi.org/10.1137/030601818
     sum_ = val1 + val2
@@ -29,11 +32,25 @@ def _split(val):
     return high_bits, low_bits
 
 
+def _fma(val1, val2, val3):
+    if (
+        isinstance(val1, float)
+        and isinstance(val2, float)
+        and isinstance(val3, float)
+    ):
+        frac1 = fractions.Fraction(val1)
+        frac2 = fractions.Fraction(val2)
+        frac3 = fractions.Fraction(val3)
+        return float(frac1 * frac2 + frac3)
+    else:
+        return val1.fma(val1, val2, val3)
+
+
 def multiply_eft(val1, val2, use_fma=True):
     # See: https://doi.org/10.1109/TC.2008.215
     product = val1 * val2
     if use_fma:
-        error = val1.fma(val1, val2, -product)
+        error = _fma(val1, val2, -product)
     else:
         high1, low1 = _split(val1)
         high2, low2 = _split(val2)
