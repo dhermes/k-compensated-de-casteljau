@@ -1,0 +1,16 @@
+### MATPLOTLIBRC FORMAT
+
+# See https://matplotlib.org/users/customizing.html
+
+#### CONFIGURATION BEGINS HERE
+
+### TEXT
+
+text.usetex      : true
+# Custom math font settings (always use LaTeX "Computer Modern")
+mathtext.rm      : serif
+mathtext.fontset : cm
+
+### SAVING FIGURES
+
+svg.hashsalt     : a070b8d0-7470-43ff-a6b5-c1671ebf3936

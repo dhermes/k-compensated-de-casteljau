@@ -23,6 +23,19 @@ import py.path
 
 
 NOX_DIR = os.path.abspath(os.path.dirname(__file__))
+SINGLE_INTERP = "python3.6"
+DEPS = {
+    "matplotlib": (
+        "cycler == 0.10.0",
+        "kiwisolver == 1.0.1",
+        "matplotlib == 2.2.2",
+        "numpy == 1.14.2",
+        "pyparsing == 2.2.0",
+        "python-dateutil == 2.7.2",
+        "pytz == 2018.4",
+        "six == 1.11.0",
+    )
+}
 
 
 def get_path(*names):
@@ -94,3 +107,12 @@ def flop_counts(session):
     env = {"PYTHONPATH": get_path("src")}
     compute_counts = get_path("scripts", "compute_counts.py")
     session.run("python", compute_counts, env=env)
+
+
+@nox.session
+def make_images(session):
+    session.interpreter = SINGLE_INTERP
+    # Install all dependencies.
+    session.install(*DEPS["matplotlib"])
+    # Run the script(s).
+    env = {"MATPLOTLIBRC": get_path("images")}
