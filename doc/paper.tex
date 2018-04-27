@@ -213,7 +213,8 @@ Consider
 57 b_{2, 4}(s) + (-32) b_{3, 4}(s) + 15 b_{4, 4}(s)\]
 at the point \(s = \frac{3}{4} + 800 u\). In exact arithmetic, we
 have \(p(s) = 2^{38.6} u^3 + \mathcal{O}\left(u^4\right)\).
-However, using the compensated de Casteljau algorithm causes problems.
+However, using the compensated de Casteljau algorithm results in
+\(\widehat{p} + \widehat{e} = 0\):
 
 \begin{center}
   \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
