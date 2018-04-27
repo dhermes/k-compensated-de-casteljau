@@ -23,6 +23,21 @@
   },
 }
 
+%% H/T: https://tex.stackexchange.com/a/99051/32270
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+\tikzstyle{box} = [
+  rectangle, minimum width=0.1\textwidth, minimum height=0.1\textwidth,
+  text centered, draw=black]
+\tikzstyle{empty-box} = [
+  rectangle, minimum width=0.1\textwidth, minimum height=0.1\textwidth,
+  text width=0.05\textwidth]
+\tikzstyle{empty-box-vert} = [
+  rectangle, minimum width=0.1\textwidth, minimum height=0.1\textwidth,
+  text centered, text height=0.001\textwidth]
+\tikzstyle{line} = [draw, -latex']
+
 \usepackage{embedfile}
 \embedfile{\jobname.tex}
 
@@ -272,7 +287,64 @@ end of Section 5, at the bottom of page 109):
 
 \subsection{\texorpdfstring{\(K\)}{K}-Fold Error Filtering}
 
-Picture coming soon
+\begin{center}
+\begin{tikzpicture}[node distance = 0.2\textwidth]
+    \node [box] (bj) {\(b_j\)};
+    \node [box, below of=bj] (bn0) {\(b_j^{(n)}\)};
+    \node [box, right of=bn0] (dbn0) {\(\partial b_j^{(n)}\)};
+    \node [box, right of=dbn0] (ddbn0) {\(\partial^2 b_j^{(n)}\)};
+    \node [box, right of=ddbn0] (dddbn0) {\(\partial^3 b_j^{(n)}\)};
+    %%
+    \node [box, below of=bn0] (bn1) {\(b_j^{(n - 1)}\)};
+    \node [box, below of=dbn0] (dbn1) {\(\partial b_j^{(n - 1)}\)};
+    \node [box, below of=ddbn0] (ddbn1) {\(\partial^2 b_j^{(n - 1)}\)};
+    \node [box, below of=dddbn0] (dddbn1) {\(\partial^3 b_j^{(n - 1)}\)};
+    %%
+    \node [box, below of=bn1] (bn2) {\(b_j^{(n - 2)}\)};
+    \node [box, below of=dbn1] (dbn2) {\(\partial b_j^{(n - 2)}\)};
+    \node [box, below of=ddbn1] (ddbn2) {\(\partial^2 b_j^{(n - 2)}\)};
+    \node [box, below of=dddbn1] (dddbn2) {\(\partial^3 b_j^{(n - 2)}\)};
+    %%
+    \path [line] (bn0) -- node[above] {\(w_1^{(n)}\)} (dbn0);
+    \path [line] (dbn0) -- node[above] {\(w_2^{(n)}\)} (ddbn0);
+    \path [line] (ddbn0) -- node[above] {\(w_3^{(n)}\)} (dddbn0);
+    \node [empty-box, right of=dddbn0] (right0) {\(\cdots\)};
+    \path [line] (dddbn0) -- node[above] {\(w_4^{(n)}\)} (right0);
+    %%
+    \path [line] (bn1) -- node[above] {\(w_1^{(n - 1)}\)} (dbn1);
+    \path [line] (dbn1) -- node[above] {\(w_2^{(n - 1)}\)} (ddbn1);
+    \path [line] (ddbn1) -- node[above] {\(w_3^{(n - 1)}\)} (dddbn1);
+    \node [empty-box, right of=dddbn1] (right1) {\(\cdots\)};
+    \path [line] (dddbn1) -- node[above] {\(w_4^{(n - 1)}\)} (right1);
+    %%
+    \path [line] (bn2) -- node[above] {\(w_1^{(n - 2)}\)} (dbn2);
+    \path [line] (dbn2) -- node[above] {\(w_2^{(n - 2)}\)} (ddbn2);
+    \path [line] (ddbn2) -- node[above] {\(w_3^{(n - 2)}\)} (dddbn2);
+    \node [empty-box, right of=dddbn2] (right2) {\(\cdots\)};
+    \path [line] (dddbn2) -- node[above] {\(w_4^{(n - 2)}\)} (right2);
+    %%
+    \path [line] (bj) -- (bn0);
+    \path [line] (bn0) -- node[fill=white] {\(U_n(s)\)} (bn1);
+    \path [line] (bn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (bn2);
+    \node [empty-box-vert, below of=bn2] (bottom0) {\(\vdots\)};
+    \path [line] (bn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom0);
+    %%
+    \path [line] (dbn0) -- node[fill=white] {\(U_n(s)\)} (dbn1);
+    \path [line] (dbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dbn2);
+    \node [empty-box-vert, below of=dbn2] (bottom1) {\(\vdots\)};
+    \path [line] (dbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom1);
+    %%
+    \path [line] (ddbn0) -- node[fill=white] {\(U_n(s)\)} (ddbn1);
+    \path [line] (ddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (ddbn2);
+    \node [empty-box-vert, below of=ddbn2] (bottom2) {\(\vdots\)};
+    \path [line] (ddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom2);
+    %%
+    \path [line] (dddbn0) -- node[fill=white] {\(U_n(s)\)} (dddbn1);
+    \path [line] (dddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dddbn2);
+    \node [empty-box-vert, below of=dddbn2] (bottom3) {\(\vdots\)};
+    \path [line] (dddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom3);
+\end{tikzpicture}
+\end{center}
 
 \subsection{Operation Counts}
 
