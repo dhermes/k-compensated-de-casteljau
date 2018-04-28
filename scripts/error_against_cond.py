@@ -58,13 +58,15 @@ def get_path(filename):
 def main(filename=None):
     # n = 8
     gamma2n = 16 * U / (1 - 16 * U)
+    bound_coeff1 = float(gamma2n)
     gamma3n = 24 * U / (1 - 24 * U)
+    bound_coeff2 = float(2 * gamma2n**2)
 
     cond_nums = []
     forward_errs1 = []
     forward_errs2 = []
-    a_priori_bound2 = []
-    for j in range(-5, -44 - 1, -1):
+    forward_errs3 = []
+    for j in range(-5, -70 - 1, -1):
         s = 0.75 - 1.3 ** j
         exact_s = F(s)
 
@@ -75,11 +77,8 @@ def main(filename=None):
         exact_cond = abs(exact_p_tilde / exact_p)
         cond_nums.append(float(exact_cond))
 
-        # Update the lines of the a priori bounds.
-        a_priori_bound2.append(float(U + 2 * gamma3n ** 2 * exact_cond))
-
         # Compute the forward error for uncompensated de Casteljau.
-        b1, db, _ = de_casteljau._compensated3(s, BEZIER_COEFFS)
+        b1, db, ddb = de_casteljau._compensated3(s, BEZIER_COEFFS)
         exact_b1 = F(b1)
         exact_forward_err1 = abs((exact_b1 - exact_p) / exact_p)
         forward_errs1.append(float(exact_forward_err1))
@@ -90,6 +89,12 @@ def main(filename=None):
         exact_forward_err2 = abs((exact_b2 - exact_p) / exact_p)
         forward_errs2.append(float(exact_forward_err2))
 
+        # Compute the forward error for K-compensated de Casteljau (K=3).
+        b3 = b2 + ddb
+        exact_b3 = F(b3)
+        exact_forward_err3 = abs((exact_b3 - exact_p) / exact_p)
+        forward_errs3.append(float(exact_forward_err3))
+
     # Set a tight ``x``-limit.
     min_exp = np.log(min(cond_nums))
     max_exp = np.log(max(cond_nums))
@@ -99,6 +104,7 @@ def main(filename=None):
 
     figure = plt.figure()
     ax = figure.gca()
+    alpha = 0.25
     ax.loglog(
         cond_nums,
         forward_errs1,
@@ -115,27 +121,39 @@ def main(filename=None):
         zorder=2,
         label=r"$\mathtt{CompDeCasteljau}$",
     )
+    ax.loglog(
+        cond_nums,
+        forward_errs3,
+        marker="d",
+        linestyle="none",
+        zorder=2,
+        label=r"$\mathtt{CompDeCasteljau3}$",
+    )
+    # Figure out the bounds before adding the bounding lines.
+    min_y, max_y = ax.get_ylim()
     # Plot the lines of the a priori error bounds.
     ax.loglog(
         [min_x, max_x],
-        [float(gamma2n * min_x), float(gamma2n * max_x)],
+        [bound_coeff1 * min_x, bound_coeff1 * max_x],
         color="black",
+        alpha=alpha,
         zorder=1,
     )
     ax.loglog(
-        [min_x] + cond_nums,
-        [float(U + 2 * gamma3n ** 2 * min_x)] + a_priori_bound2,
+        [min_x, max_x],
+        [bound_coeff2 * min_x, bound_coeff2 * max_x],
         color="black",
+        alpha=alpha,
         zorder=1,
     )
-    # Figure out the bounds before adding the ``1/u`` and ``1/u^2`` lines.
-    min_y, max_y = ax.get_ylim()
+    # Add the ``u``, ``1/u`` and ``1/u^2`` lines.
     delta_y = max_y - min_y
     ax.loglog(
         [1.0 / float(U), 1.0 / float(U)],
         [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
         color="black",
         linestyle="dashed",
+        alpha=alpha,
         zorder=1,
     )
     ax.loglog(
@@ -143,11 +161,20 @@ def main(filename=None):
         [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
         color="black",
         linestyle="dashed",
+        alpha=alpha,
+        zorder=1,
+    )
+    ax.loglog(
+        [min_x, max_x],
+        [float(U), float(U)],
+        color="black",
+        linestyle="dashed",
+        alpha=alpha,
         zorder=1,
     )
 
     # Make sure the ``y``-limit stays set (the bounds lines exceed).
-    ax.set_ylim(min_y, 1.0)
+    ax.set_ylim(min_y, 2.0)
     ax.set_xlim(min_x, max_x)
     # Add the legend.
     ax.legend(loc="lower right", framealpha=1.0, frameon=True)
@@ -165,6 +192,18 @@ def main(filename=None):
         bottom=0,
         labelbottom=0,
         labeltop=1,
+    )
+    # Set special ``yticks`` for ``u``.
+    ax.set_yticks([float(U)], minor=True)
+    ax.set_yticklabels([r"$\mathbf{u}$"], minor=True)
+    ax.tick_params(
+        axis="y",
+        which="minor",
+        direction="out",
+        left=0,
+        right=1,
+        labelleft=0,
+        labelright=1,
     )
     # Label the axes.
     ax.set_xlabel("Condition Number")
