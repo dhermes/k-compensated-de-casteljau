@@ -10,6 +10,11 @@
 \usepackage{algpseudocode}
 %% H/T: https://tex.stackexchange.com/a/244805
 \usepackage{booktabs,siunitx}
+%% H/T: https://tex.stackexchange.com/a/4217/32270
+\usepackage{mathtools}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
 
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{hyperref}
@@ -98,7 +103,7 @@ which case most or all of the computed digits will be incorrect.
 In some cases, even the order of magnitude of the computed value
 of \(p(s)\) can be incorrect.
 
-To address ill-conditioned problems, error-free transformations can
+To address ill-conditioned problems, error-free transformations (EFT) can
 be applied in \textit{compensated algorithms} to account for roundoff.
 Error-free transformations were studied in great detail in \cite{Ogita2005}
 and open a large number of applications.
@@ -150,7 +155,7 @@ as accurate as the result of the de Casteljau algorithm performed in
 working precision.
 
 The paper is organized as follows. Section~\ref{notation} introduces some
-basic notations and results about floating point arithmetic, error-free
+basic notation and results about floating point arithmetic, error-free
 transformations and the de Casteljau algorithm. In Section~\ref{compensated-2},
 the compensated algorithm for polynomial evaluation from \cite{Jiang2010} is
 reviewed and notation is established for the expansion. In
@@ -160,7 +165,103 @@ give numerical tests to illustrate the practical efficiency of our algorithms.
 
 \section{Basic notation and results}\label{notation}
 
-Placeholder
+Throughout this paper we assume that the computation in floating point
+arithmetic obeys the model
+\begin{equation}
+  a \star b = \fl{a \circ b} = (a \circ b)(1 + \eps_1) =
+  (a \circ b) / (1 + \eps_2)
+\end{equation}
+where \(\star \in \left\{\oplus, \ominus, \otimes, \oslash\right\}\), \(\circ
+\in \left\{+, -, \times, \div\right\}\) and \(\left|\eps_1\right|,
+\left|\eps_2\right| \leq \mach\). The symbol \(\mach\) is the unit round-off
+and \(\star\) represents the floating point computation, e.g.
+\(a \oplus b = \fl{a + b}\). We also assume that the computed result of
+\(\alpha \in \mathbf{R}\) in floating point arithmetic is denoted by
+\(\widehat{\alpha}\) or \(\fl{\alpha}\) and \(\mathbf{F}\) denotes the set of
+all floating point numbers (see \cite{Higham2002} for more details).
+Following \cite{Higham2002}, we will use the following classic properties in
+error analysis.
+
+\begin{enumerate}
+  \item If \(\delta_i \leq \mach\), \(\rho_i = \pm 1\), then
+      \(\prod_{i = 1}^n (1 + \delta_i)^{\rho_i} = 1 + \theta_n\),
+  \item \(\left|\theta_n\right| \leq \gamma_n \coloneqq
+      n \mach / (1 - n \mach)\),
+  \item \((1 + \theta_k)(1 + \theta_j) \leq (1 + \theta_{k + j})\),
+  \item \(\gamma_k + \gamma_j + \gamma_k \gamma_j \leq \gamma_{k + j}\),
+  \item \((1 + \mach)^j \leq 1 / (1 - j \mach)\).
+\end{enumerate}
+
+Now let us introduce some results concerning error-free transformation (EFT).
+For a pair floating point numbers \(a, b \in \mathbf{F}\), there exists
+a floating point number \(y\) satisfying \(a \circ b = x + y\) where
+\(x = \fl{a \circ b}\) and \(\circ \in \left\{+, -, \times\right\}\).
+The transformation \((a, b) \longrightarrow (x, y)\) is regarded as an
+error-free transformation. The error-free transformation algorithms of the
+sum and product of two floating point numbers used later in this paper are
+the \texttt{TwoSum} algorithm by Knuth \cite{Knuth1997} and \texttt{TwoProd}
+algorithm by Dekker \cite{Dekker1971}, respectively. The following theorem
+exhibits the important properties of \texttt{TwoSum} and \texttt{TwoProd}
+algorithms (see \cite{Ogita2005}).
+
+\begin{theorem}[\cite{Ogita2005}]
+For \(a, b \in \mathbf{F}\) and \(x, y \in \mathbf{F}\), \texttt{TwoSum} and
+\texttt{TwoProd} satisfy
+\begin{itemize}
+  \item \(\left[x, y\right] = \mathtt{TwoSum}(a, b)\), \(x = \fl{a + b}\),
+      \(x + y = a + b\), \(y \leq \mach \left|x\right|\),
+      \(y \leq \mach \left|a + b\right|\)
+  \item \(\left[x, y\right] = \mathtt{TwoProd}(a, b)\),
+      \(x = \fl{a \times b}\), \(x + y = a \times b\),
+      \(y \leq \mach \left|x\right|\),
+      \(y \leq \mach \left|a \times b\right|\).
+\end{itemize}
+\end{theorem}
+
+Next, we recall the de Casteljau algorithm:
+
+\begin{algorithm}[H]
+  \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
+
+  \begin{algorithmic}
+    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$\mathbf{b}, s$}
+      \State \(n = \texttt{length}(b) - 1\)
+      \State \(r = 1 \ominus s\)
+      \\
+      \For{\(j = 0, \ldots, n\)}
+        \State \(b_j^{(n)} = b_j\)
+      \EndFor
+      \\
+      \For{\(k = n - 1, \ldots, 0\)}
+        \For{\(j = 0, \ldots, k\)}
+          \State \(b_j^{(k)} = \left(r \otimes b_j^{(k + 1)}\right) \oplus
+              \left(s \otimes b_{j + 1}^{(k + 1)}\right)\)
+        \EndFor
+      \EndFor
+      \\
+      \State \(\mathtt{res} = b_0^{(0)}\)
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}[\cite{Mainar1999}]
+If \(p(s) = \sum_{j = 0}^n b_j B_{j, n}(s)\) and \(\mathtt{DeCasteljau}(p, s)\)
+is the value computed by the de Casteljau algorithm then
+\begin{equation}
+\left|p(s) - \mathtt{DeCasteljau}(p, s)\right| \leq \gamma_{2n}
+\sum_{j = 0}^n \left|b_j\right| B_{j, n}(s).
+\end{equation}
+\end{theorem}
+
+The relative condition number of the evaluation of \(p(s) = \sum_{j = 0}^n
+b_j B_{j, n}(s)\) in Bernstein form used in this paper is (see
+\cite{Mainar1999}, \cite{Farouki1987}):
+\begin{equation}
+\cond{p, s} = \frac{\widetilde{p}\left(s\right)}{
+  \left|p(s)\right|} = \frac{\sum_j \left|b_j\right| B_{j, n}(s)}{
+  \left|p(s)\right|},
+\end{equation}
+where \(B_{j, n} \geq 0\).
 
 \section{Compensated de Casteljau}\label{compensated-2}
 
@@ -222,30 +323,6 @@ Placeholder
     \Function{\(\left[P, \pi\right] = \mathtt{TwoProdFMA}\)}{$a, b$}
       \State \(P = a \otimes b\)
       \State \(\pi = \mathtt{FMA}(a, b, -P)\)
-    \EndFunction
-  \end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}[H]
-  \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
-
-  \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$\mathbf{b}, s$}
-      \State \(n = \texttt{length}(b) - 1\)
-      \State \(r = 1 \ominus s\)
-      \\
-      \For{\(j = 0, \ldots, n\)}
-        \State \(b_j^{(n)} = b_j\)
-      \EndFor
-      \\
-      \For{\(k = n - 1, \ldots, 0\)}
-        \For{\(j = 0, \ldots, k\)}
-          \State \(b_j^{(k)} = \left(r \otimes b_j^{(k + 1)}\right) \oplus
-              \left(s \otimes b_{j + 1}^{(k + 1)}\right)\)
-        \EndFor
-      \EndFor
-      \\
-      \State \(\mathtt{res} = b_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
