@@ -402,7 +402,102 @@ the working precision:
 
 \section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{compensated-k}
 
-Placeholder
+In order to raise from twice the working precision to \(K\) times the
+working precision, we continue using EFTs when computing
+\(\widehat{\partial b}^{(k)}\). By tracking the round-off from each
+floating point evaluation via an EFT, we can form a cascade of global errors:
+\begin{align}
+  b_j^{(k)} &= \widehat{b}_j^{(k)} + \partial b_j^{(k)} \\
+  \partial b_j^{(k)} &= \widehat{\partial b}_j^{(k)} + \partial^2 b_j^{(k)} \\
+  \partial^2 b_j^{(k)} &= \widehat{\partial^2 b}_j^{(k)} +
+  \partial^3 b_j^{(k)} \\
+  & \vdots \nonumber
+\end{align}
+In the same way local error can be tracked when updating
+\(\widehat{b}_j^{(k)}\), it can be tracked for updates that happen down
+the cascade:
+\begin{alignat}{4}
+  (1 - s) \cdot \widehat{b}_j^{(k + 1)} &+
+  s \cdot \widehat{b}_{j + 1}^{(k + 1)} &&  &&=
+  \widehat{b}_j^{(k)} &&+ \ell_{1, j}^{(k)} \\
+  (1 - s) \cdot \widehat{\partial b}_j^{(k + 1)} &+
+  s \cdot \widehat{\partial b}_{j + 1}^{(k + 1)} &&+ \ell_{1, j}^{(k)} &&=
+  \widehat{\partial b}_j^{(k)} &&+ \ell_{2, j}^{(k)} \\
+  (1 - s) \cdot \widehat{\partial^2 b}_j^{(k + 1)} &+
+  s \cdot \widehat{\partial^2 b}_{j + 1}^{(k + 1)} &&+ \ell_{2, j}^{(k)} &&=
+  \widehat{\partial^2 b}_j^{(k)} &&+ \ell_{3, j}^{(k)} \\
+  &  &&  &&\vdots && \nonumber
+\end{alignat}
+
+In \texttt{CompDeCasteljau}, after a single stage of error filtering we
+``give up'' and use \(\widehat{\partial b}^{(k)}\) instead of
+\(\partial b^{(k)}\) (and don't keep around any information about the
+round-off error). In order to obtain results that are as accurate as if
+computed in \(K\) times the working precision, we must continue filtering
+errors down \((K - 1)\) times, so that at the final level we compute
+\(\widehat{\partial^{K - 1} b}^{(k)}\) and don't worry about round-off
+error.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance = 0.2\textwidth]
+    \node [box] (bj) {\(b\)};
+    \node [box, below of=bj] (bn0) {\(\widehat{b}^{(n)}\)};
+    \node [box, right of=bn0] (dbn0) {\(\widehat{\partial b}^{(n)}\)};
+    \node [box, right of=dbn0] (ddbn0) {\(\widehat{\partial^2 b}^{(n)}\)};
+    \node [box, right of=ddbn0] (dddbn0) {\(\widehat{\partial^3 b}^{(n)}\)};
+    %%
+    \node [box, below of=bn0] (bn1) {\(\widehat{b}^{(n - 1)}\)};
+    \node [box, below of=dbn0] (dbn1) {\(\widehat{\partial b}^{(n - 1)}\)};
+    \node [box, below of=ddbn0] (ddbn1) {\(\widehat{\partial^2 b}^{(n - 1)}\)};
+    \node [box, below of=dddbn0] (dddbn1) {\(\widehat{\partial^3 b}^{(n - 1)}\)};
+    %%
+    \node [box, below of=bn1] (bn2) {\(\widehat{b}^{(n - 2)}\)};
+    \node [box, below of=dbn1] (dbn2) {\(\widehat{\partial b}^{(n - 2)}\)};
+    \node [box, below of=ddbn1] (ddbn2) {\(\widehat{\partial^2 b}^{(n - 2)}\)};
+    \node [box, below of=dddbn1] (dddbn2) {\(\widehat{\partial^3 b}^{(n - 2)}\)};
+    %%
+    \path [line] (bn0) -- node[above] {\(\widehat{\ell}_1^{(n)}\)} (dbn0);
+    \path [line] (dbn0) -- node[above] {\(\widehat{\ell}_2^{(n)}\)} (ddbn0);
+    \path [line] (ddbn0) -- node[above] {\(\widehat{\ell}_3^{(n)}\)} (dddbn0);
+    \node [empty-box, right of=dddbn0] (right0) {\(\cdots\)};
+    \path [line] (dddbn0) -- node[above] {\(\widehat{\ell}_4^{(n)}\)} (right0);
+    %%
+    \path [line] (bn1) -- node[above] {\(\widehat{\ell}_1^{(n - 1)}\)} (dbn1);
+    \path [line] (dbn1) -- node[above] {\(\widehat{\ell}_2^{(n - 1)}\)} (ddbn1);
+    \path [line] (ddbn1) -- node[above] {\(\widehat{\ell}_3^{(n - 1)}\)} (dddbn1);
+    \node [empty-box, right of=dddbn1] (right1) {\(\cdots\)};
+    \path [line] (dddbn1) -- node[above] {\(\widehat{\ell}_4^{(n - 1)}\)} (right1);
+    %%
+    \path [line] (bn2) -- node[above] {\(\widehat{\ell}_1^{(n - 2)}\)} (dbn2);
+    \path [line] (dbn2) -- node[above] {\(\widehat{\ell}_2^{(n - 2)}\)} (ddbn2);
+    \path [line] (ddbn2) -- node[above] {\(\widehat{\ell}_3^{(n - 2)}\)} (dddbn2);
+    \node [empty-box, right of=dddbn2] (right2) {\(\cdots\)};
+    \path [line] (dddbn2) -- node[above] {\(\widehat{\ell}_4^{(n - 2)}\)} (right2);
+    %%
+    \path [line] (bj) -- (bn0);
+    \path [line] (bn0) -- node[fill=white] {\(U_n(s)\)} (bn1);
+    \path [line] (bn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (bn2);
+    \node [empty-box-vert, below of=bn2] (bottom0) {\(\vdots\)};
+    \path [line] (bn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom0);
+    %%
+    \path [line] (dbn0) -- node[fill=white] {\(U_n(s)\)} (dbn1);
+    \path [line] (dbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dbn2);
+    \node [empty-box-vert, below of=dbn2] (bottom1) {\(\vdots\)};
+    \path [line] (dbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom1);
+    %%
+    \path [line] (ddbn0) -- node[fill=white] {\(U_n(s)\)} (ddbn1);
+    \path [line] (ddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (ddbn2);
+    \node [empty-box-vert, below of=ddbn2] (bottom2) {\(\vdots\)};
+    \path [line] (ddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom2);
+    %%
+    \path [line] (dddbn0) -- node[fill=white] {\(U_n(s)\)} (dddbn1);
+    \path [line] (dddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dddbn2);
+    \node [empty-box-vert, below of=dddbn2] (bottom3) {\(\vdots\)};
+    \path [line] (dddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom3);
+\end{tikzpicture}
+\caption{Filtering errors}
+\end{figure}
 
 \section{Numerical experiments}\label{numerical}
 
@@ -577,67 +672,6 @@ end of Section 5, at the bottom of page 109):
   precision, although the running error bound is not so accurate in points
   close to the roots.
 \end{quote}
-
-\subsection{\texorpdfstring{\(K\)}{K} Error Filtering}
-
-\begin{center}
-\begin{tikzpicture}[node distance = 0.2\textwidth]
-    \node [box] (bj) {\(b_j\)};
-    \node [box, below of=bj] (bn0) {\(b_j^{(n)}\)};
-    \node [box, right of=bn0] (dbn0) {\(\partial b_j^{(n)}\)};
-    \node [box, right of=dbn0] (ddbn0) {\(\partial^2 b_j^{(n)}\)};
-    \node [box, right of=ddbn0] (dddbn0) {\(\partial^3 b_j^{(n)}\)};
-    %%
-    \node [box, below of=bn0] (bn1) {\(b_j^{(n - 1)}\)};
-    \node [box, below of=dbn0] (dbn1) {\(\partial b_j^{(n - 1)}\)};
-    \node [box, below of=ddbn0] (ddbn1) {\(\partial^2 b_j^{(n - 1)}\)};
-    \node [box, below of=dddbn0] (dddbn1) {\(\partial^3 b_j^{(n - 1)}\)};
-    %%
-    \node [box, below of=bn1] (bn2) {\(b_j^{(n - 2)}\)};
-    \node [box, below of=dbn1] (dbn2) {\(\partial b_j^{(n - 2)}\)};
-    \node [box, below of=ddbn1] (ddbn2) {\(\partial^2 b_j^{(n - 2)}\)};
-    \node [box, below of=dddbn1] (dddbn2) {\(\partial^3 b_j^{(n - 2)}\)};
-    %%
-    \path [line] (bn0) -- node[above] {\(w_1^{(n)}\)} (dbn0);
-    \path [line] (dbn0) -- node[above] {\(w_2^{(n)}\)} (ddbn0);
-    \path [line] (ddbn0) -- node[above] {\(w_3^{(n)}\)} (dddbn0);
-    \node [empty-box, right of=dddbn0] (right0) {\(\cdots\)};
-    \path [line] (dddbn0) -- node[above] {\(w_4^{(n)}\)} (right0);
-    %%
-    \path [line] (bn1) -- node[above] {\(w_1^{(n - 1)}\)} (dbn1);
-    \path [line] (dbn1) -- node[above] {\(w_2^{(n - 1)}\)} (ddbn1);
-    \path [line] (ddbn1) -- node[above] {\(w_3^{(n - 1)}\)} (dddbn1);
-    \node [empty-box, right of=dddbn1] (right1) {\(\cdots\)};
-    \path [line] (dddbn1) -- node[above] {\(w_4^{(n - 1)}\)} (right1);
-    %%
-    \path [line] (bn2) -- node[above] {\(w_1^{(n - 2)}\)} (dbn2);
-    \path [line] (dbn2) -- node[above] {\(w_2^{(n - 2)}\)} (ddbn2);
-    \path [line] (ddbn2) -- node[above] {\(w_3^{(n - 2)}\)} (dddbn2);
-    \node [empty-box, right of=dddbn2] (right2) {\(\cdots\)};
-    \path [line] (dddbn2) -- node[above] {\(w_4^{(n - 2)}\)} (right2);
-    %%
-    \path [line] (bj) -- (bn0);
-    \path [line] (bn0) -- node[fill=white] {\(U_n(s)\)} (bn1);
-    \path [line] (bn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (bn2);
-    \node [empty-box-vert, below of=bn2] (bottom0) {\(\vdots\)};
-    \path [line] (bn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom0);
-    %%
-    \path [line] (dbn0) -- node[fill=white] {\(U_n(s)\)} (dbn1);
-    \path [line] (dbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dbn2);
-    \node [empty-box-vert, below of=dbn2] (bottom1) {\(\vdots\)};
-    \path [line] (dbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom1);
-    %%
-    \path [line] (ddbn0) -- node[fill=white] {\(U_n(s)\)} (ddbn1);
-    \path [line] (ddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (ddbn2);
-    \node [empty-box-vert, below of=ddbn2] (bottom2) {\(\vdots\)};
-    \path [line] (ddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom2);
-    %%
-    \path [line] (dddbn0) -- node[fill=white] {\(U_n(s)\)} (dddbn1);
-    \path [line] (dddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dddbn2);
-    \node [empty-box-vert, below of=dddbn2] (bottom3) {\(\vdots\)};
-    \path [line] (dddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom3);
-\end{tikzpicture}
-\end{center}
 
 \subsection{Operation Counts}
 
