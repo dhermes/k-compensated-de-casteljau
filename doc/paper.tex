@@ -50,6 +50,7 @@
 \newcommand{\cond}[1]{\operatorname{cond}\left(#1\right)}
 \newcommand{\fl}[1]{\operatorname{fl}\left(#1\right)}
 \newcommand{\eps}{\varepsilon}
+\newcommand{\mach}{\mathbf{u}}
 
 \begin{document}
 
@@ -60,14 +61,118 @@ accurately evaluate a polynomial in Bernstein form with floating point
 coefficients. The principle is to apply error-free transformations to
 improve the traditional de Casteljau algorithm. At each stage of computation,
 round-off error is passed on to first order errors, then to second order
-errors, and so on. After the computation has been ``filtered'' \(K\)-times
-via this process, the resulting output is as accurate as the de Casteljau
+errors, and so on. After the computation has been ``filtered'' \((K - 1)\)
+times via this process, the resulting output is as accurate as the de Casteljau
 algorithm performed in \(K\) times the working precision. Forward error
 analysis and numerical experiments illustrate the accuracy of this family
 of algorithms.
 \end{abstract}
 
 \tableofcontents
+
+\section{Introduction}
+
+In computer aided geometric design, polynomials are usually expressed in
+Bernstein form. Polynomials in this form are usually evaluated by the
+de Casteljau algorithm. This algorithm has a round-off error bound
+which grows only linearly with degree, even though the number of
+arithmetic operations grows quadratically. Nevertheless the de Casteljau
+algorithm returns results arbitrarily less accurate than the working
+precision \(\mach\) when evaluating \(p(s)\) is ill-conditioned.
+The relative accuracy of the computed
+evaluation with the de Casteljau algorithm (\texttt{DeCasteljau}) satisfies
+(\cite{Mainar1999}) the following a priori bound:
+\begin{equation}\label{de-casteljau-error}
+  \frac{\left|p(s) - \mathtt{DeCasteljau}(p, s)\right|}{\left|p(s)\right|} \leq
+  \cond{p, s} \times \mathcal{O}(\mach).
+\end{equation}
+In the right-hand side of this inequality, \(\mach\) is the computing
+precision and the condition number \(\cond{p, s} \geq 1\) only depends
+on \(s\) and the Bernstein coefficients of \(p\) --- its expression will
+be given further.
+
+For ill-conditioned problems, such as evaluating \(p(s)\) near a
+multiple root, the condition number may be arbitrarily large, i.e.
+\(\cond{p, s} > 1 / \mach\), in
+which case most or all of the computed digits will be incorrect.
+In some cases, even the order of magnitude of the computed value
+of \(p(s)\) can be incorrect.
+
+To address ill-conditioned problems, error-free transformations can
+be applied in \textit{compensated algorithms} to account for roundoff.
+Error-free transformations were studied in great detail in \cite{Ogita2005}
+and open a large number of applications.
+In \cite{langlois_et_al:DSP:2006:442}, a compensated Horner's algorithm was
+described to evaluate a polynomial in the monomial basis. In \cite{Jiang2010},
+a similar method was described to perform a compensated version of the de
+Casteljau algorithm. In both cases, the \(\cond{p, s}\) factor is moved
+from \(\mach\) to \(\mach^2\) and the computed value is as accurate
+as if the computations were done in twice the working precision. For example,
+the compensated de Casteljau algorithm (\texttt{CompDeCasteljau}) satisfies
+\begin{equation}\label{de-casteljau-2-error}
+  \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s)\right|}{
+    \left|p(s)\right|} \leq \mach + \cond{p, s} \times
+    \mathcal{O}\left(\mach^2\right).
+\end{equation}
+For problems with \(\cond{p, s} < 1 / \mach^2\), the relative error
+is \(\mach\), i.e. accurate to full precision, aside from rounding to the
+nearest floating point number.
+
+In \cite{Graillat2009}, the authors built on the compensated Horner's
+algorithm to produce a method for evaluating a polynomial as if
+the computations were done in \(K\) times the working precision for
+any \(K \geq 2\). This result motivates this paper, though the
+approach there is somewhat different than ours. They perform each computation
+with error-free transformations and interpret the errors as coefficients of new
+polynomials. They then evaluate the error polynomials, which (recursively)
+generate second order error polynomials and so on. This recursive property
+causes the number of operations to grow exponentially in \(K\). Here, we
+instead have a fixed number of error groups, each corresponding to roundoff
+from the group above it. For example, when
+\((1 - s) b_j^{(n)} + s b_{j + 1}^{(n)}\) is computed in floating point, any
+error is filtered down to the error group below it.
+
+As in~\eqref{de-casteljau-error}, the accuracy of the compensated
+result~\eqref{de-casteljau-2-error} may be arbitrarily bad for ill-conditioned
+polynomial evaluations. We describe how to defer rounding into progressively
+smaller error groups and improve the accuracy of the computed result by a
+factor of \(\mach\) for every error group added. So we derive
+\texttt{CompDeCasteljauK}, a \(K\)-fold compensated de Casteljau algorithm
+that satisfies the following a prior bound for any arbitrary integer \(K\):
+\begin{equation}
+  \frac{\left|p(s) - \mathtt{CompDeCasteljauK}(p, s)\right|}{
+    \left|p(s)\right|} \leq \mach + \cond{p, s} \times
+    \mathcal{O}\left(\mach^K\right).
+\end{equation}
+This means that the computed value with \texttt{CompDeCasteljauK} is now
+as accurate as the result of the de Casteljau algorithm performed in
+\(K\) times the working precision with a final rounding back to this
+working precision.
+
+The paper is organized as follows. Section~\ref{notation} introduces some
+basic notations and results about floating point arithmetic, error-free
+transformations and the de Casteljau algorithm. In Section~\ref{compensated-2},
+the compensated algorithm for polynomial evaluation from \cite{Jiang2010} is
+reviewed and notation is established for the expansion. In
+Section~\ref{compensated-k}, the \(K\) compensated algorithm is provided and
+a forward error analysis is performed. Finally, in Section~\ref{numerical} we
+give numerical tests to illustrate the practical efficiency of our algorithms.
+
+\section{Basic notation and results}\label{notation}
+
+Placeholder
+
+\section{Compensated de Casteljau}\label{compensated-2}
+
+Placeholder
+
+\section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{compensated-k}
+
+Placeholder
+
+\section{Numerical experiments}\label{numerical}
+
+Placeholder
 
 \section{IEEE Stuff}
 
@@ -193,40 +298,52 @@ polynomial in Bernstein-B\'{e}zier form with control points \(b_j\):
 
 For a polynomial \(p(x)\) in the power basis, we have
 (\cite{langlois_et_al:DSP:2006:442}):
-\[\cond{p(x)} = \frac{\widetilde{p}\left(\left|x\right|\right)}{
+\begin{equation}
+\cond{p(x)} = \frac{\widetilde{p}\left(\left|x\right|\right)}{
   \left|p(x)\right|} = \frac{\sum_j \left|a_j\right| \left|x\right|^j}{
-  \left|p(x)\right|}.\]
+  \left|p(x)\right|}.
+\end{equation}
 In particular, this means that if \(x \geq 0\) and each \(a_j \geq 0\)
 we must necessarily have \(\cond{p(x)} = 1\). To see an example in use,
 consider \(p(x) = (x - 1)^n\) and input values of the form \(x = 1 + \delta\)
 (with \(\left|\delta\right| \ll 1\)). Since \(a_j = \binom{n}{j} (-1)^{n - j}\)
 we have \(\widetilde{p}(x) = (x + 1)^n\) hence
-\[\cond{p\left(1 + \delta\right)} = \frac{(2 + \delta)^n}{
-  \left|\delta\right|^n} = \left|1 + \frac{2}{\delta}\right|^n.\]
+\begin{equation}
+\cond{p\left(1 + \delta\right)} = \frac{(2 + \delta)^n}{
+  \left|\delta\right|^n} = \left|1 + \frac{2}{\delta}\right|^n.
+\end{equation}
 As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
 
 For a polynomial \(p(s)\) in Bernstein form, we have (\cite{Jiang2010}):
-\[\cond{p(s)} = \frac{\widetilde{p}\left(s\right)}{
+\begin{equation}
+\cond{p(s)} = \frac{\widetilde{p}\left(s\right)}{
   \left|p(s)\right|} = \frac{\sum_j \left|b_j\right| \left|B_{j, n}(s)\right|}{
-  \left|p(s)\right|}.\]
+  \left|p(s)\right|}.
+\end{equation}
 The Bernstein form is suited for \(s \in \left[0, 1\right]\), which means
 \(B_{j, n}(s) \geq 0\) typically. If \(s \in \left[0, 1\right]\) and each
 \(b_j \geq 0\) we must necessarily have \(\cond{p(s)} = 1\). To see an
 example in use, consider
-\[p(s) = (1 - 2s)^n = \left[(1 - s) - s\right]^n = \sum_j \binom{n}{j}
-(1 - s)^{n - j} (-s)^j = \sum_j (-1)^j B_{j, n}(s)\]
+\begin{equation}
+p(s) = (1 - 2s)^n = \left[(1 - s) - s\right]^n = \sum_j \binom{n}{j}
+(1 - s)^{n - j} (-s)^j = \sum_j (-1)^j B_{j, n}(s)
+\end{equation}
 and input values of the form \(x = \frac{1}{2} + \delta\)
 (with \(\left|\delta\right| \ll \frac{1}{2}\)). Since \(b_j = (-1)^j\)
 we have \(\widetilde{p}(s) = \left[(1 - s) + s\right]^n = 1\)
-\[\cond{p\left(\frac{1}{2} + \delta\right)} = \frac{1}{
-  \left|2\delta\right|^n}.\]
+\begin{equation}
+\cond{p\left(\frac{1}{2} + \delta\right)} = \frac{1}{
+  \left|2\delta\right|^n}.
+\end{equation}
 As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
 
 \subsection{Example of Compensated de Casteljau Failing}
 
 Consider
-\[p(s) = (4s - 3)^3 (8s + 7) = (-189) B_{0, 4}(s) + (-54) B_{1, 4}(s) +
-57 B_{2, 4}(s) + (-32) B_{3, 4}(s) + 15 B_{4, 4}(s)\]
+\begin{equation}
+p(s) = (4s - 3)^3 (8s + 7) = (-189) B_{0, 4}(s) + (-54) B_{1, 4}(s) +
+57 B_{2, 4}(s) + (-32) B_{3, 4}(s) + 15 B_{4, 4}(s)
+\end{equation}
 at the point \(s = \frac{3}{4} + 800 u\). In exact arithmetic, we
 have \(p(s) = 13(3200u)^3 + \mathcal{O}\left(u^4\right)\).
 However, using the compensated de Casteljau algorithm results in
@@ -285,7 +402,7 @@ end of Section 5, at the bottom of page 109):
   close to the roots.
 \end{quote}
 
-\subsection{\texorpdfstring{\(K\)}{K}-Fold Error Filtering}
+\subsection{\texorpdfstring{\(K\)}{K} Error Filtering}
 
 \begin{center}
 \begin{tikzpicture}[node distance = 0.2\textwidth]
@@ -350,8 +467,10 @@ end of Section 5, at the bottom of page 109):
 
 After implementing for \(K = 2, 3, \ldots, 12\) and instrumenting all
 relevant floating point operations, the \(K\)-fold Horner requires
-\[(5 \cdot 2^K - 8)n + \left((K + 8) 2^K - 12K - 6\right) =
-\mathcal{O}\left((n + K)2^K\right)\]
+\begin{equation}
+(5 \cdot 2^K - 8)n + \left((K + 8) 2^K - 12K - 6\right) =
+\mathcal{O}\left((n + K)2^K\right)
+\end{equation}
 flops to evaluate a degree \(n\) polynomial (this only applies when
 \(n \geq K - 1\)). As a comparison, the
 non-compensated form of Horner requires \(2n\) flops. Of these,
@@ -360,8 +479,10 @@ FMA (fused-multiply-add) instructions.
 
 After implementing for \(K = 2, 3, 4, 5\) and instrumenting all relevant
 floating point operations, the \(K\)-fold de Casteljau requires
-\[(15K^2 - 34K + 26)T_n + K + 5 =
-\mathcal{O}\left(n^2 K^2\right)\]
+\begin{equation}
+(15K^2 - 34K + 26)T_n + K + 5 =
+\mathcal{O}\left(n^2 K^2\right)
+\end{equation}
 flops to evaluate a degree \(n\) polynomial. (Here \(T_n\) is the
 \(n\)th triangular number.) As a comparison, the non-compensated form of
 de Casteljau requires \(3 T_n + 1\) flops. Of these, \((3K - 4)T_n\) are
