@@ -24,17 +24,20 @@ import py.path
 
 NOX_DIR = os.path.abspath(os.path.dirname(__file__))
 SINGLE_INTERP = "python3.6"
+MATPLOTLIB_DEPS = (
+    "cycler == 0.10.0",
+    "kiwisolver == 1.0.1",
+    "matplotlib == 2.2.2",
+    "numpy == 1.14.3",
+    "pyparsing == 2.2.0",
+    "python-dateutil == 2.7.2",
+    "pytz == 2018.4",
+    "six == 1.11.0",
+)
 DEPS = {
-    "matplotlib": (
-        "cycler == 0.10.0",
-        "kiwisolver == 1.0.1",
-        "matplotlib == 2.2.2",
-        "numpy == 1.14.2",
-        "pyparsing == 2.2.0",
-        "python-dateutil == 2.7.2",
-        "pytz == 2018.4",
-        "six == 1.11.0",
-    )
+    "matplotlib": MATPLOTLIB_DEPS,
+    "seaborn": MATPLOTLIB_DEPS
+    + ("pandas == 0.22.0", "scipy == 1.0.1", "seaborn == 0.8.1"),
 }
 
 
@@ -113,6 +116,16 @@ def flop_counts(session):
 def make_images(session):
     session.interpreter = SINGLE_INTERP
     # Install all dependencies.
-    session.install(*DEPS["matplotlib"])
+    session.install(*DEPS["seaborn"])
     # Run the script(s).
-    env = {"MATPLOTLIBRC": get_path("images")}
+    # Make sure
+    # - Custom ``matplotlibrc`` is used
+    # - Code in ``src/`` is importable
+    # - PDFs have deterministic ``CreationDate``
+    env = {
+        "MATPLOTLIBRC": get_path("images"),
+        "PYTHONPATH": get_path("src"),
+        "SOURCE_DATE_EPOCH": "0",
+    }
+    script = get_path("scripts", "error_against_cond.py")
+    session.run("python", script, env=env)
