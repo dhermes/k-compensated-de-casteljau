@@ -205,17 +205,19 @@ exhibits the important properties of \texttt{TwoSum} and \texttt{TwoProd}
 algorithms (see \cite{Ogita2005}).
 
 \begin{theorem}[\cite{Ogita2005}]
-For \(a, b \in \mathbf{F}\) and \(x, y \in \mathbf{F}\), \texttt{TwoSum} and
-\texttt{TwoProd} satisfy
+For \(a, b \in \mathbf{F}\) and \(P, \pi, S, \sigma \in \mathbf{F}\),
+\texttt{TwoSum} and \texttt{TwoProd} satisfy
 \begin{itemize}
-  \item \(\left[x, y\right] = \mathtt{TwoSum}(a, b)\), \(x = \fl{a + b}\),
-      \(x + y = a + b\), \(y \leq \mach \left|x\right|\),
-      \(y \leq \mach \left|a + b\right|\)
-  \item \(\left[x, y\right] = \mathtt{TwoProd}(a, b)\),
-      \(x = \fl{a \times b}\), \(x + y = a \times b\),
-      \(y \leq \mach \left|x\right|\),
-      \(y \leq \mach \left|a \times b\right|\).
+  \item \(\left[S, \sigma\right] = \mathtt{TwoSum}(a, b)\), \(x = \fl{a + b}\),
+      \(S + \sigma = a + b\), \(\sigma \leq \mach \left|S\right|\),
+      \(\sigma \leq \mach \left|a + b\right|\)
+  \item \(\left[P, \pi\right] = \mathtt{TwoProd}(a, b)\),
+      \(P = \fl{a \times b}\), \(P + \pi = a \times b\),
+      \(\pi \leq \mach \left|P\right|\),
+      \(\pi \leq \mach \left|a \times b\right|\).
 \end{itemize}
+The letters \(\sigma\) and \(\pi\) are used to indicate that the
+errors came from sum and product, respectively.
 \end{theorem}
 
 Next, we recall the de Casteljau algorithm:
@@ -224,22 +226,23 @@ Next, we recall the de Casteljau algorithm:
   \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$\mathbf{b}, s$}
+    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$b, s$}
       \State \(n = \texttt{length}(b) - 1\)
-      \State \(r = 1 \ominus s\)
+      \State \(\widehat{r} = 1 \ominus s\)
       \\
       \For{\(j = 0, \ldots, n\)}
-        \State \(b_j^{(n)} = b_j\)
+        \State \(\widehat{b}_j^{(n)} = b_j\)
       \EndFor
       \\
       \For{\(k = n - 1, \ldots, 0\)}
         \For{\(j = 0, \ldots, k\)}
-          \State \(b_j^{(k)} = \left(r \otimes b_j^{(k + 1)}\right) \oplus
-              \left(s \otimes b_{j + 1}^{(k + 1)}\right)\)
+          \State \(\widehat{b}_j^{(k)} = \left(
+              r \otimes \widehat{b}_j^{(k + 1)}\right) \oplus
+              \left(s \otimes \widehat{b}_{j + 1}^{(k + 1)}\right)\)
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = b_0^{(0)}\)
+      \State \(\mathtt{res} = \widehat{b}_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
@@ -265,7 +268,137 @@ where \(B_{j, n} \geq 0\).
 
 \section{Compensated de Casteljau}\label{compensated-2}
 
-Placeholder
+In this section we review the compensated de Casteljau algorithm
+from \cite{Jiang2010}. In order to track the local errors at
+each update step, we use four EFTs:
+\begin{align}
+\left[\widehat{r}, \rho\right] &= \mathtt{TwoSum}(1, -s) \\
+\left[P_1, \pi_1\right] &= \mathtt{TwoProd}\left(\widehat{r}, \widehat{b}_j^{(k + 1)}\right) \\
+\left[P_2, \pi_2\right] &= \mathtt{TwoProd}\left(s, \widehat{b}_{j + 1}^{(k + 1)}\right) \\
+\left[\widehat{b}_j^{(k)}, \sigma_3\right] &= \mathtt{TwoSum}(P_1, P_2)
+\end{align}
+With these, we can exactly describe the local error between the exact
+update and computed update:
+\begin{gather}
+\ell_j^{(k)} = \pi_1 + \pi_2 + \sigma_3 + \rho\widehat{b}_j^{(k + 1)} \\
+(1 - s) \cdot \widehat{b}_j^{(k + 1)} +
+  s \cdot \widehat{b}_{j + 1}^{(k + 1)} =
+\widehat{b}_j^{(k)} + \ell_j^{(k)}.
+\end{gather}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance = 0.2\textwidth]
+  \node (b0) {\(\widehat{b}^{(n)}\)}
+    child {node (b1) {\(\widehat{b}^{(n - 1)}\)}
+      child {node (b2) {\(\widehat{b}^{(n - 2)}\)}
+        child {node (bdots) {\(\vdots\)}
+          child {node (bn) {\(\widehat{b}^{(0)}\)}}
+          child {node (ln) {\(\ell^{(0)}\)}}
+        }
+        child {node (ldots) {\(\vdots\)}}
+      }
+      child {node (l2) {\(\ell^{(n - 2)}\)}}
+    }
+    child {node (l1) {\(\ell^{(n - 1)}\)}};
+  %%
+  \path (b1) -- (l1) node [midway] {\(+\)};
+  \path (b2) -- (l2) node [midway] {\(+\)};
+  \path (bn) -- (ln) node [midway] {\(+\)};
+  %% eb == exact b
+  \node [right of=b0] (eb0) {\(b^{(n)}\)}
+    child {node (eb1) {\(b^{(n - 1)}\)}
+      child {node (eb2) {\(b^{(n - 2)}\)}
+        child {node (ebdots) {\(\vdots\)}
+          child {node (ebn) {\(b^{(0)}\)}}
+        }
+      }
+    };
+\end{tikzpicture}
+\caption{Local round-off errors}
+\end{figure}
+
+\noindent By defining the global errors at each step
+\begin{equation}
+  \partial b_j^{(k)} = b_j^{(k)} - \widehat{b}_j^{(k)}
+\end{equation}
+we can see that the local errors accumulate in
+\(\partial b^{(k)}\):
+\begin{equation}
+  \partial b_j^{(k)} = (1 - s) \cdot \partial b_j^{(k + 1)} + s \cdot
+  \partial b_{j + 1}^{(k + 1)} + \ell_j^{(k)}.
+\end{equation}
+Hence, when computed in exact arithmetic, we have
+\begin{equation}
+  p(s) = \widehat{b}_0^{(0)} + \partial b_0^{(0)}.
+\end{equation}
+
+The idea behind the compensated de Casteljau algorithm
+is to compute both the local error and the updates of the global
+error with floating point operations:
+
+\begin{algorithm}[H]
+  \caption{\textit{Compensated de Casteljau algorithm for polynomial evaluation.}}
+
+  \begin{algorithmic}
+    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$b, s$}
+      \State \(n = \texttt{length}(b) - 1\)
+      \State \(\left[\widehat{r}, \rho\right] = \mathtt{TwoSum}(1, -s)\)
+      \\
+      \For{\(j = 0, \ldots, n\)}
+        \State \(\widehat{b}_j^{(n)} = b_j\)
+        \State \(\widehat{\partial b}_j^{(n)} = 0\)
+      \EndFor
+      \\
+      \For{\(k = n - 1, \ldots, 0\)}
+        \For{\(j = 0, \ldots, k\)}
+          \State \(\left[P_1, \pi_1\right] = \mathtt{TwoProd}\left(
+              \widehat{r}, \widehat{b}_j^{(k + 1)}\right)\)
+          \State \(\left[P_2, \pi_2\right] = \mathtt{TwoProd}\left(
+              s, \widehat{b}_{j + 1}^{(k + 1)}\right)\)
+          \State \(\left[\widehat{b}_j^{(k)}, \sigma_3\right] =
+              \mathtt{TwoSum}(P_1, P_2)\)
+          \State \(\widehat{\ell}_j^{(k)} = \pi_1 \oplus \pi_2 \oplus \sigma_3
+              \oplus \left(\rho \otimes \widehat{b}_j^{(k + 1)}\right)\)
+          \State \(\widehat{\partial b}_j^{(k)} =
+              \left(\widehat{r} \otimes
+              \widehat{\partial b}_j^{(k + 1)}\right) \oplus
+              \left(s \otimes \widehat{\partial b}_{j + 1}^{(k + 1)}
+              \right) \oplus
+              \widehat{\ell}_j^{(k)}\)
+        \EndFor
+      \EndFor
+      \\
+      \State \(\mathtt{res} = \widehat{b}_0^{(0)} \oplus
+          \widehat{\partial b}_0^{(0)}\)
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+\noindent  When comparing this computed error to the exact error, the
+difference depends only on \(s\) and the Bernstein
+coefficients of \(p\):
+
+\begin{theorem}[\cite{Jiang2010}]
+  If no underflow occurs and \(n \geq 2\), then
+  \begin{equation}
+    \left|\partial b_0^{(0)} - \widehat{\partial b}_0^{(0)}\right| \leq
+    2 \gamma_{3n + 1} \gamma_{3(n - 1)}
+    \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s).
+  \end{equation}
+\end{theorem}
+
+\noindent Using the bound on the error in \(\partial b\), the algorithm can
+be shown to be as accurate as if the computations were done in twice
+the working precision:
+
+\begin{theorem}[\cite{Jiang2010}]
+  If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
+  \begin{equation}
+    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s)\right|}{\left|p(s)\right|} \leq \mach +
+    2 \gamma_{3n}^2 \cond{p, s}.
+  \end{equation}
+\end{theorem}
 
 \section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{compensated-k}
 
@@ -327,49 +460,15 @@ Placeholder
   \end{algorithmic}
 \end{algorithm}
 
-\begin{algorithm}[H]
-  \caption{\textit{Compensated de Casteljau algorithm for polynomial evaluation.}}
-
-  \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$\mathbf{b}, s$}
-      \State \(n = \texttt{length}(\mathbf{b}) - 1\)
-      \State \(\left[r, \rho\right] = \mathtt{TwoSum}(1, -s)\)
-      \\
-      \For{\(j = 0, \ldots, n\)}
-        \State \(b_j^{(n)} = b_j\)
-        \State \(\partial b_j^{(n)} = 0\)
-      \EndFor
-      \\
-      \For{\(k = n - 1, \ldots, 0\)}
-        \For{\(j = 0, \ldots, k\)}
-          \State \(\left[P_1, \pi_1\right] = \mathtt{TwoProd}\left(
-              r, b_j^{(k + 1)}\right)\)
-          \State \(\left[P_2, \pi_2\right] = \mathtt{TwoProd}\left(
-              s, b_{j + 1}^{(k + 1)}\right)\)
-          \State \(\left[b_j^{(k)}, \sigma_3\right] = \mathtt{TwoSum}(
-              P_1, P_2)\)
-          \State \(w = \pi_1 \oplus \pi_2 \oplus \sigma_3 \oplus
-              \left(\rho \otimes b_j^{(k + 1)}\right)\)
-          \State \(\partial b_j^{(k)} = w \oplus \left(s \otimes
-              \partial b_{j + 1}^{(k + 1)}
-              \right) \oplus \left(r \otimes \partial b_j^{(k + 1)}\right)\)
-        \EndFor
-      \EndFor
-      \\
-      \State \(\mathtt{res} = b_0^{(0)} \oplus \partial b_0^{(0)}\)
-    \EndFunction
-  \end{algorithmic}
-\end{algorithm}
-
 \section{de Casteljau's Method}
 
 Consider de Casteljau's method to evaluate a degree \(n\)
 polynomial in Bernstein-B\'{e}zier form with control points \(b_j\):
-\begin{align*}
+\begin{align}
     b_j^{(n)} &= b_j \\
     b_j^{(k)} &= (1 - s) b_j^{(k + 1)} + s b_{j + 1}^{(k + 1)} \\
     b(s) &= b_0^{(0)}.
-\end{align*}
+\end{align}
 
 \subsection{Condition Number}
 
