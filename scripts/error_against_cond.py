@@ -79,25 +79,25 @@ def main(filename=None):
         cond_nums.append(float(exact_cond))
 
         # Compute the forward error for uncompensated de Casteljau.
-        b1, db, ddb, dddb = de_casteljau._compensated4(s, BEZIER_COEFFS)
-        exact_b1 = F(b1)
+        b, db, d2b, d3b = de_casteljau._compensated_k(s, BEZIER_COEFFS, 4)
+        exact_b1 = F(b)
         exact_forward_err1 = abs((exact_b1 - exact_p) / exact_p)
         forward_errs1.append(float(exact_forward_err1))
 
         # Compute the forward error for compensated de Casteljau.
-        b2 = b1 + db
+        b2 = b + db
         exact_b2 = F(b2)
         exact_forward_err2 = abs((exact_b2 - exact_p) / exact_p)
         forward_errs2.append(float(exact_forward_err2))
 
         # Compute the forward error for K-compensated de Casteljau (K=3).
-        b3 = b2 + ddb
+        b3 = b2 + d2b
         exact_b3 = F(b3)
         exact_forward_err3 = abs((exact_b3 - exact_p) / exact_p)
         forward_errs3.append(float(exact_forward_err3))
 
         # Compute the forward error for K-compensated de Casteljau (K=3).
-        b4 = b3 + dddb
+        b4 = b3 + d3b
         exact_b4 = F(b4)
         exact_forward_err4 = abs((exact_b4 - exact_p) / exact_p)
         forward_errs4.append(float(exact_forward_err4))
