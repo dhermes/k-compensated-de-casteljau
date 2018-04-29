@@ -66,7 +66,8 @@ def main(filename=None):
     forward_errs1 = []
     forward_errs2 = []
     forward_errs3 = []
-    for j in range(-5, -70 - 1, -1):
+    forward_errs4 = []
+    for j in range(-5, -90 - 1, -1):
         s = 0.75 - 1.3 ** j
         exact_s = F(s)
 
@@ -78,7 +79,7 @@ def main(filename=None):
         cond_nums.append(float(exact_cond))
 
         # Compute the forward error for uncompensated de Casteljau.
-        b1, db, ddb = de_casteljau._compensated3(s, BEZIER_COEFFS)
+        b1, db, ddb, dddb = de_casteljau._compensated4(s, BEZIER_COEFFS)
         exact_b1 = F(b1)
         exact_forward_err1 = abs((exact_b1 - exact_p) / exact_p)
         forward_errs1.append(float(exact_forward_err1))
@@ -94,6 +95,12 @@ def main(filename=None):
         exact_b3 = F(b3)
         exact_forward_err3 = abs((exact_b3 - exact_p) / exact_p)
         forward_errs3.append(float(exact_forward_err3))
+
+        # Compute the forward error for K-compensated de Casteljau (K=3).
+        b4 = b3 + dddb
+        exact_b4 = F(b4)
+        exact_forward_err4 = abs((exact_b4 - exact_p) / exact_p)
+        forward_errs4.append(float(exact_forward_err4))
 
     # Set a tight ``x``-limit.
     min_exp = np.log(min(cond_nums))
@@ -129,6 +136,14 @@ def main(filename=None):
         zorder=1.5,  # Beneath ``K=2``.
         label=r"$\mathtt{CompDeCasteljau3}$",
     )
+    ax.loglog(
+        cond_nums,
+        forward_errs4,
+        marker="o",
+        linestyle="none",
+        zorder=1.25,  # Beneath ``K=2, 3``.
+        label=r"$\mathtt{CompDeCasteljau4}$",
+    )
     # Figure out the bounds before adding the bounding lines.
     min_y, max_y = ax.get_ylim()
     # Plot the lines of the a priori error bounds.
@@ -146,32 +161,19 @@ def main(filename=None):
         alpha=alpha,
         zorder=1,
     )
-    # Add the ``u``, ``1/u``, ``1/u^2`` and ``1/u^3`` lines.
+    # Add the ``x = 1/u^k`` vertical lines.
     delta_y = max_y - min_y
-    ax.loglog(
-        [1.0 / float(U), 1.0 / float(U)],
-        [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
-        color="black",
-        linestyle="dashed",
-        alpha=alpha,
-        zorder=1,
-    )
-    ax.loglog(
-        [1.0 / float(U) ** 2, 1.0 / float(U) ** 2],
-        [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
-        color="black",
-        linestyle="dashed",
-        alpha=alpha,
-        zorder=1,
-    )
-    ax.loglog(
-        [1.0 / float(U) ** 3, 1.0 / float(U) ** 3],
-        [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
-        color="black",
-        linestyle="dashed",
-        alpha=alpha,
-        zorder=1,
-    )
+    for exponent in (1, 2, 3, 4):
+        u_inv = 1.0 / float(U) ** exponent
+        ax.loglog(
+            [u_inv, u_inv],
+            [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
+            color="black",
+            linestyle="dashed",
+            alpha=alpha,
+            zorder=1,
+        )
+    # Add the ``y = u`` horizontal lines.
     ax.loglog(
         [min_x, max_x],
         [float(U), float(U)],
@@ -187,16 +189,20 @@ def main(filename=None):
     # Add the legend.
     ax.legend(loc="lower right", framealpha=1.0, frameon=True)
     # Set "nice" ticks.
-    ax.set_xticks([10.0 ** n for n in range(5, 45 + 10, 10)])
+    ax.set_xticks([10.0 ** n for n in range(5, 65 + 10, 10)])
     ax.set_yticks([10.0 ** n for n in range(-18, 0 + 2, 2)])
     # Set special ``xticks`` for ``1/u``, ``1/u^2`` and ``1/u^3``.
-    ax.set_xticks(
-        [1.0 / float(U), 1.0 / float(U) ** 2, 1.0 / float(U) ** 3], minor=True
-    )
-    ax.set_xticklabels(
-        [r"$1/\mathbf{u}$", r"$1/\mathbf{u}^2$", r"$1/\mathbf{u}^3$"],
-        minor=True,
-    )
+    u_xticks = []
+    u_xticklabels = []
+    for exponent in (1, 2, 3, 4):
+        u_xticks.append(1.0 / float(U) ** exponent)
+        if exponent == 1:
+            u_xticklabels.append(r"$1/\mathbf{u}$")
+        else:
+            u_xticklabels.append(r"$1/\mathbf{{u}}^{}$".format(exponent))
+
+    ax.set_xticks(u_xticks, minor=True)
+    ax.set_xticklabels(u_xticklabels, minor=True)
     ax.tick_params(
         axis="x",
         which="minor",
