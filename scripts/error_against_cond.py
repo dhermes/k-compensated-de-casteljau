@@ -60,7 +60,7 @@ def main(filename=None):
     gamma2n = 16 * U / (1 - 16 * U)
     bound_coeff1 = float(gamma2n)
     gamma3n = 24 * U / (1 - 24 * U)
-    bound_coeff2 = float(2 * gamma2n**2)
+    bound_coeff2 = float(2 * gamma3n ** 2)
 
     cond_nums = []
     forward_errs1 = []
@@ -124,9 +124,9 @@ def main(filename=None):
     ax.loglog(
         cond_nums,
         forward_errs3,
-        marker="d",
+        marker="P",
         linestyle="none",
-        zorder=2,
+        zorder=1.5,  # Beneath ``K=2``.
         label=r"$\mathtt{CompDeCasteljau3}$",
     )
     # Figure out the bounds before adding the bounding lines.
@@ -146,7 +146,7 @@ def main(filename=None):
         alpha=alpha,
         zorder=1,
     )
-    # Add the ``u``, ``1/u`` and ``1/u^2`` lines.
+    # Add the ``u``, ``1/u``, ``1/u^2`` and ``1/u^3`` lines.
     delta_y = max_y - min_y
     ax.loglog(
         [1.0 / float(U), 1.0 / float(U)],
@@ -165,6 +165,14 @@ def main(filename=None):
         zorder=1,
     )
     ax.loglog(
+        [1.0 / float(U) ** 3, 1.0 / float(U) ** 3],
+        [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
+        color="black",
+        linestyle="dashed",
+        alpha=alpha,
+        zorder=1,
+    )
+    ax.loglog(
         [min_x, max_x],
         [float(U), float(U)],
         color="black",
@@ -174,16 +182,21 @@ def main(filename=None):
     )
 
     # Make sure the ``y``-limit stays set (the bounds lines exceed).
-    ax.set_ylim(min_y, 2.0)
+    ax.set_ylim(min_y, 1.0)
     ax.set_xlim(min_x, max_x)
     # Add the legend.
     ax.legend(loc="lower right", framealpha=1.0, frameon=True)
     # Set "nice" ticks.
-    ax.set_xticks([10.0 ** n for n in range(5, 35 + 5, 5)])
+    ax.set_xticks([10.0 ** n for n in range(5, 45 + 10, 10)])
     ax.set_yticks([10.0 ** n for n in range(-18, 0 + 2, 2)])
-    # Set special ``xticks`` for ``1/u`` and ``1/u^2``.
-    ax.set_xticks([1.0 / float(U), 1.0 / float(U) ** 2], minor=True)
-    ax.set_xticklabels([r"$1/\mathbf{u}$", r"$1/\mathbf{u}^2$"], minor=True)
+    # Set special ``xticks`` for ``1/u``, ``1/u^2`` and ``1/u^3``.
+    ax.set_xticks(
+        [1.0 / float(U), 1.0 / float(U) ** 2, 1.0 / float(U) ** 3], minor=True
+    )
+    ax.set_xticklabels(
+        [r"$1/\mathbf{u}$", r"$1/\mathbf{u}^2$", r"$1/\mathbf{u}^3$"],
+        minor=True,
+    )
     ax.tick_params(
         axis="x",
         which="minor",
