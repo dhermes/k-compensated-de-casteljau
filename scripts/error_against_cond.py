@@ -191,7 +191,7 @@ def main(filename=None):
     # Set "nice" ticks.
     ax.set_xticks([10.0 ** n for n in range(5, 65 + 10, 10)])
     ax.set_yticks([10.0 ** n for n in range(-18, 0 + 2, 2)])
-    # Set special ``xticks`` for ``1/u``, ``1/u^2`` and ``1/u^3``.
+    # Set special ``xticks`` for ``1/u^k``.
     u_xticks = []
     u_xticklabels = []
     for exponent in (1, 2, 3, 4):
@@ -237,6 +237,170 @@ def main(filename=None):
         plt.close(figure)
 
 
+def main_jlcs10(filename=None):
+    """This recreates the plot from `JLCS10`_.
+
+    .. _JLCS10: https://doi.org/10.1016/j.camwa.2010.05.021
+
+    Note that it is essentially a copy of :func:`main` (and much of the
+    code could be shared, but it isn't worth the effort).
+
+    This seeks to recreate the plot from the original paper, but to show
+    what happens as the exponent on ``1.3`` decreases from ``-44`` down to
+    ``-64``. In particular, it shows that the compensated de Casteljau
+    algorithm produces exactly zero.
+    """
+    # n = 8
+    gamma2n = 16 * U / (1 - 16 * U)
+    bound_coeff1 = float(gamma2n)
+    gamma3n = 24 * U / (1 - 24 * U)
+    bound_coeff2 = float(2 * gamma3n ** 2)
+
+    cond_nums = []
+    forward_errs1 = []
+    forward_errs2 = []
+    for j in range(-5, -64 - 1, -1):
+        s = 0.75 - 1.3 ** j
+        exact_s = F(s)
+
+        # Compute the condition number.
+        exact_p = (exact_s - 1) * (4 * exact_s - 3) ** 7 / 16384
+        # p_tilde(s) = SUM_j |b_j| B_{j, 8}(s) = (s - 1) (s/2 - 3/4)^7
+        exact_p_tilde = (exact_s - 1) * (2 * exact_s - 3) ** 7 / 16384
+        exact_cond = abs(exact_p_tilde / exact_p)
+        cond_nums.append(float(exact_cond))
+
+        # Compute the forward error for uncompensated de Casteljau.
+        b, db = de_casteljau.jlcs10_compensated(s, BEZIER_COEFFS)
+        exact_b1 = F(b)
+        exact_forward_err1 = abs((exact_b1 - exact_p) / exact_p)
+        forward_errs1.append(float(exact_forward_err1))
+
+        # Compute the forward error for compensated de Casteljau.
+        b2 = b + db
+        exact_b2 = F(b2)
+        exact_forward_err2 = abs((exact_b2 - exact_p) / exact_p)
+        forward_errs2.append(float(exact_forward_err2))
+
+    # Set a tight ``x``-limit.
+    min_exp = np.log(min(cond_nums))
+    max_exp = np.log(max(cond_nums))
+    delta_exp = max_exp - min_exp
+    min_x = np.exp(min_exp - 0.01 * delta_exp)
+    max_x = np.exp(max_exp + 0.01 * delta_exp)
+
+    figure = plt.figure()
+    ax = figure.gca()
+    alpha = 0.25
+    ax.loglog(
+        cond_nums,
+        forward_errs1,
+        marker="v",
+        linestyle="none",
+        zorder=2,
+        label=r"$\mathtt{DeCasteljau}$",
+    )
+    ax.loglog(
+        cond_nums,
+        forward_errs2,
+        marker="d",
+        linestyle="none",
+        zorder=2,
+        label=r"$\mathtt{CompDeCasteljau}$",
+    )
+    # Figure out the bounds before adding the bounding lines.
+    min_y, max_y = ax.get_ylim()
+    # Plot the lines of the a priori error bounds.
+    ax.loglog(
+        [min_x, max_x],
+        [bound_coeff1 * min_x, bound_coeff1 * max_x],
+        color="black",
+        alpha=alpha,
+        zorder=1,
+    )
+    ax.loglog(
+        [min_x, max_x],
+        [bound_coeff2 * min_x, bound_coeff2 * max_x],
+        color="black",
+        alpha=alpha,
+        zorder=1,
+    )
+    # Add the ``x = 1/u^k`` vertical lines.
+    delta_y = max_y - min_y
+    for exponent in (1, 2):
+        u_inv = 1.0 / float(U) ** exponent
+        ax.loglog(
+            [u_inv, u_inv],
+            [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
+            color="black",
+            linestyle="dashed",
+            alpha=alpha,
+            zorder=1,
+        )
+    # Add the ``y = u`` and ``y = 1`` horizontal lines.
+    ax.loglog(
+        [min_x, max_x],
+        [float(U), float(U)],
+        color="black",
+        linestyle="dashed",
+        alpha=alpha,
+        zorder=1,
+    )
+    ax.loglog(
+        [min_x, max_x],
+        [1.0, 1.0],
+        color="black",
+        linestyle="dashed",
+        alpha=alpha,
+        zorder=1,
+    )
+
+    # Make sure the ``y``-limit stays set (the bounds lines exceed).
+    ax.set_ylim(min_y, 10.0 ** 18)
+    ax.set_xlim(min_x, max_x)
+    # Add the legend.
+    ax.legend(loc="lower right", framealpha=1.0, frameon=True)
+    # Set "nice" ticks.
+    ax.set_xticks([10.0 ** n for n in range(5, 45 + 5, 5)])
+    ax.set_yticks([10.0 ** n for n in range(-18, 14 + 4, 4)])
+    # Set special ``xticks`` for ``1/u`` and ``1/u^2``.
+    ax.set_xticks([1.0 / float(U), 1.0 / float(U) ** 2], minor=True)
+    ax.set_xticklabels([r"$1/\mathbf{u}$", r"$1/\mathbf{u}^2$"], minor=True)
+    ax.tick_params(
+        axis="x",
+        which="minor",
+        direction="out",
+        top=1,
+        bottom=0,
+        labelbottom=0,
+        labeltop=1,
+    )
+    # Set special ``yticks`` for ``u`` and ``1``.
+    ax.set_yticks([float(U), 1.0], minor=True)
+    ax.set_yticklabels([r"$\mathbf{u}$", "$1$"], minor=True)
+    ax.tick_params(
+        axis="y",
+        which="minor",
+        direction="out",
+        left=0,
+        right=1,
+        labelleft=0,
+        labelright=1,
+    )
+    # Label the axes.
+    ax.set_xlabel("Condition Number")
+    ax.set_ylabel("Relative Forward Error")
+
+    if filename is None:
+        plt.show()
+    else:
+        path = get_path(filename)
+        figure.savefig(path, bbox_inches="tight")
+        print("Saved {}".format(filename))
+        plt.close(figure)
+
+
 if __name__ == "__main__":
-    seaborn.set()
+    seaborn.set(style="white")
     main(filename="de_casteljau_rel_error.pdf")
+    main_jlcs10(filename="jlcs10_plot.pdf")

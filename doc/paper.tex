@@ -21,6 +21,7 @@
 \hypersetup{
   colorlinks=true,
   urlcolor=blue,
+  linkcolor=MidnightBlue,
   citecolor=ForestGreen,
   pdfinfo={
     CreationDate={D:20180425160342},
@@ -121,7 +122,16 @@ the compensated de Casteljau algorithm (\texttt{CompDeCasteljau}) satisfies
 \end{equation}
 For problems with \(\cond{p, s} < 1 / \mach^2\), the relative error
 is \(\mach\), i.e. accurate to full precision, aside from rounding to the
-nearest floating point number.
+nearest floating point number. Figure~\ref{fig:jlcs-10} shows this shift
+in relative error from \texttt{DeCasteljau} to \texttt{CompDeCasteljau}.
+
+\begin{figure}
+  \includegraphics[width=0.8125\textwidth]{../images/jlcs10_plot.pdf}
+  \centering
+  \caption{Evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
+    represented in Bernstein form.}
+  \label{fig:jlcs-10}
+\end{figure}
 
 In \cite{Graillat2009}, the authors built on the compensated Horner's
 algorithm to produce a method for evaluating a polynomial as if
@@ -139,7 +149,11 @@ error is filtered down to the error group below it.
 
 As in~\eqref{de-casteljau-error}, the accuracy of the compensated
 result~\eqref{de-casteljau-2-error} may be arbitrarily bad for ill-conditioned
-polynomial evaluations. We describe how to defer rounding into progressively
+polynomial evaluations. For example, as the condition number grows in
+Figure~\ref{fig:jlcs-10}, some points have relative error exactly equal to
+\(1\); this indicates that \(\mathtt{CompDeCasteljau}(p, s) = 0\), which is
+a complete failure to evaluate the order of magnitude of \(p(s)\).
+We describe how to defer rounding into progressively
 smaller error groups and improve the accuracy of the computed result by a
 factor of \(\mach\) for every error group added. So we derive
 \texttt{CompDeCasteljauK}, a \(K\)-fold compensated de Casteljau algorithm
@@ -154,16 +168,17 @@ as accurate as the result of the de Casteljau algorithm performed in
 \(K\) times the working precision with a final rounding back to this
 working precision.
 
-The paper is organized as follows. Section~\ref{notation} introduces some
+The paper is organized as follows. Section~\ref{sec:notation} introduces some
 basic notation and results about floating point arithmetic, error-free
-transformations and the de Casteljau algorithm. In Section~\ref{compensated-2},
+transformations and the de Casteljau algorithm. In
+Section~\ref{sec:compensated-2},
 the compensated algorithm for polynomial evaluation from \cite{Jiang2010} is
 reviewed and notation is established for the expansion. In
-Section~\ref{compensated-k}, the \(K\) compensated algorithm is provided and
-a forward error analysis is performed. Finally, in Section~\ref{numerical} we
+Section~\ref{sec:compensated-k}, the \(K\) compensated algorithm is provided and
+a forward error analysis is performed. Finally, in Section~\ref{sec:numerical} we
 give numerical tests to illustrate the practical efficiency of our algorithms.
 
-\section{Basic notation and results}\label{notation}
+\section{Basic notation and results}\label{sec:notation}
 
 Throughout this paper we assume that the computation in floating point
 arithmetic obeys the model
@@ -266,7 +281,7 @@ b_j B_{j, n}(s)\) in Bernstein form used in this paper is (see
 \end{equation}
 where \(B_{j, n} \geq 0\).
 
-\section{Compensated de Casteljau}\label{compensated-2}
+\section{Compensated de Casteljau}\label{sec:compensated-2}
 
 In this section we review the compensated de Casteljau algorithm
 from \cite{Jiang2010}. In order to track the local errors at
@@ -400,7 +415,7 @@ the working precision:
   \end{equation}
 \end{theorem}
 
-\section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{compensated-k}
+\section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{sec:compensated-k}
 
 In order to raise from twice the working precision to \(K\) times the
 working precision, we continue using EFTs when computing
@@ -630,12 +645,12 @@ error filtrations:
 \caption{Filtering errors}
 \end{figure}
 
-\section{Numerical experiments}\label{numerical}
+\section{Numerical experiments}\label{sec:numerical}
 
 \begin{figure}[H]
   \includegraphics[width=0.8125\textwidth]{../images/de_casteljau_rel_error.pdf}
   \centering
-  \caption{Accurary of evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^4\)
+  \caption{Accuracy of evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
     represented in Bernstein form.}
 \end{figure}
 

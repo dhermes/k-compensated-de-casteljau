@@ -56,6 +56,51 @@ def basic(s, coeffs):
     return pk[0]
 
 
+def jlcs10_compensated(s, coeffs):
+    r"""Performs the compensated de Casteljau algorithm.
+
+    .. _JLCS10: https://doi.org/10.1016/j.camwa.2010.05.021
+
+    This is similar to :func:`compensated` below, but the order of
+    operations exactly matches the `JLCS10`_ paper. In particular,
+    :math:`\widehat{\partial b}_j^{(k)}` is computed as
+
+    .. math::
+
+        \widehat{ell}_{i, j}^{(k)} \oplus \left[s \otimes
+            \widehat{\partial b}_{j + 1}^{(k + 1)}\right] \oplus
+            \left[\widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}\right]
+
+    and the code in :func:`_compensated_k` uses the "typical" order
+
+    .. math::
+
+        \left[\widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}\right]
+            \oplus \left[s \otimes \widehat{\partial b}_{j + 1}^{(k + 1)}
+            \right] \oplus \widehat{ell}_{i, j}^{(k)}.
+    """
+    r, rho = eft.add_eft(1.0, -s)
+
+    degree = len(coeffs) - 1
+    bk = {0: list(coeffs), 1: (0.0,) * (degree + 1)}
+    for k in range(degree):
+        new_bk = {0: [], 1: []}
+
+        for j in range(degree - k):
+            P1, pi1 = eft.multiply_eft(r, bk[0][j])
+            P2, pi2 = eft.multiply_eft(s, bk[0][j + 1])
+            S3, sigma3 = eft.add_eft(P1, P2)
+            new_bk[0].append(S3)
+            # Now update the error.
+            wA = pi1 + pi2 + sigma3 + rho * bk[0][j]
+            new_bk[1].append(wA + s * bk[1][j + 1] + r * bk[1][j])
+
+        # Update the "current" values.
+        bk = new_bk
+
+    return bk[0][0], bk[1][0]
+
+
 def local_error(errors, rho, delta_b):
     r"""Compute :math:`\ell` from a list of errors.
 
