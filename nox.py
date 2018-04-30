@@ -127,7 +127,9 @@ def make_images(session):
         "PYTHONPATH": get_path("src"),
         "SOURCE_DATE_EPOCH": "0",
     }
-    script = get_path("scripts", "error_against_cond.py")
-    session.run("python", script, env=env)
-    script = get_path("scripts", "smooth_drawing.py")
-    session.run("python", script, env=env)
+    names = (
+        "error_against_cond.py", "smooth_drawing.py", "horner_inferior.py"
+    )
+    for name in names:
+        script = get_path("scripts", name)
+        session.run("python", script, env=env)
