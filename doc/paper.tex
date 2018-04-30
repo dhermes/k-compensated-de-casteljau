@@ -647,11 +647,23 @@ error filtrations:
 
 \section{Numerical experiments}\label{sec:numerical}
 
-\begin{figure}[H]
+Figure~\ref{fig:smooth-drawing} and Figure~\ref{fig:compensated-k}
+show how things improve.
+
+\begin{figure}
+  \includegraphics[width=0.9375\textwidth]{../images/de_casteljau_smooth_drawing.pdf}
+  \centering
+  \caption{Evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
+    in the neighborhood of its multiple root \(3/4\).}
+  \label{fig:smooth-drawing}
+\end{figure}
+
+\begin{figure}
   \includegraphics[width=0.8125\textwidth]{../images/de_casteljau_rel_error.pdf}
   \centering
   \caption{Accuracy of evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
     represented in Bernstein form.}
+  \label{fig:compensated-k}
 \end{figure}
 
 \section{IEEE Stuff}

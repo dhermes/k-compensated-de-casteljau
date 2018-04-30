@@ -18,13 +18,13 @@ has :math:`\widetilde{p}(s) = (s - 1) \left(\frac{s}{2} -
 """
 
 import fractions
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn
 
 import de_casteljau
+import file_utils
 
 
 F = fractions.Fraction
@@ -41,18 +41,6 @@ BEZIER_COEFFS = (
     -1.0 / 131072.0,
     0.0,
 )
-
-
-def get_path(filename):
-    """Get a file path in the ``images/`` directory.
-
-    This assumes the script is currently in the ``scripts/``
-    directory.
-    """
-    curr_dir = os.path.abspath(os.path.dirname(__file__))
-    root_dir = os.path.dirname(curr_dir)
-    images_dir = os.path.join(root_dir, "images")
-    return os.path.join(images_dir, filename)
 
 
 def main(filename=None):
@@ -231,7 +219,7 @@ def main(filename=None):
     if filename is None:
         plt.show()
     else:
-        path = get_path(filename)
+        path = file_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)
@@ -394,7 +382,7 @@ def main_jlcs10(filename=None):
     if filename is None:
         plt.show()
     else:
-        path = get_path(filename)
+        path = file_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)

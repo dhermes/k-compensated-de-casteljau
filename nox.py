@@ -129,3 +129,5 @@ def make_images(session):
     }
     script = get_path("scripts", "error_against_cond.py")
     session.run("python", script, env=env)
+    script = get_path("scripts", "smooth_drawing.py")
+    session.run("python", script, env=env)
