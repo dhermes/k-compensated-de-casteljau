@@ -33,6 +33,9 @@
    \end{center}
   }
 \makeatother
+%% H/T: https://tex.stackexchange.com/a/202047/32270
+%%      https://tex.stackexchange.com/a/32463/32270
+\usepackage[labelfont=bf]{caption}
 
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}
@@ -126,6 +129,7 @@ be given further.
 \begin{figure}
   \includegraphics[width=0.9375\textwidth]{../images/horner_inferior.pdf}
   \centering
+  \captionsetup{width=.75\linewidth}
   \caption{Comparing Horner's method to the de Casteljau method for
     evaluating \(p(s) = (2s - 1)^3\) in the neighborhood of its
     multiple root \(1/2\).}
@@ -163,6 +167,7 @@ in relative error from \texttt{DeCasteljau} to \texttt{CompDeCasteljau}.
 \begin{figure}
   \includegraphics[width=0.8125\textwidth]{../images/jlcs10_plot.pdf}
   \centering
+  \captionsetup{width=.75\linewidth}
   \caption{Evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
     represented in Bernstein form.}
   \label{fig:jlcs-10}
@@ -372,6 +377,7 @@ update and computed update:
       }
     };
 \end{tikzpicture}
+\captionsetup{width=.75\linewidth}
 \caption{Local round-off errors}
 \end{figure}
 
@@ -462,7 +468,8 @@ the working precision:
 \begin{figure}
   \includegraphics[width=0.9375\textwidth]{../images/compensated_insufficient.pdf}
   \centering
-  \caption{Compensated Casteljau method starts to lose accuracy
+  \captionsetup{width=.75\linewidth}
+  \caption{The compensated de Casteljau method starts to lose accuracy
     for \(p(s) = (2s - 1)^3 (s - 1)\) in the neighborhood of its
     multiple root \(1/2\).}
   \label{fig:compensated-insufficient}
@@ -500,7 +507,8 @@ Table~\ref{tab:exact-computation}, the breakdown occurs because
     0 & 0 & 0.0625 \mach & -0.0625 \mach & -4 (1001 \mach)^3 + 8 (1001 \mach)^4 \\
     \bottomrule
   \end{tabular}
-  \caption{Terms computed by \texttt{CompDeCasteljau} when evaluating
+  \captionsetup{width=.75\linewidth}
+  \caption{Terms computed by \texttt{CompDeCasteljau} when evaluating \\
     \(p(s) = (2s - 1)^3 (s - 1)\) at the point
     \(s = \frac{1}{2} + 1001 \mach\)}
   \label{tab:exact-computation}
@@ -593,6 +601,7 @@ the cascade:
     \node [empty-box-vert, below of=dddbn2] (bottom3) {\(\vdots\)};
     \path [line] (dddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom3);
 \end{tikzpicture}
+\captionsetup{width=.75\linewidth}
 \caption{Filtering errors}
 \end{figure}
 
@@ -769,6 +778,7 @@ show how things improve.
 \begin{figure}
   \includegraphics[width=0.9375\textwidth]{../images/de_casteljau_smooth_drawing.pdf}
   \centering
+  \captionsetup{width=.75\linewidth}
   \caption{Evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
     in the neighborhood of its multiple root \(3/4\).}
   \label{fig:smooth-drawing}
@@ -777,6 +787,7 @@ show how things improve.
 \begin{figure}
   \includegraphics[width=0.8125\textwidth]{../images/de_casteljau_rel_error.pdf}
   \centering
+  \captionsetup{width=.75\linewidth}
   \caption{Accuracy of evaluation of \(p(s) = (s - 1)\left(s - 3/4\right)^7\)
     represented in Bernstein form.}
   \label{fig:compensated-k}
