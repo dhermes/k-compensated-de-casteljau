@@ -29,7 +29,7 @@ import file_utils
 
 F = fractions.Fraction
 U = F(1, 2 ** 53)
-# p(s) = (s - 1) (s - 3/4)^7 = SUM_j b_j B_{j, 8}(s)
+# p(s) = (s - 1) (s - 3/4)^7
 BEZIER_COEFFS = (
     2187.0 / 16384.0,
     -5103.0 / 131072.0,
@@ -41,6 +41,7 @@ BEZIER_COEFFS = (
     -1.0 / 131072.0,
     0.0,
 )
+ROOT = 0.75
 
 
 def main(filename=None):
@@ -56,7 +57,7 @@ def main(filename=None):
     forward_errs3 = []
     forward_errs4 = []
     for j in range(-5, -90 - 1, -1):
-        s = 0.75 - 1.3 ** j
+        s = ROOT - 1.3 ** j
         exact_s = F(s)
 
         # Compute the condition number.
@@ -248,7 +249,7 @@ def main_jlcs10(filename=None):
     forward_errs1 = []
     forward_errs2 = []
     for j in range(-5, -64 - 1, -1):
-        s = 0.75 - 1.3 ** j
+        s = ROOT - 1.3 ** j
         exact_s = F(s)
 
         # Compute the condition number.

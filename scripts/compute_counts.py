@@ -30,6 +30,7 @@ def count_add_eft():
     sum_, error = eft.add_eft(val1, val2)
     assert sum_.value == 2.0
     assert error.value == 0.5 ** 52
+    assert parent.count == 6
     print("     add_eft(): {}".format(parent.display))
 
 
@@ -39,6 +40,7 @@ def count__split():
     high, low = eft._split(val)
     assert high.value == 1.0
     assert low.value == 0.5 ** 27
+    assert parent.count == 4
     print("      _split(): {}".format(parent.display))
 
 
@@ -53,8 +55,10 @@ def count_multiply_eft():
         assert error.value == -0.5 ** 80
         if use_fma:
             description = "with FMA:    "
+            assert parent.count == 2
         else:
             description = "w / out FMA: "
+            assert parent.count == 17
         print("  {} {}".format(description, parent.display))
 
 
@@ -66,6 +70,7 @@ def count__vec_sum():
         eft._vec_sum(p)
 
         assert p[size_p - 1].value == float(size_p)
+        assert parent.count == 6 * (size_p - 1)
         print("  |p| = {}:      {}".format(size_p, parent.display))
 
 
@@ -79,6 +84,7 @@ def count_sum_k():
             total = eft.sum_k(p, k)
 
             assert total.value == float(size_p)
+            assert parent.count == (6 * k - 5) * (size_p - 1)
             print("    |p| = {}:    {}".format(size_p, parent.display))
 
 
@@ -90,7 +96,34 @@ def count_horner_basic():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.basic(x, coeffs)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == 2 * degree
         print("  degree {}:     {}".format(degree, parent.display))
+
+
+def horner_expected_total(K, n):
+    """Get the expected flop count for compensated Horner's method.
+
+    When using FMA, the count is
+
+    .. math::
+
+       (5 \cdot 2^K - 8)n + \left((K + 8) 2^K - 12K - 6\right).
+    """
+    return (5 * 2 ** K - 8) * n + ((K + 8) * 2 ** K - 12 * K - 6)
+
+
+def horner_expected_fma(K, n):
+    """Get the FMA count for compensated Horner's method.
+
+    When using FMA, the count is
+
+    .. math::
+
+       \left(2^{K - 1} - 1\right)n - 2^{K - 1}(K - 3) - 2
+
+    FMA (fused-multiply-add) instructions.
+    """
+    return (2 ** (K - 1) - 1) * n - 2 ** (K - 1) * (K - 3) - 2
 
 
 def count_horner_compensated():
@@ -101,6 +134,7 @@ def count_horner_compensated():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated(x, coeffs)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == 11 * degree + 1
         print("  degree {}:     {}".format(degree, parent.display))
 
     # NOTE: This is **the same** as ``horner.compensated()`` but uses
@@ -112,6 +146,8 @@ def count_horner_compensated():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated_k(x, coeffs, 2)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == horner_expected_total(2, degree)
+        assert parent.fma_count == horner_expected_fma(2, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -123,6 +159,8 @@ def count_horner_compensated3():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated3(x, coeffs)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == horner_expected_total(3, degree)
+        assert parent.fma_count == horner_expected_fma(3, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
     print("horner.compensated_k(..., 3) (32n + 46, n >= 2):")
@@ -132,6 +170,8 @@ def count_horner_compensated3():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated_k(x, coeffs, 3)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == horner_expected_total(3, degree)
+        assert parent.fma_count == horner_expected_fma(3, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -143,6 +183,8 @@ def count_horner_compensated4():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated_k(x, coeffs, 4)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == horner_expected_total(4, degree)
+        assert parent.fma_count == horner_expected_fma(4, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -154,6 +196,8 @@ def count_horner_compensated5():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated_k(x, coeffs, 5)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == horner_expected_total(5, degree)
+        assert parent.fma_count == horner_expected_fma(5, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -165,6 +209,8 @@ def count_horner_compensated6():
         coeffs = (operation_count.Float(1.0, parent),) * (degree + 1)
         p = horner.compensated_k(x, coeffs, 6)
         assert p.value == 2.0 ** (degree + 1) - 1
+        assert parent.count == horner_expected_total(6, degree)
+        assert parent.fma_count == horner_expected_fma(6, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -179,7 +225,36 @@ def count_de_casteljau_basic():
         )
         p = de_casteljau.basic(x, coeffs)
         assert p.value == 0.5 ** degree
+        assert parent.count == 3 * (degree * (degree + 1) // 2) + 1
         print("  degree {}:     {}".format(degree, parent.display))
+
+
+def de_casteljau_expected_total(K, n):
+    """Get the expected flop count for the compensated de Casteljau method.
+
+    When using FMA, the count is
+
+    .. math::
+
+       (15K^2 - 34K + 26)T_n + K + 5.
+    """
+    Tn = (n * (n + 1)) // 2
+    return (15 * K ** 2 - 34 * K + 26) * Tn + K + 5
+
+
+def de_casteljau_expected_fma(K, n):
+    """Get the FMA count for the compensated de Casteljau method.
+
+    When using FMA, the count is
+
+    .. math::
+
+       (3K - 4)T_n
+
+    FMA (fused-multiply-add) instructions.
+    """
+    Tn = (n * (n + 1)) // 2
+    return (3 * K - 4) * Tn
 
 
 def count_de_casteljau_compensated():
@@ -193,6 +268,8 @@ def count_de_casteljau_compensated():
         )
         p = de_casteljau.compensated(x, coeffs)
         assert p.value == 0.5 ** degree
+        assert parent.count == de_casteljau_expected_total(2, degree)
+        assert parent.fma_count == de_casteljau_expected_fma(2, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -207,6 +284,8 @@ def count_de_casteljau_compensated3():
         )
         p = de_casteljau.compensated3(x, coeffs)
         assert p.value == 0.5 ** degree
+        assert parent.count == de_casteljau_expected_total(3, degree)
+        assert parent.fma_count == de_casteljau_expected_fma(3, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -221,6 +300,8 @@ def count_de_casteljau_compensated4():
         )
         p = de_casteljau.compensated4(x, coeffs)
         assert p.value == 0.5 ** degree
+        assert parent.count == de_casteljau_expected_total(4, degree)
+        assert parent.fma_count == de_casteljau_expected_fma(4, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 
@@ -239,6 +320,8 @@ def count_de_casteljau_compensated5():
         )
         p = de_casteljau.compensated5(x, coeffs)
         assert p.value == 0.5 ** degree
+        assert parent.count == de_casteljau_expected_total(5, degree)
+        assert parent.fma_count == de_casteljau_expected_fma(5, degree)
         print("  degree {}:     {}".format(degree, parent.display))
 
 

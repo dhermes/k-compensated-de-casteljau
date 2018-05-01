@@ -128,7 +128,10 @@ def make_images(session):
         "SOURCE_DATE_EPOCH": "0",
     }
     names = (
-        "error_against_cond.py", "smooth_drawing.py", "horner_inferior.py"
+        "error_against_cond.py",
+        "smooth_drawing.py",
+        "horner_inferior.py",
+        "compensated_insufficient.py",
     )
     for name in names:
         script = get_path("scripts", name)

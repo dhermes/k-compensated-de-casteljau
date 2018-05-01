@@ -12,6 +12,27 @@
 \usepackage{booktabs,siunitx}
 %% H/T: https://tex.stackexchange.com/a/4217/32270
 \usepackage{mathtools}
+%% H/T: https://tex.stackexchange.com/a/33869/32270
+\makeatletter
+\newenvironment{breakablealgorithm}
+  {% \begin{breakablealgorithm}
+   \begin{center}
+     \refstepcounter{algorithm}% New algorithm
+     \hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+     \renewcommand{\caption}[2][\relax]{% Make a new \caption
+       {\raggedright\textbf{\ALG@name~\thealgorithm} ##2\par}%
+       \ifx\relax##1\relax % #1 is \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+       \else % #1 is not \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+       \fi
+       \kern2pt\hrule\kern2pt
+     }
+  }{% \end{breakablealgorithm}
+     \kern2pt\hrule\relax% \@fs@post for \@fs@ruled
+   \end{center}
+  }
+\makeatother
 
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}
@@ -84,9 +105,9 @@ de Casteljau algorithm. This algorithm has a round-off error bound
 which grows only linearly with degree, even though the number of
 arithmetic operations grows quadratically. The Bernstein basis is
 optimally suited (\cite{Farouki1987}) for polynomial evaluation; it is
-is typically more accurate than the monomial basis, for example in
+typically more accurate than the monomial basis, for example in
 Figure~\ref{fig:horner-inferior} evaluation via Horner's method produces
-a jagged curve for points near a tripl root, but the de Casteljau algorithm
+a jagged curve for points near a triple root, but the de Casteljau algorithm
 produces a smooth curve. Nevertheless the de Casteljau
 algorithm returns results arbitrarily less accurate than the working
 precision \(\mach\) when evaluating \(p(s)\) is ill-conditioned.
@@ -255,7 +276,7 @@ in Section~\ref{sec:appendix-eft} for implementation details.
 
 Next, we recall the de Casteljau algorithm:
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}
   \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
 
   \begin{algorithmic}
@@ -278,7 +299,7 @@ Next, we recall the de Casteljau algorithm:
       \State \(\mathtt{res} = \widehat{b}_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \begin{theorem}[\cite{Mainar1999}]
 If \(p(s) = \sum_{j = 0}^n b_j B_{j, n}(s)\) and \(\mathtt{DeCasteljau}(p, s)\)
@@ -306,20 +327,23 @@ from \cite{Jiang2010}. In order to track the local errors at
 each update step, we use four EFTs:
 \begin{align}
 \left[\widehat{r}, \rho\right] &= \mathtt{TwoSum}(1, -s) \\
-\left[P_1, \pi_1\right] &= \mathtt{TwoProd}\left(\widehat{r}, \widehat{b}_j^{(k + 1)}\right) \\
-\left[P_2, \pi_2\right] &= \mathtt{TwoProd}\left(s, \widehat{b}_{j + 1}^{(k + 1)}\right) \\
+\left[P_1, \pi_1\right] &= \mathtt{TwoProd}\left(
+    \widehat{r}, \widehat{b}_j^{(k + 1)}\right) \\
+\left[P_2, \pi_2\right] &= \mathtt{TwoProd}\left(
+    s, \widehat{b}_{j + 1}^{(k + 1)}\right) \\
 \left[\widehat{b}_j^{(k)}, \sigma_3\right] &= \mathtt{TwoSum}(P_1, P_2)
 \end{align}
 With these, we can exactly describe the local error between the exact
 update and computed update:
 \begin{gather}
-\ell_{1, j}^{(k)} = \pi_1 + \pi_2 + \sigma_3 + \rho\widehat{b}_j^{(k + 1)} \label{ell-j} \\
+\ell_{1, j}^{(k)} = \pi_1 + \pi_2 + \sigma_3 + \rho \cdot
+  \widehat{b}_j^{(k + 1)} \label{ell-j} \\
 (1 - s) \cdot \widehat{b}_j^{(k + 1)} +
   s \cdot \widehat{b}_{j + 1}^{(k + 1)} =
 \widehat{b}_j^{(k)} + \ell_{1, j}^{(k)}.
 \end{gather}
 
-\begin{figure}[H]
+\begin{figure}\label{fig:loc-err-accumulate}
 \centering
 \begin{tikzpicture}[node distance = 0.2\textwidth]
   \node (b0) {\(\widehat{b}^{(n)}\)}
@@ -355,22 +379,23 @@ update and computed update:
 \begin{equation}
   \partial b_j^{(k)} = b_j^{(k)} - \widehat{b}_j^{(k)}
 \end{equation}
-we can see that the local errors accumulate in
+we can see (Figure~\ref{fig:loc-err-accumulate}) that the local errors
+accumulate in
 \(\partial b^{(k)}\):
-\begin{equation}
+\begin{equation}\label{err-update}
   \partial b_j^{(k)} = (1 - s) \cdot \partial b_j^{(k + 1)} + s \cdot
   \partial b_{j + 1}^{(k + 1)} + \ell_{1, j}^{(k)}.
 \end{equation}
-Hence, when computed in exact arithmetic, we have
+When computed in exact arithmetic, we would have
 \begin{equation}
-  p(s) = \widehat{b}_0^{(0)} + \partial b_0^{(0)}.
+  p(s) = \widehat{b}_0^{(0)} + \partial b_0^{(0)}
 \end{equation}
+and by using \eqref{err-update}, we can continue to compute
+approximations of \(\partial b_j^{(k)}\). The idea behind the compensated
+de Casteljau algorithm is to compute both the local error and the updates
+of the global error with floating point operations:
 
-The idea behind the compensated de Casteljau algorithm
-is to compute both the local error and the updates of the global
-error with floating point operations:
-
-\begin{algorithm}[H]
+\begin{breakablealgorithm}\label{alg:comp-de-casteljau}
   \caption{\textit{Compensated de Casteljau algorithm for polynomial evaluation.}}
 
   \begin{algorithmic}
@@ -407,7 +432,7 @@ error with floating point operations:
           \widehat{\partial b}_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \noindent  When comparing this computed error to the exact error, the
 difference depends only on \(s\) and the Bernstein
@@ -433,6 +458,53 @@ the working precision:
     2 \gamma_{3n}^2 \cond{p, s}.
   \end{equation}
 \end{theorem}
+
+\begin{figure}
+  \includegraphics[width=0.9375\textwidth]{../images/compensated_insufficient.pdf}
+  \centering
+  \caption{Compensated Casteljau method starts to lose accuracy
+    for \(p(s) = (2s - 1)^3 (s - 1)\) in the neighborhood of its
+    multiple root \(1/2\).}
+  \label{fig:compensated-insufficient}
+\end{figure}
+
+Unfortunately, Figure~\ref{fig:compensated-insufficient} shows how
+the \texttt{CompDeCasteljau} starts to break down in a region of
+high condition number (caused by a multiple root with multiplicity
+higher than two). For example, the point
+\(s = \frac{1}{2} + 1001\mach\)
+--- which is in the plotted region \(\left|s - \frac{1}{2}\right|
+\leq 1.5 \cdot 10^{-11}\) --- evaluates to exactly \(0\) when it should be
+\(\mathcal{O}\left(\mach^3\right)\). As shown in
+Table~\ref{tab:exact-computation}, the breakdown occurs because
+\(\widehat{b}_0^{(0)} = -\widehat{\partial b}_0^{(0)} = \mach / 16\).
+
+\begin{table}
+  \centering
+  \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
+    \toprule
+    k & j & \widehat{b}_j^{(k)} & \widehat{\partial b}_j^{(k)} & \partial b_j^{(k)} - \widehat{\partial b}_j^{(k)} \\
+    \midrule
+    3 & 0 & 0.125 - 1.75 (1001 \mach) - 0.25 \mach & 0.25\mach & 0 \\
+    3 & 1 & -0.125 + 1.25(1001 \mach) + 0.25 \mach & -0.25\mach & 0 \\
+    3 & 2 & 0.125 - 0.75 (1001 \mach) & 0 & 0 \\
+    3 & 3 & -0.125 + 0.25 (1001 \mach) & 0 & 0 \\
+    \midrule
+    2 & 0 & -0.5 (1001 \mach) & 3 (1001 \mach)^2 & 0 \\
+    2 & 1 & 0.5(1001 \mach) + 0.125 \mach & -0.125\mach - 2 (1001 \mach)^2 & 0 \\
+    2 & 2 & -0.5 (1001 \mach) & (1001 \mach)^2 & 0 \\
+    \midrule
+    1 & 0 & 0.0625\mach + (1001 \mach)^2 + 239\mach^2 & -0.0625\mach + 0.5  (1001 \mach)^2 - 239 \mach^2 & -5 (1001\mach)^3 \\
+    1 & 1 & 0.0625\mach - (1001 \mach)^2 - 239\mach^2 & -0.0625\mach - 0.5  (1001 \mach)^2 + 239 \mach^2 & 3 (1001\mach)^3 \\
+    \midrule
+    0 & 0 & 0.0625 \mach & -0.0625 \mach & -4 (1001 \mach)^3 + 8 (1001 \mach)^4 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Terms computed by \texttt{CompDeCasteljau} when evaluating
+    \(p(s) = (2s - 1)^3 (s - 1)\) at the point
+    \(s = \frac{1}{2} + 1001 \mach\)}
+  \label{tab:exact-computation}
+\end{table}
 
 \section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{sec:compensated-k}
 
@@ -463,14 +535,78 @@ the cascade:
   &  &&  &&\vdots && \nonumber
 \end{alignat}
 
-In \texttt{CompDeCasteljau}, after a single stage of error filtering we
-``give up'' and use \(\widehat{\partial b}^{(k)}\) instead of
-\(\partial b^{(k)}\) (without keeping around any information about the
+\begin{figure}\label{fig:error-filtration}
+\centering
+\begin{tikzpicture}[node distance = 0.2\textwidth]
+    \node [box] (bj) {\(b\)};
+    \node [box, below of=bj] (bn0) {\(\widehat{b}^{(n)}\)};
+    \node [box, right of=bn0] (dbn0) {\(\widehat{\partial b}^{(n)}\)};
+    \node [box, right of=dbn0] (ddbn0) {\(\widehat{\partial^2 b}^{(n)}\)};
+    \node [box, right of=ddbn0] (dddbn0) {\(\widehat{\partial^3 b}^{(n)}\)};
+    %%
+    \node [box, below of=bn0] (bn1) {\(\widehat{b}^{(n - 1)}\)};
+    \node [box, below of=dbn0] (dbn1) {\(\widehat{\partial b}^{(n - 1)}\)};
+    \node [box, below of=ddbn0] (ddbn1) {\(\widehat{\partial^2 b}^{(n - 1)}\)};
+    \node [box, below of=dddbn0] (dddbn1) {\(\widehat{\partial^3 b}^{(n - 1)}\)};
+    %%
+    \node [box, below of=bn1] (bn2) {\(\widehat{b}^{(n - 2)}\)};
+    \node [box, below of=dbn1] (dbn2) {\(\widehat{\partial b}^{(n - 2)}\)};
+    \node [box, below of=ddbn1] (ddbn2) {\(\widehat{\partial^2 b}^{(n - 2)}\)};
+    \node [box, below of=dddbn1] (dddbn2) {\(\widehat{\partial^3 b}^{(n - 2)}\)};
+    %%
+    \path [line] (bn0) -- node[above] {\(\widehat{\ell}_1^{(n)}\)} (dbn0);
+    \path [line] (dbn0) -- node[above] {\(\widehat{\ell}_2^{(n)}\)} (ddbn0);
+    \path [line] (ddbn0) -- node[above] {\(\widehat{\ell}_3^{(n)}\)} (dddbn0);
+    \node [empty-box, right of=dddbn0] (right0) {\(\cdots\)};
+    \path [line] (dddbn0) -- node[above] {\(\widehat{\ell}_4^{(n)}\)} (right0);
+    %%
+    \path [line] (bn1) -- node[above] {\(\widehat{\ell}_1^{(n - 1)}\)} (dbn1);
+    \path [line] (dbn1) -- node[above] {\(\widehat{\ell}_2^{(n - 1)}\)} (ddbn1);
+    \path [line] (ddbn1) -- node[above] {\(\widehat{\ell}_3^{(n - 1)}\)} (dddbn1);
+    \node [empty-box, right of=dddbn1] (right1) {\(\cdots\)};
+    \path [line] (dddbn1) -- node[above] {\(\widehat{\ell}_4^{(n - 1)}\)} (right1);
+    %%
+    \path [line] (bn2) -- node[above] {\(\widehat{\ell}_1^{(n - 2)}\)} (dbn2);
+    \path [line] (dbn2) -- node[above] {\(\widehat{\ell}_2^{(n - 2)}\)} (ddbn2);
+    \path [line] (ddbn2) -- node[above] {\(\widehat{\ell}_3^{(n - 2)}\)} (dddbn2);
+    \node [empty-box, right of=dddbn2] (right2) {\(\cdots\)};
+    \path [line] (dddbn2) -- node[above] {\(\widehat{\ell}_4^{(n - 2)}\)} (right2);
+    %%
+    \path [line] (bj) -- (bn0);
+    \path [line] (bn0) -- node[fill=white] {\(U_n(s)\)} (bn1);
+    \path [line] (bn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (bn2);
+    \node [empty-box-vert, below of=bn2] (bottom0) {\(\vdots\)};
+    \path [line] (bn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom0);
+    %%
+    \path [line] (dbn0) -- node[fill=white] {\(U_n(s)\)} (dbn1);
+    \path [line] (dbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dbn2);
+    \node [empty-box-vert, below of=dbn2] (bottom1) {\(\vdots\)};
+    \path [line] (dbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom1);
+    %%
+    \path [line] (ddbn0) -- node[fill=white] {\(U_n(s)\)} (ddbn1);
+    \path [line] (ddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (ddbn2);
+    \node [empty-box-vert, below of=ddbn2] (bottom2) {\(\vdots\)};
+    \path [line] (ddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom2);
+    %%
+    \path [line] (dddbn0) -- node[fill=white] {\(U_n(s)\)} (dddbn1);
+    \path [line] (dddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dddbn2);
+    \node [empty-box-vert, below of=dddbn2] (bottom3) {\(\vdots\)};
+    \path [line] (dddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom3);
+\end{tikzpicture}
+\caption{Filtering errors}
+\end{figure}
+
+In \texttt{CompDeCasteljau} (Algorithm~\ref{alg:comp-de-casteljau}), after
+a single stage of error filtering we
+``give up'' and use \(\widehat{\partial b}\) instead of
+\(\partial b\) (without keeping around any information about the
 round-off error). In order to obtain results that are as accurate as if
 computed in \(K\) times the working precision, we must continue filtering
-errors down \((K - 1)\) times, so that at the final level we compute
-\(\widehat{\partial^{K - 1} b}^{(k)}\) and don't worry about round-off
-error.
+(see Figure~\ref{fig:error-filtration})
+errors down \((K - 1)\) times, and only at the final level do we accept
+the rounded
+\(\widehat{\partial^{K - 1} b}\) in place of the exact
+\(\partial^{K - 1} b\).
 
 When computing \(\widehat{\partial^F b}\) (i.e. the error after
 \(F\) stages of filtering)
@@ -492,17 +628,26 @@ for the ``missing'' \(\rho \cdot \widehat{\partial^F b}_j^{(k + 1)}\) in
   \widehat{\ell}_{F, j}^{(k)}\)
 \end{itemize}
 For example, in~\eqref{ell-j}:
+%% H/T: https://tex.stackexchange.com/a/154333/32270
 \begin{equation}
-\ell_{1, j}^{(k)} = \underbrace{\pi_1}_{P_1 = \widehat{r} \otimes
-    \widehat{b}_j^{(k + 1)}} +
-\underbrace{\pi_2}_{P_2 = s \otimes \widehat{b}_{j + 1}^{(k + 1)}} +
-\underbrace{\sigma_3}_{P_1 \oplus P_2} +
-\underbrace{\rho \cdot \widehat{b}_j^{(k + 1)}}_{(1 - s)
-  \widehat{b}_j^{(k + 1)}}
+\ell_{1, j}^{(k)} =
+    \underbrace{\vphantom{\rho \cdot \widehat{b}_j^{(k + 1)}} \pi_1}_{
+        \vphantom{(1 - s) \widehat{b}_j^{(k + 1)}}
+        P_1 = \widehat{r} \otimes \widehat{b}_j^{(k + 1)}} +
+    \underbrace{\vphantom{\rho \cdot \widehat{b}_j^{(k + 1)}} \pi_2}_{
+        \vphantom{(1 - s) \widehat{b}_j^{(k + 1)}}
+        P_2 = s \otimes \widehat{b}_{j + 1}^{(k + 1)}} +
+    \underbrace{\vphantom{\rho \cdot \widehat{b}_j^{(k + 1)}} \sigma_3}_{
+        \vphantom{(1 - s) \widehat{b}_j^{(k + 1)}}
+        P_1 \oplus P_2} +
+    \underbrace{\rho \cdot \widehat{b}_j^{(k + 1)}}_{
+        (1 - s) \widehat{b}_j^{(k + 1)}}
 \end{equation}
 After each stage, we'll always have
-\[\ell_{F, j}^{(k)} = e_1 + e_2 + \cdots + e_M + \rho \cdot
-\widehat{\partial^{F - 1} b}_j^{(k + 1)}\]
+\begin{equation}
+\ell_{F, j}^{(k)} = e_1 + e_2 + \cdots + e_M + \rho \cdot
+\widehat{\partial^{F - 1} b}_j^{(k + 1)}
+\end{equation}
 where the terms \(e_1, \ldots, e_M\) come from using \texttt{TwoSum} and
 \texttt{TwoProd} when computing \(\widehat{\partial^{F - 1} b}_j^{(k)}\)
 and the \(\rho\) term comes from the roundoff
@@ -512,7 +657,7 @@ can define an EFT (\texttt{LocalErrorEFT}) that computes
 \(\widehat{\ell}\) and tracks all round-off errors generated in
 the process:
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}
   \caption{\textit{EFT for computing the local error.}}
 
   \begin{algorithmic}
@@ -533,12 +678,12 @@ the process:
           \mathtt{TwoSum}\left(\widehat{\ell}, P\right)\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \noindent With this EFT helper in place, we can perform \((K - 1)\)
 error filtrations:
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}\label{alg:k-comp-de-casteljau}
   \caption{\(K\)-\textit{compensated de Casteljau algorithm.}}
 
   \begin{algorithmic}
@@ -601,68 +746,20 @@ error filtrations:
       \EndFor
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[node distance = 0.2\textwidth]
-    \node [box] (bj) {\(b\)};
-    \node [box, below of=bj] (bn0) {\(\widehat{b}^{(n)}\)};
-    \node [box, right of=bn0] (dbn0) {\(\widehat{\partial b}^{(n)}\)};
-    \node [box, right of=dbn0] (ddbn0) {\(\widehat{\partial^2 b}^{(n)}\)};
-    \node [box, right of=ddbn0] (dddbn0) {\(\widehat{\partial^3 b}^{(n)}\)};
-    %%
-    \node [box, below of=bn0] (bn1) {\(\widehat{b}^{(n - 1)}\)};
-    \node [box, below of=dbn0] (dbn1) {\(\widehat{\partial b}^{(n - 1)}\)};
-    \node [box, below of=ddbn0] (ddbn1) {\(\widehat{\partial^2 b}^{(n - 1)}\)};
-    \node [box, below of=dddbn0] (dddbn1) {\(\widehat{\partial^3 b}^{(n - 1)}\)};
-    %%
-    \node [box, below of=bn1] (bn2) {\(\widehat{b}^{(n - 2)}\)};
-    \node [box, below of=dbn1] (dbn2) {\(\widehat{\partial b}^{(n - 2)}\)};
-    \node [box, below of=ddbn1] (ddbn2) {\(\widehat{\partial^2 b}^{(n - 2)}\)};
-    \node [box, below of=dddbn1] (dddbn2) {\(\widehat{\partial^3 b}^{(n - 2)}\)};
-    %%
-    \path [line] (bn0) -- node[above] {\(\widehat{\ell}_1^{(n)}\)} (dbn0);
-    \path [line] (dbn0) -- node[above] {\(\widehat{\ell}_2^{(n)}\)} (ddbn0);
-    \path [line] (ddbn0) -- node[above] {\(\widehat{\ell}_3^{(n)}\)} (dddbn0);
-    \node [empty-box, right of=dddbn0] (right0) {\(\cdots\)};
-    \path [line] (dddbn0) -- node[above] {\(\widehat{\ell}_4^{(n)}\)} (right0);
-    %%
-    \path [line] (bn1) -- node[above] {\(\widehat{\ell}_1^{(n - 1)}\)} (dbn1);
-    \path [line] (dbn1) -- node[above] {\(\widehat{\ell}_2^{(n - 1)}\)} (ddbn1);
-    \path [line] (ddbn1) -- node[above] {\(\widehat{\ell}_3^{(n - 1)}\)} (dddbn1);
-    \node [empty-box, right of=dddbn1] (right1) {\(\cdots\)};
-    \path [line] (dddbn1) -- node[above] {\(\widehat{\ell}_4^{(n - 1)}\)} (right1);
-    %%
-    \path [line] (bn2) -- node[above] {\(\widehat{\ell}_1^{(n - 2)}\)} (dbn2);
-    \path [line] (dbn2) -- node[above] {\(\widehat{\ell}_2^{(n - 2)}\)} (ddbn2);
-    \path [line] (ddbn2) -- node[above] {\(\widehat{\ell}_3^{(n - 2)}\)} (dddbn2);
-    \node [empty-box, right of=dddbn2] (right2) {\(\cdots\)};
-    \path [line] (dddbn2) -- node[above] {\(\widehat{\ell}_4^{(n - 2)}\)} (right2);
-    %%
-    \path [line] (bj) -- (bn0);
-    \path [line] (bn0) -- node[fill=white] {\(U_n(s)\)} (bn1);
-    \path [line] (bn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (bn2);
-    \node [empty-box-vert, below of=bn2] (bottom0) {\(\vdots\)};
-    \path [line] (bn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom0);
-    %%
-    \path [line] (dbn0) -- node[fill=white] {\(U_n(s)\)} (dbn1);
-    \path [line] (dbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dbn2);
-    \node [empty-box-vert, below of=dbn2] (bottom1) {\(\vdots\)};
-    \path [line] (dbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom1);
-    %%
-    \path [line] (ddbn0) -- node[fill=white] {\(U_n(s)\)} (ddbn1);
-    \path [line] (ddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (ddbn2);
-    \node [empty-box-vert, below of=ddbn2] (bottom2) {\(\vdots\)};
-    \path [line] (ddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom2);
-    %%
-    \path [line] (dddbn0) -- node[fill=white] {\(U_n(s)\)} (dddbn1);
-    \path [line] (dddbn1) -- node[fill=white] {\(U_{n - 1}(s)\)} (dddbn2);
-    \node [empty-box-vert, below of=dddbn2] (bottom3) {\(\vdots\)};
-    \path [line] (dddbn2) -- node[fill=white] {\(U_{n - 2}(s)\)} (bottom3);
-\end{tikzpicture}
-\caption{Filtering errors}
-\end{figure}
+Noting that \(\ell_{F, j}\) contains \(5F - 2\) terms, one can
+show that Algorithm~\ref{alg:k-comp-de-casteljau} requires
+\begin{equation}
+(15K^2 + 11K - 34)T_n + K + 5 =
+\mathcal{O}\left(n^2 K^2\right)
+\end{equation}
+flops to evaluate a degree \(n\) polynomial, where \(T_n\) is the
+\(n\)th triangular number. As a comparison, the non-compensated form of
+de Casteljau requires \(3 T_n + 1\) flops. In total this will require
+\((3K - 4)T_n\) uses of \texttt{TwoProd}. On hardware that supports
+FMA, \texttt{TwoProdFMA} (Algorithm~\ref{alg:two-prod-fma}) can be used
+instead, lowering the flop count by \(15(3K - 4)T_n\).
 
 \section{Numerical experiments}\label{sec:numerical}
 
@@ -685,94 +782,7 @@ show how things improve.
   \label{fig:compensated-k}
 \end{figure}
 
-\section{de Casteljau's Method}
-
-Consider de Casteljau's method to evaluate a degree \(n\)
-polynomial in Bernstein-B\'{e}zier form with control points \(b_j\):
-\begin{align}
-    b_j^{(n)} &= b_j \\
-    b_j^{(k)} &= (1 - s) b_j^{(k + 1)} + s b_{j + 1}^{(k + 1)} \\
-    b(s) &= b_0^{(0)}.
-\end{align}
-
-\subsection{Condition Number}
-
-For a polynomial \(p(x)\) in the power basis, we have
-(\cite{langlois_et_al:DSP:2006:442}):
-\begin{equation}
-\cond{p(x)} = \frac{\widetilde{p}\left(\left|x\right|\right)}{
-  \left|p(x)\right|} = \frac{\sum_j \left|a_j\right| \left|x\right|^j}{
-  \left|p(x)\right|}.
-\end{equation}
-In particular, this means that if \(x \geq 0\) and each \(a_j \geq 0\)
-we must necessarily have \(\cond{p(x)} = 1\). To see an example in use,
-consider \(p(x) = (x - 1)^n\) and input values of the form \(x = 1 + \delta\)
-(with \(\left|\delta\right| \ll 1\)). Since \(a_j = \binom{n}{j} (-1)^{n - j}\)
-we have \(\widetilde{p}(x) = (x + 1)^n\) hence
-\begin{equation}
-\cond{p\left(1 + \delta\right)} = \frac{(2 + \delta)^n}{
-  \left|\delta\right|^n} = \left|1 + \frac{2}{\delta}\right|^n.
-\end{equation}
-As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
-
-For a polynomial \(p(s)\) in Bernstein form, we have (\cite{Jiang2010}):
-\begin{equation}
-\cond{p(s)} = \frac{\widetilde{p}\left(s\right)}{
-  \left|p(s)\right|} = \frac{\sum_j \left|b_j\right| \left|B_{j, n}(s)\right|}{
-  \left|p(s)\right|}.
-\end{equation}
-The Bernstein form is suited for \(s \in \left[0, 1\right]\), which means
-\(B_{j, n}(s) \geq 0\) typically. If \(s \in \left[0, 1\right]\) and each
-\(b_j \geq 0\) we must necessarily have \(\cond{p(s)} = 1\). To see an
-example in use, consider
-\begin{equation}
-p(s) = (1 - 2s)^n = \left[(1 - s) - s\right]^n = \sum_j \binom{n}{j}
-(1 - s)^{n - j} (-s)^j = \sum_j (-1)^j B_{j, n}(s)
-\end{equation}
-and input values of the form \(x = \frac{1}{2} + \delta\)
-(with \(\left|\delta\right| \ll \frac{1}{2}\)). Since \(b_j = (-1)^j\)
-we have \(\widetilde{p}(s) = \left[(1 - s) + s\right]^n = 1\)
-\begin{equation}
-\cond{p\left(\frac{1}{2} + \delta\right)} = \frac{1}{
-  \left|2\delta\right|^n}.
-\end{equation}
-As \(\delta \to 0\), this value approaches \(\infty\) (as expected).
-
-\subsection{Example of Compensated de Casteljau Failing}
-
-Consider
-\begin{equation}
-p(s) = (4s - 3)^3 (8s + 7) = (-189) B_{0, 4}(s) + (-54) B_{1, 4}(s) +
-57 B_{2, 4}(s) + (-32) B_{3, 4}(s) + 15 B_{4, 4}(s)
-\end{equation}
-at the point \(s = \frac{3}{4} + 800 \mach\). In exact arithmetic, we
-have \(p(s) = 13(3200\mach)^3 + \mathcal{O}\left(\mach^4\right)\).
-However, using the compensated de Casteljau algorithm results in
-\(\widehat{b}_0^{(0)} \oplus \widehat{\partial b}_0^{(0)} = 0\):
-
-\begin{center}
-  \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
-    \toprule
-    k & j & \widehat{b}_j^{(k)} & \widehat{\partial b}_j^{(k)} & \widehat{\partial^2 b}_j^{(k)} & \widehat{\partial^3 b}_j^{(k)} \\
-    \midrule
-    3 & 0 & -87\frac{3}{4} + 108032\mach & -32\mach & 0 & 0 \\
-    3 & 1 & 29\frac{1}{4} + 88768\mach & 32\mach & 0 & 0 \\
-    3 & 2 & -9\frac{3}{4} - 71200\mach & 0 & 0 & 0 \\
-    3 & 3 & 3\frac{1}{4} + 37600\mach & 0 & 0 & 0 \\
-    \midrule
-    2 & 0 & 187200\mach & -15360000\mach^2 & 0 & 0 \\
-    2 & 1 & -62408\mach & 8\mach - 128000000\mach^2 & 0 & 0 \\
-    2 & 2 & 20800\mach & 87040000\mach^2 & 0 & 0 \\
-    \midrule
-    1 & 0 & -6\mach - 199688192\mach^2 & 6\mach - 99831808\mach^2 & -90112000000\mach^3 & 0 \\
-    1 & 1 & -2\mach + 66568192\mach^2  & 2\mach + 33271808\mach^2 & 172032000000\mach^3 & 0 \\
-    \midrule
-    0 & 0 & -3\mach + 7296\mach^2 & 3\mach - 7296\mach^2 & 13 (3200\mach)^3 + 3048(512\mach)^4 & 962(128\mach)^4 \\
-    \bottomrule
-  \end{tabular}
-\end{center}
-
-\subsection{Selection of Test Cases}
+\section{Quotes: Selection of Test Cases}
 
 From \cite{Delgado2015} (end of Section 3):
 
@@ -803,40 +813,6 @@ end of Section 5, at the bottom of page 109):
   close to the roots.
 \end{quote}
 
-\subsection{Operation Counts}
-
-After implementing for \(K = 2, 3, \ldots, 12\) and instrumenting all
-relevant floating point operations, the \(K\)-fold Horner requires
-\begin{equation}
-(5 \cdot 2^K - 8)n + \left((K + 8) 2^K - 12K - 6\right) =
-\mathcal{O}\left((n + K)2^K\right)
-\end{equation}
-flops to evaluate a degree \(n\) polynomial (this only applies when
-\(n \geq K - 1\)). As a comparison, the
-non-compensated form of Horner requires \(2n\) flops. Of these,
-\(\left(2^{K - 1} - 1\right)n - 2^{K - 1}(K - 3) - 2\) are
-FMA (fused-multiply-add) instructions.
-
-After implementing for \(K = 2, 3, 4, 5\) and instrumenting all relevant
-floating point operations, the \(K\)-fold de Casteljau requires
-\begin{equation}
-(15K^2 - 34K + 26)T_n + K + 5 =
-\mathcal{O}\left(n^2 K^2\right)
-\end{equation}
-flops to evaluate a degree \(n\) polynomial. (Here \(T_n\) is the
-\(n\)th triangular number.) As a comparison, the non-compensated form of
-de Casteljau requires \(3 T_n + 1\) flops. Of these, \((3K - 4)T_n\) are
-FMA instructions. On hardware that doesn't support FMA,
-every FMA will be exchanged for 10 \(\ominus\)'s and 6 \(\otimes\)'s so the
-count will increase by \((10 + 6 - 1)(3K - 4)T_n\).
-
-\section{Bogus Section for Refs}
-
-Here they are, for now
-\begin{itemize}
-  \item Newton with compensated Horner (\cite{Graillat2008})
-\end{itemize}
-
 \bibliography{paper}
 \bibliographystyle{alpha}
 
@@ -846,7 +822,7 @@ Find here concrete implementation details on the EFTs described
 in Theorem~\ref{thm:eft}. They do not use branches, nor access to the
 mantissa that can be time-consuming
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}
   \caption{\textit{EFT of the sum of two floating point numbers.}}
 
   \begin{algorithmic}
@@ -856,13 +832,13 @@ mantissa that can be time-consuming
       \State \(\sigma = (a \ominus (S \ominus z)) \oplus (b \ominus z)\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \noindent In order to avoid branching to check which among
 \(\left|a\right|, \left|b\right|\) is largest, \texttt{TwoSum} uses 6 flops
 rather than 3.
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}
   \caption{\textit{Splitting of a floating point number into two parts.}}
 
   \begin{algorithmic}
@@ -872,13 +848,13 @@ rather than 3.
       \State \(\ell = a \ominus h\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \noindent For IEEE-754 double precision floating point number, \(r = 26\)
 so \(2^r + 1\) will be known before \texttt{Split} is called. In all,
 \texttt{Split} uses 4 flops.
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}
   \caption{\textit{EFT of the product of two floating point numbers.}}
 
   \begin{algorithmic}
@@ -891,13 +867,13 @@ so \(2^r + 1\) will be known before \texttt{Split} is called. In all,
           \ominus a_{\ell} \otimes b_h) \ominus a_h \otimes b_{\ell})\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \noindent This implementation of \texttt{TwoProd} requires 17 flops.
 For processors that provide a fused-multipy-add operator (\texttt{FMA}),
 \texttt{TwoProd} can be rewritten to use only 2 flops:
 
-\begin{algorithm}[H]
+\begin{breakablealgorithm}\label{alg:two-prod-fma}
   \caption{\textit{EFT of the sum of two floating point numbers with a FMA.}}
 
   \begin{algorithmic}
@@ -906,6 +882,6 @@ For processors that provide a fused-multipy-add operator (\texttt{FMA}),
       \State \(\pi = \mathtt{FMA}(a, b, -P)\)
     \EndFunction
   \end{algorithmic}
-\end{algorithm}
+\end{breakablealgorithm}
 
 \end{document}

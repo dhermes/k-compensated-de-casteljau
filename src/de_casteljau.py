@@ -92,8 +92,8 @@ def jlcs10_compensated(s, coeffs):
             S3, sigma3 = eft.add_eft(P1, P2)
             new_bk[0].append(S3)
             # Now update the error.
-            wA = pi1 + pi2 + sigma3 + rho * bk[0][j]
-            new_bk[1].append(wA + s * bk[1][j + 1] + r * bk[1][j])
+            l_hat = pi1 + pi2 + sigma3 + rho * bk[0][j]
+            new_bk[1].append(l_hat + s * bk[1][j + 1] + r * bk[1][j])
 
         # Update the "current" values.
         bk = new_bk
