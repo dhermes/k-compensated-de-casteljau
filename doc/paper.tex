@@ -36,6 +36,8 @@
 %% H/T: https://tex.stackexchange.com/a/202047/32270
 %%      https://tex.stackexchange.com/a/32463/32270
 \usepackage[labelfont=bf]{caption}
+%% H/T: https://tex.stackexchange.com/a/71153/32270
+\usepackage[nottoc,notlot,notlof]{tocbibind}
 
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}
@@ -107,7 +109,8 @@ Bernstein form. Polynomials in this form are usually evaluated by the
 de Casteljau algorithm. This algorithm has a round-off error bound
 which grows only linearly with degree, even though the number of
 arithmetic operations grows quadratically. The Bernstein basis is
-optimally suited (\cite{Farouki1987}) for polynomial evaluation; it is
+optimally suited (\cite{Farouki1987}, \cite{Delgado2015}, \cite{Mainar2005})
+for polynomial evaluation; it is
 typically more accurate than the monomial basis, for example in
 Figure~\ref{fig:horner-inferior} evaluation via Horner's method produces
 a jagged curve for points near a triple root, but the de Casteljau algorithm
@@ -348,7 +351,7 @@ update and computed update:
 \widehat{b}_j^{(k)} + \ell_{1, j}^{(k)}.
 \end{gather}
 
-\begin{figure}\label{fig:loc-err-accumulate}
+\begin{figure}
 \centering
 \begin{tikzpicture}[node distance = 0.2\textwidth]
   \node (b0) {\(\widehat{b}^{(n)}\)}
@@ -379,6 +382,7 @@ update and computed update:
 \end{tikzpicture}
 \captionsetup{width=.75\linewidth}
 \caption{Local round-off errors}
+\label{fig:loc-err-accumulate}
 \end{figure}
 
 \noindent By defining the global errors at each step
@@ -401,8 +405,9 @@ approximations of \(\partial b_j^{(k)}\). The idea behind the compensated
 de Casteljau algorithm is to compute both the local error and the updates
 of the global error with floating point operations:
 
-\begin{breakablealgorithm}\label{alg:comp-de-casteljau}
+\begin{breakablealgorithm}
   \caption{\textit{Compensated de Casteljau algorithm for polynomial evaluation.}}
+  \label{alg:comp-de-casteljau}
 
   \begin{algorithmic}
     \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$b, s$}
@@ -543,7 +548,7 @@ the cascade:
   &  &&  &&\vdots && \nonumber
 \end{alignat}
 
-\begin{figure}\label{fig:error-filtration}
+\begin{figure}
 \centering
 \begin{tikzpicture}[node distance = 0.2\textwidth]
     \node [box] (bj) {\(b\)};
@@ -603,6 +608,7 @@ the cascade:
 \end{tikzpicture}
 \captionsetup{width=.75\linewidth}
 \caption{Filtering errors}
+\label{fig:error-filtration}
 \end{figure}
 
 In \texttt{CompDeCasteljau} (Algorithm~\ref{alg:comp-de-casteljau}), after
@@ -692,8 +698,9 @@ the process:
 \noindent With this EFT helper in place, we can perform \((K - 1)\)
 error filtrations:
 
-\begin{breakablealgorithm}\label{alg:k-comp-de-casteljau}
+\begin{breakablealgorithm}
   \caption{\(K\)-\textit{compensated de Casteljau algorithm.}}
+  \label{alg:k-comp-de-casteljau}
 
   \begin{algorithmic}
     \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$b, s$}
@@ -793,37 +800,6 @@ show how things improve.
   \label{fig:compensated-k}
 \end{figure}
 
-\section{Quotes: Selection of Test Cases}
-
-From \cite{Delgado2015} (end of Section 3):
-
-\begin{quote}
-  We can observe that, in this case, the algorithm with a good
-  behavior everywhere is the de Casteljau algorithm
-\end{quote}
-
-\noindent In the same paper (when referring to \cite{Bezerra2013} at the
-beginning of Section 2):
-
-\begin{quote}
-  assuming that all control points are positive. This assumption avoided
-  ill-conditioned polynomials. In this section, we shall show that this is
-  a natural assumption in Computer Aided Geometric Design (from now on,
-  C.A.G.D.) and that it permits to assure high relative precision for the
-  evaluation through a large family of representations in C.A.G.D.
-\end{quote}
-
-\noindent From the same author, in \cite{Mainar2005} (towards the
-end of Section 5, at the bottom of page 109):
-
-\begin{quote}
-  Let us observe that in this case, the de Casteljau algorithm presents
-  better stability properties for the evaluation near the roots. In fact,
-  the de Casteljau algorithm has good behaviour even when using simple
-  precision, although the running error bound is not so accurate in points
-  close to the roots.
-\end{quote}
-
 \bibliography{paper}
 \bibliographystyle{alpha}
 
@@ -884,8 +860,9 @@ so \(2^r + 1\) will be known before \texttt{Split} is called. In all,
 For processors that provide a fused-multipy-add operator (\texttt{FMA}),
 \texttt{TwoProd} can be rewritten to use only 2 flops:
 
-\begin{breakablealgorithm}\label{alg:two-prod-fma}
+\begin{breakablealgorithm}
   \caption{\textit{EFT of the sum of two floating point numbers with a FMA.}}
+  \label{alg:two-prod-fma}
 
   \begin{algorithmic}
     \Function{\(\left[P, \pi\right] = \mathtt{TwoProdFMA}\)}{$a, b$}
