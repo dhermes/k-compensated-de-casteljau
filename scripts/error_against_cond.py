@@ -42,6 +42,7 @@ BEZIER_COEFFS = (
     0.0,
 )
 ROOT = 0.75
+POWER_VAL = 1.3
 
 
 def main(filename=None):
@@ -57,7 +58,7 @@ def main(filename=None):
     forward_errs3 = []
     forward_errs4 = []
     for j in range(-5, -90 - 1, -1):
-        s = ROOT - 1.3 ** j
+        s = ROOT - POWER_VAL ** j
         exact_s = F(s)
 
         # Compute the condition number.
@@ -249,7 +250,7 @@ def main_jlcs10(filename=None):
     forward_errs1 = []
     forward_errs2 = []
     for j in range(-5, -64 - 1, -1):
-        s = ROOT - 1.3 ** j
+        s = ROOT - POWER_VAL ** j
         exact_s = F(s)
 
         # Compute the condition number.

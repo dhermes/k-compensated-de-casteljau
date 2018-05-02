@@ -79,6 +79,7 @@
 \rhead{Danny Hermes}
 
 \renewcommand{\headrulewidth}{0pt}
+\renewcommand{\qed}{\(\blacksquare\)}
 \newcommand{\cond}[1]{\operatorname{cond}\left(#1\right)}
 \newcommand{\fl}[1]{\operatorname{fl}\left(#1\right)}
 \newcommand{\eps}{\varepsilon}
@@ -286,6 +287,7 @@ Next, we recall the de Casteljau algorithm:
 
 \begin{breakablealgorithm}
   \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
+  \label{alg:de-casteljau}
 
   \begin{algorithmic}
     \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$b, s$}
@@ -703,7 +705,7 @@ error filtrations:
   \label{alg:k-comp-de-casteljau}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$b, s$}
+    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljauK}\)}{$b, s, K$}
       \State \(n = \texttt{length}(b) - 1\)
       \State \(\left[\widehat{r}, \rho\right] = \mathtt{TwoSum}(1, -s)\)
       \\
@@ -777,10 +779,54 @@ de Casteljau requires \(3 T_n + 1\) flops. In total this will require
 FMA, \texttt{TwoProdFMA} (Algorithm~\ref{alg:two-prod-fma}) can be used
 instead, lowering the flop count by \(15(3K - 4)T_n\).
 
+\begin{theorem}
+  If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
+  \begin{equation}
+    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s, K)\right|}{
+      \left|p(s)\right|} \leq \left[\mach + \mathcal{O}\left(\mach^2\right)
+      \right] +
+      \left[\left(\alpha(n) \mach\right)^K + \mathcal{O}\left(
+      \mach^{K + 1}\right)\right] \cond{p, s}.
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+Note that
+\begin{equation}
+p(s) = b_0^{(0)} = \widehat{b}_0^{(0)} + \partial b_0^{(0)}
+= \cdots
+= \widehat{b}_0^{(0)} + \widehat{\partial b}_0^{(0)} + \cdots
++ \widehat{\partial^{K - 2} b}_0^{(0)} + \partial^{K - 1} b_0^{(0)}
+\end{equation}
+and
+\begin{equation}
+\mathtt{CompDeCasteljau}(p, s, K) = \widehat{b}_0^{(0)} \oplus
+\widehat{\partial b}_0^{(0)} \oplus \cdots
+\oplus \widehat{\partial^{K - 2} b}_0^{(0)} \oplus
+\widehat{\partial^{K - 1} b}_0^{(0)}.
+\end{equation}
+It will be crucial for us to bound
+\(\partial^K b_0^{(0)} = \partial^{K - 1} b_0^{(0)} -
+\widehat{\partial^{K - 1} b}_0^{(0)}\). In addition, note that
+\begin{align}
+&\widehat{b}_0^{(0)} \oplus
+\widehat{\partial b}_0^{(0)} \oplus \cdots
+\oplus \widehat{\partial^{K - 2} b}_0^{(0)} \oplus
+\widehat{\partial^{K - 1} b}_0^{(0)} \\
+&= \widehat{b}_0^{(0)} \left(1 + \theta_{K - 1}\right) +
+\widehat{\partial b}_0^{(0)} \left(1 + \theta_{K - 1}\right) + \cdots
++ \widehat{\partial^{K - 2} b}_0^{(0)} \left(1 + \theta_2\right) +
+\widehat{\partial^{K - 1} b}_0^{(0)} \left(1 + \theta_1\right).
+\end{align}
+We'll use these two quantities to prove a bound.
+\end{proof}
+
 \section{Numerical experiments}\label{sec:numerical}
 
-Figure~\ref{fig:smooth-drawing} and Figure~\ref{fig:compensated-k}
-show how things improve.
+All experiments were performed in IEEE-754 double precision.
+As in \cite{Jiang2010}, we consider the evaluation in the neighborhood
+of the multiple root of \(p(s) = (s - 1)\left(s - \frac{3}{4}\right)^7\),
+written in Bernstein form.
 
 \begin{figure}
   \includegraphics[width=0.9375\textwidth]{../images/de_casteljau_smooth_drawing.pdf}
@@ -791,6 +837,26 @@ show how things improve.
   \label{fig:smooth-drawing}
 \end{figure}
 
+Figure~\ref{fig:smooth-drawing} shows the evaluation of \(p(s)\) at
+the 401 equally spaced\footnote{It's worth noting that \(0.1\) cannot
+be represented exactly in IEEE-754 double precision (or any binary
+arithmetic for that matter). Hence (most of) the points of the form
+\(a + b \cdot 10^{-c}\) can only be approximately represented.} points
+\(\left\{\frac{3}{4} + j \frac{10^{-7}}{2}\right\}_{j=-200}^{200}\)
+with \texttt{DeCasteljau} (Algorithm~\ref{alg:de-casteljau}),
+\texttt{CompDeCasteljau} (Algorithm~\ref{alg:comp-de-casteljau})
+and \texttt{CompDeCasteljau3} (Algorithm~\ref{alg:k-comp-de-casteljau}
+with \(K = 3\)). We see that \texttt{DeCasteljau} fails to get the
+magnitude correct, \texttt{CompDeCasteljau} has the right shape but
+lots of noise and \texttt{CompDeCasteljau3} is able to smoothly evaluate
+the function. This is in contrast to a similar figure in \cite{Jiang2010},
+where the plot was smooth for the 400 equally spaced points
+\(\left\{\frac{3}{4} + \frac{10^{-4}}{2} \frac{2j - 399}{399}
+\right\}_{j=0}^{399}\). The primary difference is that as the interval
+shrinks by a factor of \(\approx \frac{10^{-4}}{10^{-7}} = 10^3\), the
+condition number goes up by \(\approx 10^{21}\) and \texttt{CompDeCasteljau}
+is no longer accurate.
+
 \begin{figure}
   \includegraphics[width=0.8125\textwidth]{../images/de_casteljau_rel_error.pdf}
   \centering
@@ -799,6 +865,38 @@ show how things improve.
     represented in Bernstein form.}
   \label{fig:compensated-k}
 \end{figure}
+
+Figure~\ref{fig:compensated-k} shows the relative forward errors compared
+against the condition number. To compute relative errors, each input and
+coefficient is converted to a fraction (i.e. infinite precision) and then
+compared to the corresponding computed values. Similar tools are used to
+\textbf{exactly} compute the condition number, though here we can rely
+on the fact that \(\widetilde{p}\left(s\right) = (s - 1)
+\left(\frac{s}{2} - \frac{3}{4}\right)^7\). Once the relative errors and
+condition numbers are computed as fractions, they are rounded to the
+nearest IEEE-754 double precision value. As in \cite{Jiang2010}, we use
+values \(\left\{\frac{3}{4} - (1.3)^j\right\}_{j=-5}^{-90}\)\footnote{As with
+\(0.1\), it's worth noting that \((1.3)^j\) can't be represented exactly in
+IEEE-754 double precision. However, this geometric series still serves a
+useful purpose since it continues to raise \(\cond{p, s}\) as \(j\) decreases
+away from \(0\) and because it results in ``random'' changes in the bits of
+\(0.75\) that are impacted by subtracting \((1.3)^j\).}. The curves for
+\texttt{DeCasteljau} and \texttt{CompDeCasteljau} trace the same paths seen
+in \cite{Jiang2010}. In particular, \texttt{CompDeCasteljau} has a relative
+error that is \(\mathcal{O}(\mach)\) until \(\cond{p, s}\) reaches
+\(1 / \mach\), at which point the relative error increases linearly with
+the condition number until it becomes \(\mathcal{O}(1)\) when
+\(\cond{p, s}\) reaches \(1 / \mach^2\).
+Similarly, the relative error in \texttt{CompDeCasteljau3}
+(Algorithm~\ref{alg:k-comp-de-casteljau} with \(K = 3\))
+is \(\mathcal{O}(\mach)\) until \(\cond{p, s}\) reaches
+\(1 / \mach^2\) at which point the relative error increases linearly
+to \(\mathcal{O}(1)\) when \(\cond{p, s}\) reaches \(1 / \mach^3\)
+and the relative error in \texttt{CompDeCasteljau4}
+(Algorithm~\ref{alg:k-comp-de-casteljau} with \(K = 4\))
+is \(\mathcal{O}(\mach)\) until \(\cond{p, s}\) reaches
+\(1 / \mach^3\) at which point the relative error increases linearly
+to \(\mathcal{O}(1)\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
 
 \bibliography{paper}
 \bibliographystyle{alpha}

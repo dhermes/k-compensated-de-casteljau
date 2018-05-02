@@ -38,7 +38,7 @@ BEZIER_COEFFS = (
 )
 ROOT = 0.75
 DELTA_S = 1e-5
-NUM_POINTS = 400
+NUM_POINTS = 401
 
 
 def main(filename=None):
