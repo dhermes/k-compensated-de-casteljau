@@ -261,7 +261,7 @@ def main_jlcs10(filename=None):
         cond_nums.append(float(exact_cond))
 
         # Compute the forward error for uncompensated de Casteljau.
-        b, db = de_casteljau.jlcs10_compensated(s, BEZIER_COEFFS)
+        b, db = de_casteljau._compensated_k(s, BEZIER_COEFFS, 2)
         exact_b1 = F(b)
         exact_forward_err1 = abs((exact_b1 - exact_p) / exact_p)
         forward_errs1.append(float(exact_forward_err1))

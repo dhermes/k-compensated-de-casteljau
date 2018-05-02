@@ -56,51 +56,6 @@ def basic(s, coeffs):
     return pk[0]
 
 
-def jlcs10_compensated(s, coeffs):
-    r"""Performs the compensated de Casteljau algorithm.
-
-    .. _JLCS10: https://doi.org/10.1016/j.camwa.2010.05.021
-
-    This is similar to :func:`compensated` below, but the order of
-    operations exactly matches the `JLCS10`_ paper. In particular,
-    :math:`\widehat{\partial b}_j^{(k)}` is computed as
-
-    .. math::
-
-        \widehat{ell}_{i, j}^{(k)} \oplus \left[s \otimes
-            \widehat{\partial b}_{j + 1}^{(k + 1)}\right] \oplus
-            \left[\widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}\right]
-
-    and the code in :func:`_compensated_k` uses the "typical" order
-
-    .. math::
-
-        \left[\widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}\right]
-            \oplus \left[s \otimes \widehat{\partial b}_{j + 1}^{(k + 1)}
-            \right] \oplus \widehat{ell}_{i, j}^{(k)}.
-    """
-    r, rho = eft.add_eft(1.0, -s)
-
-    degree = len(coeffs) - 1
-    bk = {0: list(coeffs), 1: (0.0,) * (degree + 1)}
-    for k in range(degree):
-        new_bk = {0: [], 1: []}
-
-        for j in range(degree - k):
-            P1, pi1 = eft.multiply_eft(r, bk[0][j])
-            P2, pi2 = eft.multiply_eft(s, bk[0][j + 1])
-            S3, sigma3 = eft.add_eft(P1, P2)
-            new_bk[0].append(S3)
-            # Now update the error.
-            l_hat = pi1 + pi2 + sigma3 + rho * bk[0][j]
-            new_bk[1].append(l_hat + s * bk[1][j + 1] + r * bk[1][j])
-
-        # Update the "current" values.
-        bk = new_bk
-
-    return bk[0][0], bk[1][0]
-
-
 def local_error(errors, rho, delta_b):
     r"""Compute :math:`\ell` from a list of errors.
 
@@ -138,6 +93,36 @@ def local_error_eft(errors, rho, delta_b):
 
 
 def _compensated_k(s, coeffs, K):
+    r"""Performs a K-compensated de Casteljau.
+
+    .. _JLCS10: https://doi.org/10.1016/j.camwa.2010.05.021
+
+    Note that the order of operations exactly matches the `JLCS10`_ paper.
+    For example, :math:`\widehat{\partial b}_j^{(k)}` is computed as
+
+    .. math::
+
+        \widehat{ell}_{1, j}^{(k)} \oplus \left(s \otimes
+            \widehat{\partial b}_{j + 1}^{(k + 1)}\right) \oplus
+            \left(\widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}\right)
+
+    instead of "typical" order
+
+    .. math::
+
+        \left(\widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}\right)
+            \oplus \left(s \otimes \widehat{\partial b}_{j + 1}^{(k + 1)}
+            \right) \oplus \widehat{ell}_{1, j}^{(k)}.
+
+    This is so that the term
+
+    .. math::
+
+        \widehat{r} \otimes \widehat{\partial b}_j^{(k + 1)}
+
+    only has to be in one sum. We avoid an extra sum because
+    :math:`\widehat{r}` already has round-off error.
+    """
     r, rho = eft.add_eft(1.0, -s)
 
     degree = len(coeffs) - 1
@@ -162,20 +147,20 @@ def _compensated_k(s, coeffs, K):
 
             for F in range(1, K - 2 + 1):
                 new_errors, l_hat = local_error_eft(errors, rho, delta_b)
-                P1, pi1 = eft.multiply_eft(r, bk[F][j])
-                P2, pi2 = eft.multiply_eft(s, bk[F][j + 1])
-                S3, sigma3 = eft.add_eft(P1, P2)
-                S, sigma4 = eft.add_eft(S3, l_hat)
+                P1, pi1 = eft.multiply_eft(s, bk[F][j + 1])
+                S2, sigma2 = eft.add_eft(l_hat, P1)
+                P3, pi3 = eft.multiply_eft(r, bk[F][j])
+                S, sigma4 = eft.add_eft(S2, P3)
                 new_bk[F].append(S)
 
-                new_errors.extend([pi1, pi2, sigma3, sigma4])
+                new_errors.extend([pi1, sigma2, pi3, sigma4])
                 errors = new_errors
                 delta_b = bk[F][j]
 
             # Update the "level 2" stuff.
             l_hat = local_error(errors, rho, delta_b)
             new_bk[K - 1].append(
-                r * bk[K - 1][j] + s * bk[K - 1][j + 1] + l_hat
+                l_hat + s * bk[K - 1][j + 1] + r * bk[K - 1][j]
             )
 
         # Update the "current" values.

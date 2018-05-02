@@ -29,7 +29,7 @@ POLY_COEFFS = (8.0, -12.0, 6.0, -1.0)
 BEZIER_COEFFS = (-1.0, 1.0, -1.0, 1.0)
 ROOT = 0.5
 DELTA_S = 5e-6
-NUM_POINTS = 400
+NUM_POINTS = 401
 
 
 def main(filename=None):

@@ -249,8 +249,8 @@ where \(\star \in \left\{\oplus, \ominus, \otimes, \oslash\right\}\), \(\circ
 \left|\eps_2\right| \leq \mach\). The symbol \(\mach\) is the unit round-off
 and \(\star\) represents the floating point computation, e.g.
 \(a \oplus b = \fl{a + b}\). (For IEEE-754 floating point double precision,
-\(\mach = 2^{-53}\).) We also assume that the computed result of
-\(\alpha \in \mathbf{R}\) in floating point arithmetic is denoted by
+\(\mach = 2^{-53}\).) We denote the computed result of
+\(\alpha \in \mathbf{R}\) in floating point arithmetic by
 \(\widehat{\alpha}\) or \(\fl{\alpha}\) and \(\mathbf{F}\) denotes the set of
 all floating point numbers (see \cite{Higham2002} for more details).
 Following \cite{Higham2002}, we will use the following classic properties in
@@ -268,7 +268,7 @@ error analysis.
 
 Now let us introduce some results concerning error-free transformation (EFT).
 For a pair floating point numbers \(a, b \in \mathbf{F}\), there exists
-a floating point number \(y\) satisfying \(a \circ b = x + y\) where
+\(y \in \mathbf{F}\) satisfying \(a \circ b = x + y\) where
 \(x = \fl{a \circ b}\) and \(\circ \in \left\{+, -, \times\right\}\).
 The transformation \((a, b) \longrightarrow (x, y)\) is regarded as an
 error-free transformation. The error-free transformation algorithms of the
@@ -410,7 +410,7 @@ accumulate in
   \db{1}_j^{(k)} = (1 - s) \cdot \db{1}_j^{(k + 1)} + s \cdot
   \db{1}_{j + 1}^{(k + 1)} + \ell_{1, j}^{(k)}.
 \end{equation}
-When computed in exact arithmetic, we would have
+When computed in exact arithmetic
 \begin{equation}
   p(s) = \widehat{b}_0^{(0)} + \db{1}_0^{(0)}
 \end{equation}
@@ -445,11 +445,11 @@ of the global error with floating point operations:
               \sigma_3 \oplus \left(\rho \otimes
               \widehat{b}_j^{(k + 1)}\right)\)
           \State \(\cdb{1}_j^{(k)} =
-              \left(\widehat{r} \otimes
-              \cdb{1}_j^{(k + 1)}\right) \oplus
+              \widehat{\ell}_{1, j}^{(k)} \oplus
               \left(s \otimes \cdb{1}_{j + 1}^{(k + 1)}
               \right) \oplus
-              \widehat{\ell}_{1, j}^{(k)}\)
+              \left(\widehat{r} \otimes
+              \cdb{1}_j^{(k + 1)}\right)\)
         \EndFor
       \EndFor
       \\
@@ -480,8 +480,8 @@ the working precision:
 \begin{theorem}[\cite{Jiang2010}]
   If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
   \begin{equation}
-    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s)\right|}{\left|p(s)\right|} \leq \mach +
-    2 \gamma_{3n}^2 \cond{p, s}.
+    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s)\right|}{
+      \left|p(s)\right|} \leq \mach + 2 \gamma_{3n}^2 \cond{p, s}.
   \end{equation}
 \end{theorem}
 
@@ -496,13 +496,13 @@ the working precision:
 \end{figure}
 
 Unfortunately, Figure~\ref{fig:compensated-insufficient} shows how
-the \texttt{CompDeCasteljau} starts to break down in a region of
+\texttt{CompDeCasteljau} starts to break down in a region of
 high condition number (caused by a multiple root with multiplicity
 higher than two). For example, the point
 \(s = \frac{1}{2} + 1001\mach\)
 --- which is in the plotted region \(\left|s - \frac{1}{2}\right|
-\leq 1.5 \cdot 10^{-11}\) --- evaluates to exactly \(0\) when it should be
-\(\mathcal{O}\left(\mach^3\right)\). As shown in
+\leq \frac{3}{2} \cdot 10^{-11}\) --- evaluates to exactly \(0\) when
+it should be \(\mathcal{O}\left(\mach^3\right)\). As shown in
 Table~\ref{tab:exact-computation}, the breakdown occurs because
 \(\widehat{b}_0^{(0)} = -\cdb{1}_0^{(0)} = \mach / 16\).
 
@@ -655,9 +655,9 @@ for the ``missing'' \(\rho \cdot \cdb{F}_j^{(k + 1)}\) in
   \(s \otimes \cdb{F}_{j + 1}^{(k + 1)}\)
 \item two errors from the two \(\oplus\) when combining the three
   terms in
-  \(\left[\widehat{r} \otimes \cdb{F}_j^{(k + 1)}\right] \oplus
-  \left[s \otimes \cdb{F}_{j + 1}^{(k + 1)}\right] \oplus
-  \widehat{\ell}_{F, j}^{(k)}\)
+  \(\widehat{\ell}_{F, j}^{(k)} \oplus
+  \left(s \otimes \cdb{F}_{j + 1}^{(k + 1)}\right) \oplus
+  \left(\widehat{r} \otimes \cdb{F}_j^{(k + 1)}\right)\)
 \end{itemize}
 For example, in~\eqref{ell-j}:
 %% H/T: https://tex.stackexchange.com/a/154333/32270
@@ -712,7 +712,7 @@ the process:
   \end{algorithmic}
 \end{breakablealgorithm}
 
-\noindent With this EFT helper in place, we can perform \((K - 1)\)
+\noindent With this EFT in place, we can perform \((K - 1)\)
 error filtrations:
 
 \begin{breakablealgorithm}
@@ -749,13 +749,13 @@ error filtrations:
             \State \(M = \texttt{length}(\eta)\)
             \\
             \State \(\left[P_1, \eta_{M + 1}\right] = \mathtt{TwoProd}\left(
-                \widehat{r}, \cdb{F}_j^{(k + 1)}\right)\)
-            \State \(\left[P_2, \eta_{M + 2}\right] = \mathtt{TwoProd}\left(
                 s, \cdb{F}_{j + 1}^{(k + 1)}\right)\)
-            \State \(\left[S_3, \eta_{M + 3}\right] =
-                \mathtt{TwoSum}(P_1, P_2)\)
+            \State \(\left[S_2, \eta_{M + 2}\right] =
+                \mathtt{TwoSum}\left(\widehat{\ell}, P_1\right)\)
+            \State \(\left[P_3, \eta_{M + 3}\right] = \mathtt{TwoProd}\left(
+                \widehat{r}, \cdb{F}_j^{(k + 1)}\right)\)
             \State \(\left[\cdb{F}_j^{(k)}, \eta_{M + 4}\right]
-                = \mathtt{TwoSum}\left(S_3, \widehat{\ell}\right)\)
+                = \mathtt{TwoSum}\left(S_2, P_3\right)\)
             \\
             \State \(e = \eta\)
             \State \(\delta b = \cdb{F}_j^{(k + 1)}\)
@@ -764,11 +764,11 @@ error filtrations:
           \State \(\widehat{\ell} =
                 \mathtt{LocalError}(e, \rho, \delta b)\)
           \State \(\cdb{K - 1}_j^{(k)} =
-              \left(\widehat{r} \otimes
-              \cdb{K - 1}_j^{(k + 1)}\right) \oplus
+              \widehat{\ell} \oplus
               \left(s \otimes \cdb{K - 1}_{j + 1}^{(k + 1)}
               \right) \oplus
-              \widehat{\ell}\)
+              \left(\widehat{r} \otimes
+              \cdb{K - 1}_j^{(k + 1)}\right)\)
         \EndFor
       \EndFor
       \\
@@ -830,6 +830,28 @@ In addition, note that
 + \cdb{K - 1}_0^{(0)} \left(1 + \theta_1\right).
 \end{align}
 We'll use these two quantities to prove a bound.
+
+First, note that \(\widehat{r} = (1 - s)(1 + \theta_1)\). Due to this,
+we put the \(\widehat{r}\) term at the end of each update step to reduce
+the amount of round-off:
+\begin{align}
+  \cdb{F}_j^{(k)} &=
+  \widehat{\ell}_{F, j}^{(k)} \oplus
+  \left(s \otimes \cdb{F}_{j + 1}^{(k + 1)}\right) \oplus
+  \left(\widehat{r} \otimes \cdb{F}_j^{(k + 1)}\right) \\
+&= (1 - s) \cdot \cdb{F}_j^{(k + 1)}(1 + \theta_3) +
+  s \cdot \cdb{F}_{j + 1}^{(k + 1)}(1 + \theta_3) +
+  \widehat{\ell}_{F, j}^{(k)} (1 + \theta_2) \\
+\Longrightarrow \cdb{F}^{(k)} &=
+  U_{k + 1}(s) \cdb{F}^{(k + 1)}(1 + \theta_3) +
+  \widehat{\ell}_{F}^{(k)} (1 + \theta_2).
+\end{align}
+This is quite similar to the relationship satisfied in
+exact arithmetic:
+\begin{equation}
+\db{F}^{(k)} = U_{k + 1}(s) \db{F}^{(k + 1)} + \ell_{F}^{(k)}.
+\end{equation}
+
 \end{proof}
 
 \section{Numerical experiments}\label{sec:numerical}

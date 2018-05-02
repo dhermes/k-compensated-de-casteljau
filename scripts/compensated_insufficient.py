@@ -27,7 +27,7 @@ F = fractions.Fraction
 BEZIER_COEFFS = (1.0, -0.75, 0.5, -0.25, 0.0)
 ROOT = 0.5
 DELTA_S = 1.5e-11
-NUM_POINTS = 400
+NUM_POINTS = 401
 
 
 def main(filename=None):
