@@ -33,6 +33,12 @@
    \end{center}
   }
 \makeatother
+%% H/T: https://tex.stackexchange.com/a/28334/32270
+\usepackage{chngcntr}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\counterwithin{equation}{section}
+\counterwithin{algorithm}{section}
 %% H/T: https://tex.stackexchange.com/a/202047/32270
 %%      https://tex.stackexchange.com/a/32463/32270
 \usepackage[labelfont=bf]{caption}
@@ -40,7 +46,8 @@
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 
 \theoremstyle{definition}
-\newtheorem{theorem}{Theorem}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
 
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{hyperref}
@@ -295,7 +302,11 @@ errors came from sum and product, respectively. See the appendix
 in Section~\ref{sec:appendix-eft} for implementation details.
 \end{theorem}
 
-Next, we recall the de Casteljau algorithm:
+Next, we recall\footnote{We have used slightly non-standard notation for the
+terms produced by the de Casteljau algorithm: we start the superscript at
+\(n\) and count down to \(0\) as is typically done when describing Horner's
+algorithm. For example, we use \(b_j^{(n - 2)}\) instead of
+\(b_j^{(2)}\).} the de Casteljau algorithm:
 
 \begin{breakablealgorithm}
   \caption{\textit{de Casteljau algorithm for polynomial evaluation.}}
@@ -336,7 +347,7 @@ The relative condition number of the evaluation of \(p(s) = \sum_{j = 0}^n
 b_j B_{j, n}(s)\) in Bernstein form used in this paper is (see
 \cite{Mainar1999}, \cite{Farouki1987}):
 \begin{equation}
-\cond{p, s} = \frac{\widetilde{p}\left(s\right)}{
+\cond{p, s} = \frac{\widetilde{p}(s)}{
   \left|p(s)\right|} = \frac{\sum_j \left|b_j\right| B_{j, n}(s)}{
   \left|p(s)\right|},
 \end{equation}
@@ -461,19 +472,8 @@ of the global error with floating point operations:
 
 \noindent  When comparing this computed error to the exact error, the
 difference depends only on \(s\) and the Bernstein
-coefficients of \(p\):
-
-\begin{theorem}[\cite{Jiang2010}]
-  If no underflow occurs and \(n \geq 2\), then
-  \begin{equation}
-    \left|\db{1}_0^{(0)} - \cdb{1}_0^{(0)}\right| \leq
-    2 \gamma_{3n + 1} \gamma_{3(n - 1)}
-    \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s) =
-    2 \gamma_{3n + 1} \gamma_{3(n - 1)} \widetilde{p}(s).
-  \end{equation}
-\end{theorem}
-
-\noindent Using the bound on the error in \(\db{1}\), the algorithm can
+coefficients of \(p\). Using a bound (Lemma~\ref{lemma:db-lemma}) on the
+round-off error when computing \(\db{1}^{(0)}\), the algorithm can
 be shown to be as accurate as if the computations were done in twice
 the working precision:
 
@@ -547,7 +547,8 @@ floating point evaluation via an EFT, we can form a cascade of global errors:
   \db{1}_j^{(k)} &= \cdb{1}_j^{(k)} + \db{2}_j^{(k)} \\
   \db{2}_j^{(k)} &= \cdb{2}_j^{(k)} +
   \db{3}_j^{(k)} \\
-  & \vdots \nonumber
+  %% H/T: https://tex.stackexchange.com/a/7651/32270
+  &\mathrel{\makebox[\widthof{=}]{\vdots}} \nonumber
 \end{align}
 In the same way local error can be tracked when updating
 \(\widehat{b}_j^{(k)}\), it can be tracked for updates that happen down
@@ -562,7 +563,7 @@ the cascade:
   (1 - s) \cdot \cdb{2}_j^{(k + 1)} &+
   s \cdot \cdb{2}_{j + 1}^{(k + 1)} &&+ \ell_{2, j}^{(k)} &&=
   \cdb{2}_j^{(k)} &&+ \ell_{3, j}^{(k)} \\
-  &  &&  &&\vdots && \nonumber
+  &  &&  &&\mathrel{\makebox[\widthof{=}]{\vdots}} && \nonumber
 \end{alignat}
 
 \begin{figure}
@@ -781,8 +782,9 @@ error filtrations:
   \end{algorithmic}
 \end{breakablealgorithm}
 
-Noting that \(\ell_{F, j}\) contains \(5F - 2\) terms, one can
-show that Algorithm~\ref{alg:k-comp-de-casteljau} requires
+\noindent Noting that \(\ell_{F, j}\) contains \(5F - 1\) terms, one can
+show that \texttt{CompDeCasteljauK} (Algorithm~\ref{alg:k-comp-de-casteljau})
+requires
 \begin{equation}
 (15K^2 + 11K - 34)T_n + K + 5 =
 \mathcal{O}\left(n^2 K^2\right)
@@ -795,6 +797,26 @@ FMA, \texttt{TwoProdFMA} (Algorithm~\ref{alg:two-prod-fma}) can be used
 instead, lowering the flop count by \(15(3K - 4)T_n\).
 
 \subsection{Error bound for polynomial evaluation}
+
+\begin{lemma}[\cite{Jiang2010}]
+For \(p(s) = \sum_{j = 0}^n b_j B_{j, n}(s)\) a polynomial in Bernstein form
+and \(s \in \left[0, 1\right]\), the terms produced by the de Casteljau
+algorithm in exact arithmetic satisfy:
+\begin{equation}
+  \left|b_0^{(0)}\right| \leq \cdots \leq
+  \sum_{j = 0}^k \left|b_j^{(k)}\right| B_{j, k}(s) \leq \cdots \leq
+  \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s) = \widetilde{p}(s).
+\end{equation}
+\end{lemma}
+
+\begin{lemma}[\cite{Jiang2010}]\label{lemma:db-lemma}
+The second order error \(\db{2}^{(0)}_0\) satisfies
+\begin{equation}
+  \left|\db{1}^{(0)}_0 - \cdb{1}^{(0)}_0\right| =
+  \left|\db{2}^{(0)}_0\right| \leq 2 \gamma_{3n + 1} \gamma_{3(n - 1)}
+  \widetilde{p}(s).
+\end{equation}
+\end{lemma}
 
 \begin{theorem}
   If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
@@ -904,7 +926,7 @@ against the condition number. To compute relative errors, each input and
 coefficient is converted to a fraction (i.e. infinite precision) and then
 compared to the corresponding computed values. Similar tools are used to
 \textbf{exactly} compute the condition number, though here we can rely
-on the fact that \(\widetilde{p}\left(s\right) = (s - 1)
+on the fact that \(\widetilde{p}(s) = (s - 1)
 \left(\frac{s}{2} - \frac{3}{4}\right)^7\). Once the relative errors and
 condition numbers are computed as fractions, they are rounded to the
 nearest IEEE-754 double precision value. As in \cite{Jiang2010}, we use
