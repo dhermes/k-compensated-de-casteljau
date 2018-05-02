@@ -84,6 +84,18 @@
 \newcommand{\fl}[1]{\operatorname{fl}\left(#1\right)}
 \newcommand{\eps}{\varepsilon}
 \newcommand{\mach}{\mathbf{u}}
+%% db == ``delta'' b
+\newcommand{\db}[1]{
+  \ifthenelse{\equal{#1}{1}}
+             {\partial b}
+             {\partial^{#1} b}
+}
+%% cdb == computed ``delta'' b
+\newcommand{\cdb}[1]{
+  \ifthenelse{\equal{#1}{1}}
+             {\widehat{\partial b}}
+             {\widehat{\partial^{#1} b}}
+}
 
 \begin{document}
 
@@ -249,7 +261,7 @@ error analysis.
       \(\prod_{i = 1}^n (1 + \delta_i)^{\rho_i} = 1 + \theta_n\),
   \item \(\left|\theta_n\right| \leq \gamma_n \coloneqq
       n \mach / (1 - n \mach)\),
-  \item \((1 + \theta_k)(1 + \theta_j) \leq (1 + \theta_{k + j})\),
+  \item \((1 + \theta_k)(1 + \theta_j) \leq 1 + \theta_{k + j}\),
   \item \(\gamma_k + \gamma_j + \gamma_k \gamma_j \leq \gamma_{k + j}\),
   \item \((1 + \mach)^j \leq 1 / (1 - j \mach)\).
 \end{enumerate}
@@ -389,21 +401,21 @@ update and computed update:
 
 \noindent By defining the global errors at each step
 \begin{equation}
-  \partial b_j^{(k)} = b_j^{(k)} - \widehat{b}_j^{(k)}
+  \db{1}_j^{(k)} = b_j^{(k)} - \widehat{b}_j^{(k)}
 \end{equation}
 we can see (Figure~\ref{fig:loc-err-accumulate}) that the local errors
 accumulate in
-\(\partial b^{(k)}\):
+\(\db{1}^{(k)}\):
 \begin{equation}\label{err-update}
-  \partial b_j^{(k)} = (1 - s) \cdot \partial b_j^{(k + 1)} + s \cdot
-  \partial b_{j + 1}^{(k + 1)} + \ell_{1, j}^{(k)}.
+  \db{1}_j^{(k)} = (1 - s) \cdot \db{1}_j^{(k + 1)} + s \cdot
+  \db{1}_{j + 1}^{(k + 1)} + \ell_{1, j}^{(k)}.
 \end{equation}
 When computed in exact arithmetic, we would have
 \begin{equation}
-  p(s) = \widehat{b}_0^{(0)} + \partial b_0^{(0)}
+  p(s) = \widehat{b}_0^{(0)} + \db{1}_0^{(0)}
 \end{equation}
 and by using \eqref{err-update}, we can continue to compute
-approximations of \(\partial b_j^{(k)}\). The idea behind the compensated
+approximations of \(\db{1}_j^{(k)}\). The idea behind the compensated
 de Casteljau algorithm is to compute both the local error and the updates
 of the global error with floating point operations:
 
@@ -418,7 +430,7 @@ of the global error with floating point operations:
       \\
       \For{\(j = 0, \ldots, n\)}
         \State \(\widehat{b}_j^{(n)} = b_j\)
-        \State \(\widehat{\partial b}_j^{(n)} = 0\)
+        \State \(\cdb{1}_j^{(n)} = 0\)
       \EndFor
       \\
       \For{\(k = n - 1, \ldots, 0\)}
@@ -432,17 +444,17 @@ of the global error with floating point operations:
           \State \(\widehat{\ell}_{1, j}^{(k)} = \pi_1 \oplus \pi_2 \oplus
               \sigma_3 \oplus \left(\rho \otimes
               \widehat{b}_j^{(k + 1)}\right)\)
-          \State \(\widehat{\partial b}_j^{(k)} =
+          \State \(\cdb{1}_j^{(k)} =
               \left(\widehat{r} \otimes
-              \widehat{\partial b}_j^{(k + 1)}\right) \oplus
-              \left(s \otimes \widehat{\partial b}_{j + 1}^{(k + 1)}
+              \cdb{1}_j^{(k + 1)}\right) \oplus
+              \left(s \otimes \cdb{1}_{j + 1}^{(k + 1)}
               \right) \oplus
               \widehat{\ell}_{1, j}^{(k)}\)
         \EndFor
       \EndFor
       \\
       \State \(\mathtt{res} = \widehat{b}_0^{(0)} \oplus
-          \widehat{\partial b}_0^{(0)}\)
+          \cdb{1}_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{breakablealgorithm}
@@ -454,13 +466,14 @@ coefficients of \(p\):
 \begin{theorem}[\cite{Jiang2010}]
   If no underflow occurs and \(n \geq 2\), then
   \begin{equation}
-    \left|\partial b_0^{(0)} - \widehat{\partial b}_0^{(0)}\right| \leq
+    \left|\db{1}_0^{(0)} - \cdb{1}_0^{(0)}\right| \leq
     2 \gamma_{3n + 1} \gamma_{3(n - 1)}
-    \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s).
+    \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s) =
+    2 \gamma_{3n + 1} \gamma_{3(n - 1)} \widetilde{p}(s).
   \end{equation}
 \end{theorem}
 
-\noindent Using the bound on the error in \(\partial b\), the algorithm can
+\noindent Using the bound on the error in \(\db{1}\), the algorithm can
 be shown to be as accurate as if the computations were done in twice
 the working precision:
 
@@ -491,13 +504,13 @@ higher than two). For example, the point
 \leq 1.5 \cdot 10^{-11}\) --- evaluates to exactly \(0\) when it should be
 \(\mathcal{O}\left(\mach^3\right)\). As shown in
 Table~\ref{tab:exact-computation}, the breakdown occurs because
-\(\widehat{b}_0^{(0)} = -\widehat{\partial b}_0^{(0)} = \mach / 16\).
+\(\widehat{b}_0^{(0)} = -\cdb{1}_0^{(0)} = \mach / 16\).
 
 \begin{table}
   \centering
   \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
     \toprule
-    k & j & \widehat{b}_j^{(k)} & \widehat{\partial b}_j^{(k)} & \partial b_j^{(k)} - \widehat{\partial b}_j^{(k)} \\
+    k & j & \widehat{b}_j^{(k)} & \cdb{1}_j^{(k)} & \db{1}_j^{(k)} - \cdb{1}_j^{(k)} \\
     \midrule
     3 & 0 & 0.125 - 1.75 (1001 \mach) - 0.25 \mach & 0.25\mach & 0 \\
     3 & 1 & -0.125 + 1.25(1001 \mach) + 0.25 \mach & -0.25\mach & 0 \\
@@ -523,15 +536,17 @@ Table~\ref{tab:exact-computation}, the breakdown occurs because
 
 \section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{sec:compensated-k}
 
+\subsection{Algorithm Specified}
+
 In order to raise from twice the working precision to \(K\) times the
 working precision, we continue using EFTs when computing
-\(\widehat{\partial b}^{(k)}\). By tracking the round-off from each
+\(\cdb{1}^{(k)}\). By tracking the round-off from each
 floating point evaluation via an EFT, we can form a cascade of global errors:
 \begin{align}
-  b_j^{(k)} &= \widehat{b}_j^{(k)} + \partial b_j^{(k)} \\
-  \partial b_j^{(k)} &= \widehat{\partial b}_j^{(k)} + \partial^2 b_j^{(k)} \\
-  \partial^2 b_j^{(k)} &= \widehat{\partial^2 b}_j^{(k)} +
-  \partial^3 b_j^{(k)} \\
+  b_j^{(k)} &= \widehat{b}_j^{(k)} + \db{1}_j^{(k)} \\
+  \db{1}_j^{(k)} &= \cdb{1}_j^{(k)} + \db{2}_j^{(k)} \\
+  \db{2}_j^{(k)} &= \cdb{2}_j^{(k)} +
+  \db{3}_j^{(k)} \\
   & \vdots \nonumber
 \end{align}
 In the same way local error can be tracked when updating
@@ -541,12 +556,12 @@ the cascade:
   (1 - s) \cdot \widehat{b}_j^{(k + 1)} &+
   s \cdot \widehat{b}_{j + 1}^{(k + 1)} &&  &&=
   \widehat{b}_j^{(k)} &&+ \ell_{1, j}^{(k)} \\
-  (1 - s) \cdot \widehat{\partial b}_j^{(k + 1)} &+
-  s \cdot \widehat{\partial b}_{j + 1}^{(k + 1)} &&+ \ell_{1, j}^{(k)} &&=
-  \widehat{\partial b}_j^{(k)} &&+ \ell_{2, j}^{(k)} \\
-  (1 - s) \cdot \widehat{\partial^2 b}_j^{(k + 1)} &+
-  s \cdot \widehat{\partial^2 b}_{j + 1}^{(k + 1)} &&+ \ell_{2, j}^{(k)} &&=
-  \widehat{\partial^2 b}_j^{(k)} &&+ \ell_{3, j}^{(k)} \\
+  (1 - s) \cdot \cdb{1}_j^{(k + 1)} &+
+  s \cdot \cdb{1}_{j + 1}^{(k + 1)} &&+ \ell_{1, j}^{(k)} &&=
+  \cdb{1}_j^{(k)} &&+ \ell_{2, j}^{(k)} \\
+  (1 - s) \cdot \cdb{2}_j^{(k + 1)} &+
+  s \cdot \cdb{2}_{j + 1}^{(k + 1)} &&+ \ell_{2, j}^{(k)} &&=
+  \cdb{2}_j^{(k)} &&+ \ell_{3, j}^{(k)} \\
   &  &&  &&\vdots && \nonumber
 \end{alignat}
 
@@ -555,19 +570,19 @@ the cascade:
 \begin{tikzpicture}[node distance = 0.2\textwidth]
     \node [box] (bj) {\(b\)};
     \node [box, below of=bj] (bn0) {\(\widehat{b}^{(n)}\)};
-    \node [box, right of=bn0] (dbn0) {\(\widehat{\partial b}^{(n)}\)};
-    \node [box, right of=dbn0] (ddbn0) {\(\widehat{\partial^2 b}^{(n)}\)};
-    \node [box, right of=ddbn0] (dddbn0) {\(\widehat{\partial^3 b}^{(n)}\)};
+    \node [box, right of=bn0] (dbn0) {\(\cdb{1}^{(n)}\)};
+    \node [box, right of=dbn0] (ddbn0) {\(\cdb{2}^{(n)}\)};
+    \node [box, right of=ddbn0] (dddbn0) {\(\cdb{3}^{(n)}\)};
     %%
     \node [box, below of=bn0] (bn1) {\(\widehat{b}^{(n - 1)}\)};
-    \node [box, below of=dbn0] (dbn1) {\(\widehat{\partial b}^{(n - 1)}\)};
-    \node [box, below of=ddbn0] (ddbn1) {\(\widehat{\partial^2 b}^{(n - 1)}\)};
-    \node [box, below of=dddbn0] (dddbn1) {\(\widehat{\partial^3 b}^{(n - 1)}\)};
+    \node [box, below of=dbn0] (dbn1) {\(\cdb{1}^{(n - 1)}\)};
+    \node [box, below of=ddbn0] (ddbn1) {\(\cdb{2}^{(n - 1)}\)};
+    \node [box, below of=dddbn0] (dddbn1) {\(\cdb{3}^{(n - 1)}\)};
     %%
     \node [box, below of=bn1] (bn2) {\(\widehat{b}^{(n - 2)}\)};
-    \node [box, below of=dbn1] (dbn2) {\(\widehat{\partial b}^{(n - 2)}\)};
-    \node [box, below of=ddbn1] (ddbn2) {\(\widehat{\partial^2 b}^{(n - 2)}\)};
-    \node [box, below of=dddbn1] (dddbn2) {\(\widehat{\partial^3 b}^{(n - 2)}\)};
+    \node [box, below of=dbn1] (dbn2) {\(\cdb{1}^{(n - 2)}\)};
+    \node [box, below of=ddbn1] (ddbn2) {\(\cdb{2}^{(n - 2)}\)};
+    \node [box, below of=dddbn1] (dddbn2) {\(\cdb{3}^{(n - 2)}\)};
     %%
     \path [line] (bn0) -- node[above] {\(\widehat{\ell}_1^{(n)}\)} (dbn0);
     \path [line] (dbn0) -- node[above] {\(\widehat{\ell}_2^{(n)}\)} (ddbn0);
@@ -615,33 +630,33 @@ the cascade:
 
 In \texttt{CompDeCasteljau} (Algorithm~\ref{alg:comp-de-casteljau}), after
 a single stage of error filtering we
-``give up'' and use \(\widehat{\partial b}\) instead of
-\(\partial b\) (without keeping around any information about the
+``give up'' and use \(\cdb{1}\) instead of
+\(\db{1}\) (without keeping around any information about the
 round-off error). In order to obtain results that are as accurate as if
 computed in \(K\) times the working precision, we must continue filtering
 (see Figure~\ref{fig:error-filtration})
 errors down \((K - 1)\) times, and only at the final level do we accept
 the rounded
-\(\widehat{\partial^{K - 1} b}\) in place of the exact
-\(\partial^{K - 1} b\).
+\(\cdb{K - 1}\) in place of the exact
+\(\db{K - 1}\).
 
-When computing \(\widehat{\partial^F b}\) (i.e. the error after
+When computing \(\cdb{F}\) (i.e. the error after
 \(F\) stages of filtering)
 there will be several sources of round-off. In particular, there will be
 \begin{itemize}
 \item errors when computing \(\widehat{\ell}_{F, j}^{(k)}\) from the
   terms in \(\ell_{F, j}^{(k)}\)
 \item an error
-for the ``missing'' \(\rho \cdot \widehat{\partial^F b}_j^{(k + 1)}\) in
-\((1 - s) \cdot \widehat{\partial^F b}_j^{(k + 1)}\)
+for the ``missing'' \(\rho \cdot \cdb{F}_j^{(k + 1)}\) in
+\((1 - s) \cdot \cdb{F}_j^{(k + 1)}\)
 \item an error from the product
-  \(\widehat{r} \otimes \widehat{\partial^F b}_j^{(k + 1)}\)
+  \(\widehat{r} \otimes \cdb{F}_j^{(k + 1)}\)
 \item an error from the product
-  \(s \otimes \widehat{\partial^F b}_{j + 1}^{(k + 1)}\)
+  \(s \otimes \cdb{F}_{j + 1}^{(k + 1)}\)
 \item two errors from the two \(\oplus\) when combining the three
   terms in
-  \(\left[\widehat{r} \otimes \widehat{\partial^F b}_j^{(k + 1)}\right] \oplus
-  \left[s \otimes \widehat{\partial^F b}_{j + 1}^{(k + 1)}\right] \oplus
+  \(\left[\widehat{r} \otimes \cdb{F}_j^{(k + 1)}\right] \oplus
+  \left[s \otimes \cdb{F}_{j + 1}^{(k + 1)}\right] \oplus
   \widehat{\ell}_{F, j}^{(k)}\)
 \end{itemize}
 For example, in~\eqref{ell-j}:
@@ -663,13 +678,13 @@ For example, in~\eqref{ell-j}:
 After each stage, we'll always have
 \begin{equation}
 \ell_{F, j}^{(k)} = e_1 + e_2 + \cdots + e_M + \rho \cdot
-\widehat{\partial^{F - 1} b}_j^{(k + 1)}
+\cdb{F - 1}_j^{(k + 1)}
 \end{equation}
 where the terms \(e_1, \ldots, e_M\) come from using \texttt{TwoSum} and
-\texttt{TwoProd} when computing \(\widehat{\partial^{F - 1} b}_j^{(k)}\)
+\texttt{TwoProd} when computing \(\cdb{F - 1}_j^{(k)}\)
 and the \(\rho\) term comes from the roundoff
 in \(1 \ominus s\) when multiplying \((1 - s)\) by
-\(\widehat{\partial^{F - 1} b}_j^{(k + 1)}\). With this in mind, we
+\(\cdb{F - 1}_j^{(k + 1)}\). With this in mind, we
 can define an EFT (\texttt{LocalErrorEFT}) that computes
 \(\widehat{\ell}\) and tracks all round-off errors generated in
 the process:
@@ -712,7 +727,7 @@ error filtrations:
       \For{\(j = 0, \ldots, n\)}
         \State \(\widehat{b}_j^{(n)} = b_j\)
         \For{\(F = 1, \ldots, K - 1\)}
-          \State \(\widehat{\partial^F b}_j^{(n)} = 0\)
+          \State \(\cdb{F}_j^{(n)} = 0\)
         \EndFor
       \EndFor
       \\
@@ -734,24 +749,24 @@ error filtrations:
             \State \(M = \texttt{length}(\eta)\)
             \\
             \State \(\left[P_1, \eta_{M + 1}\right] = \mathtt{TwoProd}\left(
-                \widehat{r}, \widehat{\partial^F b}_j^{(k + 1)}\right)\)
+                \widehat{r}, \cdb{F}_j^{(k + 1)}\right)\)
             \State \(\left[P_2, \eta_{M + 2}\right] = \mathtt{TwoProd}\left(
-                s, \widehat{\partial^F b}_{j + 1}^{(k + 1)}\right)\)
+                s, \cdb{F}_{j + 1}^{(k + 1)}\right)\)
             \State \(\left[S_3, \eta_{M + 3}\right] =
                 \mathtt{TwoSum}(P_1, P_2)\)
-            \State \(\left[\widehat{\partial^F b}_j^{(k)}, \eta_{M + 4}\right]
+            \State \(\left[\cdb{F}_j^{(k)}, \eta_{M + 4}\right]
                 = \mathtt{TwoSum}\left(S_3, \widehat{\ell}\right)\)
             \\
             \State \(e = \eta\)
-            \State \(\delta b = \widehat{\partial^F b}_j^{(k + 1)}\)
+            \State \(\delta b = \cdb{F}_j^{(k + 1)}\)
           \EndFor
           \\
           \State \(\widehat{\ell} =
                 \mathtt{LocalError}(e, \rho, \delta b)\)
-          \State \(\widehat{\partial^{K - 1} b}_j^{(k)} =
+          \State \(\cdb{K - 1}_j^{(k)} =
               \left(\widehat{r} \otimes
-              \widehat{\partial^{K - 1} b}_j^{(k + 1)}\right) \oplus
-              \left(s \otimes \widehat{\partial^{K - 1} b}_{j + 1}^{(k + 1)}
+              \cdb{K - 1}_j^{(k + 1)}\right) \oplus
+              \left(s \otimes \cdb{K - 1}_{j + 1}^{(k + 1)}
               \right) \oplus
               \widehat{\ell}\)
         \EndFor
@@ -760,7 +775,7 @@ error filtrations:
       \State \(\mathtt{res} = \widehat{b}_0^{(0)}\)
       \For{\(F = 1, \ldots, K - 1\)}
         \State \(\mathtt{res} = \mathtt{res} \oplus
-            \widehat{\partial^F b}_0^{(0)}\)
+            \cdb{F}_0^{(0)}\)
       \EndFor
     \EndFunction
   \end{algorithmic}
@@ -779,6 +794,8 @@ de Casteljau requires \(3 T_n + 1\) flops. In total this will require
 FMA, \texttt{TwoProdFMA} (Algorithm~\ref{alg:two-prod-fma}) can be used
 instead, lowering the flop count by \(15(3K - 4)T_n\).
 
+\subsection{Error bound for polynomial evaluation}
+
 \begin{theorem}
   If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
   \begin{equation}
@@ -793,30 +810,24 @@ instead, lowering the flop count by \(15(3K - 4)T_n\).
 \begin{proof}
 Note that
 \begin{equation}
-p(s) = b_0^{(0)} = \widehat{b}_0^{(0)} + \partial b_0^{(0)}
+p(s) = b_0^{(0)} = \widehat{b}_0^{(0)} + \db{1}_0^{(0)}
 = \cdots
-= \widehat{b}_0^{(0)} + \widehat{\partial b}_0^{(0)} + \cdots
-+ \widehat{\partial^{K - 2} b}_0^{(0)} + \partial^{K - 1} b_0^{(0)}
+= \widehat{b}_0^{(0)} + \cdb{1}_0^{(0)} + \cdots
++ \cdb{K - 1}_0^{(0)} + \db{K}_0^{(0)}
 \end{equation}
 and
 \begin{equation}
 \mathtt{CompDeCasteljau}(p, s, K) = \widehat{b}_0^{(0)} \oplus
-\widehat{\partial b}_0^{(0)} \oplus \cdots
-\oplus \widehat{\partial^{K - 2} b}_0^{(0)} \oplus
-\widehat{\partial^{K - 1} b}_0^{(0)}.
+\cdb{1}_0^{(0)} \oplus \cdots \oplus \cdb{K - 1}_0^{(0)}.
 \end{equation}
-It will be crucial for us to bound
-\(\partial^K b_0^{(0)} = \partial^{K - 1} b_0^{(0)} -
-\widehat{\partial^{K - 1} b}_0^{(0)}\). In addition, note that
+It will be crucial for us to bound \(\db{K}_0^{(0)}\).
+In addition, note that
 \begin{align}
-&\widehat{b}_0^{(0)} \oplus
-\widehat{\partial b}_0^{(0)} \oplus \cdots
-\oplus \widehat{\partial^{K - 2} b}_0^{(0)} \oplus
-\widehat{\partial^{K - 1} b}_0^{(0)} \\
+&\widehat{b}_0^{(0)} \oplus \cdb{1}_0^{(0)} \oplus \cdots \oplus
+\cdb{K - 1}_0^{(0)} \\
 &= \widehat{b}_0^{(0)} \left(1 + \theta_{K - 1}\right) +
-\widehat{\partial b}_0^{(0)} \left(1 + \theta_{K - 1}\right) + \cdots
-+ \widehat{\partial^{K - 2} b}_0^{(0)} \left(1 + \theta_2\right) +
-\widehat{\partial^{K - 1} b}_0^{(0)} \left(1 + \theta_1\right).
+\cdb{1}_0^{(0)} \left(1 + \theta_{K - 1}\right) + \cdots
++ \cdb{K - 1}_0^{(0)} \left(1 + \theta_1\right).
 \end{align}
 We'll use these two quantities to prove a bound.
 \end{proof}
