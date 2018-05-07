@@ -37,7 +37,7 @@ MATPLOTLIB_DEPS = (
 DEPS = {
     "matplotlib": MATPLOTLIB_DEPS,
     "seaborn": MATPLOTLIB_DEPS
-    + ("pandas == 0.22.0", "scipy == 1.0.1", "seaborn == 0.8.1"),
+    + ("pandas == 0.22.0", "scipy == 1.1.0", "seaborn == 0.8.1"),
 }
 
 

@@ -992,14 +992,14 @@ Letting \(K = F + 1\) we have our result.
 \end{proof}
 
 \begin{theorem}
-  If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
-  \begin{multline}
-    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s, K)\right|}{
-      \left|p(s)\right|} \leq \left[\mach + \bigO{\mach^2}
-      \right] + \\
-      \left[\left(3^{K} \binom{n}{K} + \bigO{n^{K - 1}}\right) \mach^K +
-      \bigO{\mach^{K + 1}}\right] \cond{p, s}.
-  \end{multline}
+If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
+\begin{multline}
+  \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s, K)\right|}{
+    \left|p(s)\right|} \leq \left[\mach + \bigO{\mach^2}
+    \right] + \\
+    \left[\left(3^{K} \binom{n}{K} + \bigO{n^{K - 1}}\right) \mach^K +
+    \bigO{\mach^{K + 1}}\right] \cond{p, s}.
+\end{multline}
 \end{theorem}
 
 \begin{proof}
@@ -1063,6 +1063,28 @@ see
 \end{align}
 Dividing this by \(\left|p(s)\right|\), we have our result.
 \end{proof}
+
+For the first few values of \(K\) the coefficient of
+\(\cond{p, s}\) in the bound is
+\begin{center}
+  \begin{tabular}{>{$}c<{$} c >{$}c<{$}}
+    K & Method & \text{Multiplier} \\
+    \midrule
+    1 & \texttt{DeCasteljau} & 3 \binom{n}{1} \mach =
+      3n \mach \approx \gamma_{3n} \\[0.125cm]
+    2 & \texttt{CompDeCasteljau} & \left[9 \binom{n}{2} +
+      15 \binom{n}{1}\right]\mach^2 = \frac{3n(3n + 7)}{2} \mach^2
+      \approx \frac{1}{4} \cdot 2 \gamma_{3n}^2 \\[0.125cm]
+    3 & \texttt{CompDeCasteljau3} & \left[27 \binom{n}{3} +
+      135 \binom{n}{2} + 150 \binom{n}{1}\right] \mach^3 =
+      \frac{3n(3n^2 + 36n + 61)}{2} \mach^3 \\[0.125cm]
+    4 & \texttt{CompDeCasteljau4} & \left[81 \binom{n}{4} + 810 \binom{n}{3} +
+      2475 \binom{n}{2} + 2250 \binom{n}{1}\right] \mach^4 \\[0.125cm]
+  \end{tabular}
+\end{center}
+See the \hyperref[proof:L-and-D-bounds]{proof} of
+Lemma~\ref{lemma:L-and-D-bounds} for more details on where these
+polynomials come from.
 
 \section{Numerical experiments}\label{sec:numerical}
 
@@ -1268,7 +1290,8 @@ Algorithm~\ref{alg:local-error-eft}:
         \State \(\widehat{\ell} = \widehat{\ell} \oplus e_j\)
       \EndFor
       \\
-      \State \(\widehat{\ell} = \widehat{\ell} \oplus \left(\rho \otimes \delta b\right)\)
+      \State \(\widehat{\ell} = \widehat{\ell} \oplus \left(
+          \rho \otimes \delta b\right)\)
     \EndFunction
   \end{algorithmic}
 \end{breakablealgorithm}
@@ -1276,10 +1299,90 @@ Algorithm~\ref{alg:local-error-eft}:
 \section{Appendix: Proof Details}\label{sec:appendix-proof-details}
 
 \begin{proof}[Proof of Lemma~\ref{lemma:ell-tilde}]
-Coming soon.
+We'll start with the \(F = 1\) case. Recall where the terms originate:
+\begin{align}
+\left[P_1, e_1\right] &= \mathtt{TwoProd}\left(\widehat{r},
+  \widehat{b}_j^{(k + 1)}\right) \\
+\left[P_2, e_2\right] &= \mathtt{TwoProd}\left(s,
+  \widehat{b}_{j + 1}^{(k + 1)}\right) \\
+\left[\widehat{b}_j^{(k)}, e_3\right] &= \mathtt{TwoSum}\left(P_1, P_2\right).
+\end{align}
+Hence Theorem~\ref{thm:eft} tells us that
+\begin{align}
+\left|P_1\right| &\leq (1 + \mach)\left|\widehat{r} \cdot
+  \widehat{b}_j^{(k + 1)}\right| \leq (1 + \mach)^2 (1 - s)
+  \left|\widehat{b}_j^{(k + 1)}\right| \\
+\left|e_1\right| &\leq \mach \left|\widehat{r} \cdot
+  \widehat{b}_j^{(k + 1)}\right| \leq \mach(1 + \mach)(1 - s) \left|
+  \widehat{b}_j^{(k + 1)}\right| \\
+\left|P_2\right| &\leq (1 + \mach) s \left|\widehat{b}_{j + 1}^{(k + 1)}\right| \\
+\left|e_2\right| &\leq \mach s \left|\widehat{b}_{j + 1}^{(k + 1)}\right| \\
+\left|e_3\right| &\leq \mach \left|P_1\right| + \mach\left|P_2\right| \\
+\left|\rho \cdot \widehat{b}_j^{(k + 1)}\right| &\leq
+(1 + \mach)(1 - s) \left|\widehat{b}_j^{(k + 1)}\right|.
+\end{align}
+In general, we can swap \(\mach\left|P_j\right|\) for
+\((1 + \mach)\left|e_j\right|\) based on how closely related the bound
+on the result and the bound on the error are. Thus
+\begin{align}
+\widetilde{\ell}_{1, j}^{(k)} &= \left|e_1\right| + \left|e_2\right| +
+  \left|e_3\right| + \left|\rho \cdot \widehat{b}_j^{(k + 1)}\right| \\
+&\leq (2 + \mach)\left(\left|e_1\right| + \left|e_2\right|\right) +
+  (1 + \mach)(1 - s) \left|\widehat{b}_j^{(k + 1)}\right| \\
+&\leq \left[(1 + \mach)^3 - 1\right] (1 - s) \left|
+  \widehat{b}_j^{(k + 1)}\right| + \left[(1 + \mach)^2 - 1\right] s \left|
+  \widehat{b}_{j + 1}^{(k + 1)}\right| \\
+&\leq \gamma_3 \left((1 - s) \left|\widehat{b}_j^{(k + 1)}\right| +
+  s \left|\widehat{b}_{j + 1}^{(k + 1)}\right|\right).
+\end{align}
+For \(\widetilde{\ell}_{F + 1}\), we want to relate the ``current'' errors
+\(e_1, \ldots, e_{5F + 3}\) to the ``previous'' errors \(e_1',
+\ldots, e_{5F - 2}'\). In the same fashion as above, we track where
+the current errors come from:
+\begin{align}
+\left[S_1, e_1\right] &= \mathtt{TwoSum}\left(e_1', e_2'\right) \\
+\left[S_2, e_2\right] &= \mathtt{TwoSum}\left(S_1, e_3'\right) \\
+&\mathrel{\makebox[\widthof{=}]{\vdots}} \nonumber \\
+\left[S_{5F - 3}, e_{5F - 3}\right] &=
+  \mathtt{TwoSum}\left(S_{5F - 4}, e_{5F - 2}'\right) \\
+\left[P_{5F - 2}, e_{5F - 2}\right] &= \mathtt{TwoProd}\left(\rho,
+  \cdb{F - 1}_j^{(k + 1)}\right) \\
+\left[\widehat{\ell}_{F, j}^{(k)}, e_{5F - 1}\right] &=
+  \mathtt{TwoSum}\left(S_{5F - 3}, P_{5F - 2}\right) \\
+\left[P_{5F}, e_{5F}\right] &= \mathtt{TwoProd}\left(s,
+  \cdb{F}_{j + 1}^{(k + 1)}\right) \\
+\left[S_{5F + 1}, e_{5F + 1}\right] &=
+  \mathtt{TwoSum}\left(\widehat{\ell}_{F, j}^{(k)}, P_{5F}\right) \\
+\left[P_{5F + 2}, e_{5F + 2}\right] &= \mathtt{TwoProd}\left(\rho,
+  \cdb{F}_j^{(k + 1)}\right) \\
+\left[\cdb{F}_j^{(k)}, e_{5F + 3}\right] &= \mathtt{TwoSum}\left(
+  S_{5F + 1}, P_{5F + 2}\right).
+\end{align}
+Arguing as we did above, we start with
+\(\left|e_1\right| \leq \mach \left|e_1'\right| + \mach \left|e_2'\right|\)
+and build each bound recursively based on the previous, e.g.
+\(\left|e_2\right| \leq \mach \left|S_1\right| + \mach \left|e_3'\right| \leq
+(1 + \mach) \mach \left|e_1'\right| + (1 + \mach) \mach \left|e_2'\right| +
+\mach \left|e_3'\right|\). Proceeding in this fashion, we find
+\begin{align}
+\widetilde{\ell}_{F + 1, j}^{(k)} &= \left|e_1\right| + \cdots +
+  \left|e_{5F + 3}\right| + \left|\rho \cdot \cdb{F}_j^{(k + 1)}\right| \\
+&\leq \gamma_{5F} \left|e_1'\right| + \gamma_{5F} \left|e_2'\right| +
+  \gamma_{5F - 1} \left|e_3'\right| + \cdots +
+  \gamma_4 \left|e_{5F - 2}'\right| +
+  \gamma_4 \left|\rho \cdot \cdb{F - 1}_j^{(k + 1)}\right| \\
+&\qquad + \gamma_3 (1 - s) \left|
+  \cdb{F}_j^{(k + 1)}\right| + \gamma_3 s \left|
+  \cdb{F}_{j + 1}^{(k + 1)}\right| \\
+&\leq \gamma_3 \left(
+  (1 - s) \left|\cdb{F}_j^{(k + 1)}\right| +
+  s \left|\cdb{F}_{j + 1}^{(k + 1)}\right|\right) +
+  \gamma_{5F} \cdot \widetilde{\ell}_{F, j}^{(k)}
+\end{align}
+as desired.
 \end{proof}
 
-\begin{proof}[Proof of Lemma~\ref{lemma:L-and-D-bounds}]
+\begin{proof}[Proof of Lemma~\ref{lemma:L-and-D-bounds}]\label{proof:L-and-D-bounds}
 First, note that for \textbf{any} sequence \(v_0, \ldots, v_{k + 1}\) we
 must have
 \begin{equation}

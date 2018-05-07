@@ -46,11 +46,17 @@ POWER_VAL = 1.3
 
 
 def main(filename=None):
-    # n = 8
-    gamma2n = 16 * U / (1 - 16 * U)
+    n = 8
+    gamma2n = (2 * n * U) / (1 - 2 * n * U)
     bound_coeff1 = float(gamma2n)
-    gamma3n = 24 * U / (1 - 24 * U)
-    bound_coeff2 = float(2 * gamma3n ** 2)
+    bound_coeff2 = 3 * n * (3 * n + 7) * U ** 2 / 2
+    bound_coeff2 = float(bound_coeff2)
+    bound_coeff3 = 3 * n * (3 * n ** 2 + 36 * n + 61) * U ** 3 / 2
+    bound_coeff3 = float(bound_coeff3)
+    bound_coeff4 = 9 * n * (
+        3 * n ** 3 + 102 * n ** 2 + 773 * n + 1122
+    ) * U ** 4 / 8
+    bound_coeff4 = float(bound_coeff4)
 
     cond_nums = []
     forward_errs1 = []
@@ -151,6 +157,20 @@ def main(filename=None):
         alpha=alpha,
         zorder=1,
     )
+    ax.loglog(
+        [min_x, max_x],
+        [bound_coeff3 * min_x, bound_coeff3 * max_x],
+        color="black",
+        alpha=alpha,
+        zorder=1,
+    )
+    ax.loglog(
+        [min_x, max_x],
+        [bound_coeff4 * min_x, bound_coeff4 * max_x],
+        color="black",
+        alpha=alpha,
+        zorder=1,
+    )
     # Add the ``x = 1/u^k`` vertical lines.
     delta_y = max_y - min_y
     for exponent in (1, 2, 3, 4):
@@ -240,11 +260,11 @@ def main_jlcs10(filename=None):
     ``-64``. In particular, it shows that the compensated de Casteljau
     algorithm produces exactly zero.
     """
-    # n = 8
-    gamma2n = 16 * U / (1 - 16 * U)
+    n = 8
+    gamma2n = (2 * n * U) / (1 - 2 * n * U)
     bound_coeff1 = float(gamma2n)
-    gamma3n = 24 * U / (1 - 24 * U)
-    bound_coeff2 = float(2 * gamma3n ** 2)
+    bound_coeff2 = 3 * n * (3 * n + 7) * U ** 2 / 2
+    bound_coeff2 = float(bound_coeff2)
 
     cond_nums = []
     forward_errs1 = []
