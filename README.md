@@ -7,6 +7,9 @@ free.
 The paper demonstrates how to evaluate de Casteljau's Algorithm in
 ``K``-times the working precision.
 
+This repository is laid out in a manner described in
+[Good Enough Practices in Scientific Computing][2].
+
 ## Installation
 
 The code used to build the manuscript, generate images and verify
@@ -46,3 +49,4 @@ values during a sample evaluation (at the point ``s = 1/2 + 1001u``).
 These table values are verified via ``nox -s verify_table``.
 
 [1]: doc/paper.pdf
+[2]: https://arxiv.org/pdf/1609.00037.pdf
