@@ -171,19 +171,19 @@ def _compensated_k(s, coeffs, K):
 
 def compensated(s, coeffs):
     b, db = _compensated_k(s, coeffs, 2)
-    return b + db
+    return eft.sum_k((b, db), 2)
 
 
 def compensated3(s, coeffs):
     b, db, d2b = _compensated_k(s, coeffs, 3)
-    return (b + db) + d2b
+    return eft.sum_k((b, db, d2b), 3)
 
 
 def compensated4(s, coeffs):
     b, db, d2b, d3b = _compensated_k(s, coeffs, 4)
-    return ((b + db) + d2b) + d3b
+    return eft.sum_k((b, db, d2b, d3b), 4)
 
 
 def compensated5(s, coeffs):
     b, db, d2b, d3b, d4b = _compensated_k(s, coeffs, 5)
-    return (((b + db) + d2b) + d3b) + d4b
+    return eft.sum_k((b, db, d2b, d3b, d4b), 5)

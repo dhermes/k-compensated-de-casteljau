@@ -236,10 +236,10 @@ def de_casteljau_expected_total(K, n):
 
     .. math::
 
-       (15K^2 - 34K + 26)T_n + K + 5.
+       (15K^2 - 34K + 26)T_n + 6K^2 - 11K + 11.
     """
     Tn = (n * (n + 1)) // 2
-    return (15 * K ** 2 - 34 * K + 26) * Tn + K + 5
+    return (15 * K ** 2 - 34 * K + 26) * Tn + 6 * K ** 2 - 11 * K + 11
 
 
 def de_casteljau_expected_fma(K, n):
@@ -258,7 +258,7 @@ def de_casteljau_expected_fma(K, n):
 
 
 def count_de_casteljau_compensated():
-    print("de_casteljau.compensated() (9n^2 + 9n + 7 = 18 T_n + 7):")
+    print("de_casteljau.compensated() (9n^2 + 9n + 7 = 18 T_n + 13):")
     for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
@@ -274,7 +274,9 @@ def count_de_casteljau_compensated():
 
 
 def count_de_casteljau_compensated3():
-    print("de_casteljau.compensated3() ((59n^2 + 59n + 16) / 2 = 59 T_n + 8):")
+    print(
+        "de_casteljau.compensated3() ((59n^2 + 59n + 16) / 2 = 59 T_n + 32):"
+    )
     for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
@@ -290,7 +292,7 @@ def count_de_casteljau_compensated3():
 
 
 def count_de_casteljau_compensated4():
-    print("de_casteljau.compensated4() (65n^2 + 65n + 9 = 130 T_n + 9):")
+    print("de_casteljau.compensated4() (65n^2 + 65n + 9 = 130 T_n + 63):")
     for degree in range(1, 5 + 1):
         parent = operation_count.Computation()
         x = operation_count.Float(0.25, parent)
@@ -308,7 +310,7 @@ def count_de_casteljau_compensated4():
 def count_de_casteljau_compensated5():
     msg = (
         "de_casteljau.compensated5() ((231n^2 + 231n + 20) / 2 "
-        "= 231 T_n + 10):"
+        "= 231 T_n + 106):"
     )
     print(msg)
     for degree in range(1, 5 + 1):

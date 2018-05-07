@@ -247,15 +247,17 @@ give numerical tests to illustrate the practical efficiency of our algorithms.
 
 \section{Basic notation and results}\label{sec:notation}
 
+\subsection{Floating Point and Forward Error Analysis}
+
 Throughout this paper we assume that the computation in floating point
 arithmetic obeys the model
 \begin{equation}
-  a \star b = \fl{a \circ b} = (a \circ b)(1 + \eps_1) =
-  (a \circ b) / (1 + \eps_2)
+  a \star b = \fl{a \circ b} = (a \circ b)(1 + \delta_1) =
+  (a \circ b) / (1 + \delta_2)
 \end{equation}
 where \(\star \in \left\{\oplus, \ominus, \otimes, \oslash\right\}\), \(\circ
-\in \left\{+, -, \times, \div\right\}\) and \(\left|\eps_1\right|,
-\left|\eps_2\right| \leq \mach\). The symbol \(\mach\) is the unit round-off
+\in \left\{+, -, \times, \div\right\}\) and \(\left|\delta_1\right|,
+\left|\delta_2\right| \leq \mach\). The symbol \(\mach\) is the unit round-off
 and \(\star\) represents the floating point computation, e.g.
 \(a \oplus b = \fl{a + b}\). (For IEEE-754 floating point double precision,
 \(\mach = 2^{-53}\).) We denote the computed result of
@@ -271,9 +273,13 @@ error analysis.
   \item \(\left|\theta_n\right| \leq \gamma_n \coloneqq
       n \mach / (1 - n \mach)\),
   \item \((1 + \theta_k)(1 + \theta_j) \leq 1 + \theta_{k + j}\),
-  \item \(\gamma_k + \gamma_j + \gamma_k \gamma_j \leq \gamma_{k + j}\),
-  \item \((1 + \mach)^j \leq 1 / (1 - j \mach)\).
+  \item \(\gamma_k + \gamma_j + \gamma_k \gamma_j \leq \gamma_{k + j}
+    \Longleftrightarrow (1 + \gamma_k)(1 + \gamma_j) \leq 1 + \gamma_{k + j}\),
+  \item \((1 + \mach)^j \leq 1 / (1 - j \mach) \Longleftrightarrow
+  (1 + \mach)^j - 1 \leq \gamma_j\).
 \end{enumerate}
+
+\subsection{Error-Free Transformation}
 
 Now let us introduce some results concerning error-free transformation (EFT).
 For a pair floating point numbers \(a, b \in \mathbf{F}\), there exists
@@ -301,8 +307,10 @@ For \(a, b \in \mathbf{F}\) and \(P, \pi, S, \sigma \in \mathbf{F}\),
 \end{itemize}
 The letters \(\sigma\) and \(\pi\) are used to indicate that the
 errors came from sum and product, respectively. See the appendix
-in Section~\ref{sec:appendix-algo} for implementation details.
+(Section~\ref{sec:appendix-algo}) for implementation details.
 \end{theorem}
+
+\subsection{de Casteljau Algorithm}
 
 Next, we recall\footnote{We have used slightly non-standard notation for the
 terms produced by the de Casteljau algorithm: we start the superscript at
@@ -353,6 +361,35 @@ b_j B_{j, n}(s)\) in Bernstein form used in this paper is (see
 \end{equation}
 where \(B_{j, n}(s) \geq 0\) and
 \(\widetilde{p}(s) \coloneqq \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s)\).
+
+To be able to express the algorithm in matrix form, we define
+the vectors
+\begin{equation}
+b^{(k)} = \left[\begin{array}{c c c} b_0^{(k)} & \cdots &
+b_k^{(k)}\end{array}\right]^T, \quad
+\widehat{b}^{(k)} = \left[\begin{array}{c c c} \widehat{b}_0^{(k)} & \cdots &
+    \widehat{b}_k^{(k)}\end{array}\right]^T
+\end{equation}
+and the reduction matrices:
+\begin{equation}
+U_k = U_k(s) = \left[\begin{array}{c c c c c c}
+    1 - s  & s      & 0      & \cdots & \cdots & 0      \\
+    0      & 1 - s  & s      & \ddots &        & \vdots \\
+    \vdots & \ddots & \ddots & \ddots & \ddots & \vdots \\
+    \vdots &        & \ddots & \ddots & \ddots & 0 \\
+    0      & \cdots & \cdots & 0      & 1 - s  & s
+\end{array}\right] \in \mathbf{R}^{k \times (k + 1)}.
+\end{equation}
+With this, we can express (\cite{Mainar1999}) the de Casteljau algorithm as
+\begin{equation}\label{matrix-de-casteljau}
+b^{(k)} = U_{k + 1} b^{(k + 1)}
+\Longrightarrow b^{(0)} = U_1 \cdots U_n b^{(n)}.
+\end{equation}
+
+In general, for a sequence \(v_0, \ldots, v_n\) we'll use the notation
+\(v = \left[\begin{array}{c c c} v_0 & \cdots &
+    v_n\end{array}\right]^T\) to indicate the vector containing all of
+the values.
 
 \section{Compensated de Casteljau}\label{sec:compensated-2}
 
@@ -508,6 +545,7 @@ Table~\ref{tab:exact-computation}, the breakdown occurs because
 \(\widehat{b}_0^{(0)} = -\cdb{1}_0^{(0)} = \mach / 16\).
 
 \begin{table}
+  %% See: ``scripts/verify_table.py``.
   \centering
   \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
     \toprule
@@ -776,11 +814,8 @@ perform \((K - 1)\) error filtrations:
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = \widehat{b}_0^{(0)}\)
-      \For{\(F = 1, \ldots, K - 1\)}
-        \State \(\mathtt{res} = \mathtt{res} \oplus
-            \cdb{F}_0^{(0)}\)
-      \EndFor
+      \State \(\mathtt{res} = \mathtt{SumK}\left(\left[
+        \widehat{b}_0^{(0)}, \ldots, \cdb{K - 1}_0^{(0)}\right], K\right)\)
     \EndFunction
   \end{algorithmic}
 \end{breakablealgorithm}
@@ -789,7 +824,7 @@ perform \((K - 1)\) error filtrations:
 show that \texttt{CompDeCasteljauK} (Algorithm~\ref{alg:k-comp-de-casteljau})
 requires
 \begin{equation}
-(15K^2 + 11K - 34)T_n + K + 5 =
+(15K^2 + 11K - 34)T_n + 6K^2 - 11K + 11 =
 \mathcal{O}\left(n^2 K^2\right)
 \end{equation}
 flops to evaluate a degree \(n\) polynomial, where \(T_n\) is the
@@ -797,20 +832,30 @@ flops to evaluate a degree \(n\) polynomial, where \(T_n\) is the
 de Casteljau requires \(3 T_n + 1\) flops. In total this will require
 \((3K - 4)T_n\) uses of \texttt{TwoProd}. On hardware that supports
 FMA, \texttt{TwoProdFMA} (Algorithm~\ref{alg:two-prod-fma}) can be used
-instead, lowering the flop count by \(15(3K - 4)T_n\).
+instead, lowering the flop count by \(15(3K - 4)T_n\). Another way
+to lower the total flop count is to just use
+\(\widehat{b}_0^{(0)} \oplus \cdots \oplus \cdb{K - 1}_0^{(0)}\)
+instead of \texttt{SumK}. This will reduce the total by
+\(6(K - 1)^2\) flops, however the results produced are (empirically)
+identical. This makes sense: the whole point of \texttt{SumK}
+is to filter errors in a summation so that the final operation produces
+a sum of the form \(v_1 \oplus \cdots \oplus v_K\) where each
+term is smaller than the previous by a factor of \(\mach\). This
+property is already satisfied for the \(\cdb{F}_0^{(0)}\) so in
+practice the \(K\)-compensated summation is likely not needed.
 
 \subsection{Error bound for polynomial evaluation}
 
-\begin{lemma}[\cite{Jiang2010}]
-For \(p(s) = \sum_{j = 0}^n b_j B_{j, n}(s)\) a polynomial in Bernstein form
-and \(s \in \left[0, 1\right]\), the terms produced by the de Casteljau
-algorithm in exact arithmetic satisfy:
+\begin{theorem}[\cite{Ogita2005}]\label{thm:sum-k}
+A summation can be computed (\texttt{SumK}, Algorithm~\ref{alg:sum-k})
+with results that are as accurate as if computed in \(K\) times the
+working precision. When computed this way, the result satisfies:
 \begin{equation}
-  \left|b_0^{(0)}\right| \leq \cdots \leq
-  \sum_{j = 0}^k \left|b_j^{(k)}\right| B_{j, k}(s) \leq \cdots \leq
-  \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s) = \widetilde{p}(s).
+\left|\mathtt{SumK}(v, K) - \sum_{j = 1}^n v_j\right| \leq
+\left(\mach + 3 \gamma_{n - 1}^2\right) \left|\sum_{j = 1}^n v_j\right| +
+\gamma_{2n - 2}^K \sum_{j = 1}^n \left|v_j\right|.
 \end{equation}
-\end{lemma}
+\end{theorem}
 
 \begin{lemma}[\cite{Jiang2010}]\label{lemma:db-lemma}
 The second order error \(\db{2}^{(0)}_0\) satisfies
@@ -821,79 +866,81 @@ The second order error \(\db{2}^{(0)}_0\) satisfies
 \end{equation}
 \end{lemma}
 
-\begin{theorem}
-  If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
-  \begin{equation}
-    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s, K)\right|}{
-      \left|p(s)\right|} \leq \left[\mach + \mathcal{O}\left(\mach^2\right)
-      \right] +
-      \left[\left(\alpha(n) \mach\right)^K + \mathcal{O}\left(
-      \mach^{K + 1}\right)\right] \cond{p, s}.
-  \end{equation}
-\end{theorem}
+To enable a bound on the \(K\)-order error \(\db{K}^{(0)}_0\), it's necessary
+to understand the difference between the exact local errors \(\ell_{F, j}\)
+and the computed equivalents \(\widehat{\ell}_{F, j}\). To do this, we define
+\begin{equation}
+\widetilde{\ell}_{F, j} \coloneqq \left|e_1\right| +
+ + \cdots + \left|e_{5F - 2}\right| + \left|\rho \cdot
+\cdb{F - 1}_j^{(k + 1)}\right|.
+\end{equation}
+
+\begin{lemma}\label{lemma:ell-tilde}
+The local errors \(\widetilde{\ell}_{F, j}\) satisfy:
+\begin{align}
+\widetilde{\ell}_{1, j}^{(k)} &\leq
+  \gamma_3 \left(
+  (1 - s) \left|\widehat{b}_j^{(k + 1)}\right| +
+  s \left|\widehat{b}_{j + 1}^{(k + 1)}\right|\right) \\
+\widetilde{\ell}_{F + 1, j}^{(k)} &\leq
+  \gamma_3 \left(
+  (1 - s) \left|\cdb{F}_j^{(k + 1)}\right| +
+  s \left|\cdb{F}_{j + 1}^{(k + 1)}\right|\right) +
+  \gamma_{5F} \cdot \widetilde{\ell}_{F, j}^{(k)}
+  \text{ for } F \geq 1.
+\end{align}
+\end{lemma}
+
+As we'll see soon (Lemma~\ref{lemma:k-order}), putting a bound on
+sums of the form \(\sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\) will
+be necessary to get an overall bound on the relative error for
+\texttt{CompDeCasteljauK}. So we define
+\(L_{F, k} \coloneqq \sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\) and the
+related
+\(D_{0, k} \coloneqq \sum_{j = 0}^k \left|\widehat{b}_j^{(k)}\right|
+B_{j, k}(s)\) and
+\(D_{F, k} \coloneqq \sum_{j = 0}^k \left|\cdb{F}_j^{(k)}\right| B_{j, k}(s)\).
+
+\begin{lemma}\label{lemma:L-and-D-bounds}
+For \(s \in \left[0, 1\right]\), the Bernstein-type sums defined above
+satisfy the following bounds:
+\begin{align}
+D_{0, n - k} &\leq \left(1 + \gamma_{3k}\right) \cdot \widetilde{p}(s) \\
+L_{1, n - k} &\leq \gamma_{3k} \cdot \widetilde{p}(s) \\
+D_{F + 1, n - k} &\leq \binom{k + F}{F + 1} \gamma_3 \gamma_{5} \gamma_{10}
+  \cdots \gamma_{5F} \cdot \left(1 + \gamma_{3k + 5F + 2}\right)
+  \cdot \widetilde{p}(s) \\
+L_{F + 2, n - k} &\leq \binom{k + F}{F + 1} \gamma_3 \gamma_{5} \gamma_{10}
+  \cdots \gamma_{5F} \cdot \gamma_{3k + 5F + 2} \cdot \widetilde{p}(s).
+\label{L-sum-bound}
+\end{align}
+In particular, this means that
+\(D_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot \widetilde{p}(s)\) and
+\(L_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot \widetilde{p}(s)\).
+\end{lemma}
+
+See the appendix (Section~\ref{sec:appendix-proof-details}) for details.
+
+\begin{lemma}\label{lemma:k-order}
+The \(K\)-order error \(\db{K}^{(0)}_0\) satisfies
+\begin{equation}
+  \left|\db{K - 1}^{(0)}_0 - \cdb{K - 1}^{(0)}_0\right| =
+  \left|\db{K}^{(0)}_0\right| \leq \alpha(n) \mach^K
+  \widetilde{p}(s).
+\end{equation}
+\end{lemma}
 
 \begin{proof}
-Note that
+As in \eqref{matrix-de-casteljau}, we can express the compensated
+de Casteljau algorithm as
 \begin{equation}
-p(s) = b_0^{(0)} = \widehat{b}_0^{(0)} + \db{1}_0^{(0)}
-= \cdots
-= \widehat{b}_0^{(0)} + \cdb{1}_0^{(0)} + \cdots
-+ \cdb{K - 1}_0^{(0)} + \db{K}_0^{(0)}
-\end{equation}
-and
-\begin{equation}
-\mathtt{CompDeCasteljau}(p, s, K) = \widehat{b}_0^{(0)} \oplus
-\cdb{1}_0^{(0)} \oplus \cdots \oplus \cdb{K - 1}_0^{(0)}.
-\end{equation}
-It will be crucial for us to bound \(\db{K}_0^{(0)}\).
-In addition, note that
-\begin{align}
-&\widehat{b}_0^{(0)} \oplus \cdb{1}_0^{(0)} \oplus \cdots \oplus
-\cdb{K - 1}_0^{(0)} \\
-&= \widehat{b}_0^{(0)} \left(1 + \theta_{K - 1}\right) +
-\cdb{1}_0^{(0)} \left(1 + \theta_{K - 1}\right) + \cdots
-+ \cdb{K - 1}_0^{(0)} \left(1 + \theta_1\right).
-\end{align}
-We'll use these two quantities to prove a bound.
-
-To be able to express the algorithm in matrix form, we define
-the vectors
-\begin{gather}
-b^{(k)} = \left[\begin{array}{c c c} b_0^{(k)} & \cdots &
-b_k^{(k)}\end{array}\right]^T, \quad
-\widehat{b}^{(k)} = \left[\begin{array}{c c c} \widehat{b}_0^{(k)} & \cdots &
-\widehat{b}_k^{(k)}\end{array}\right]^T, \\
-\db{F}^{(k)} = \left[\begin{array}{c c c} \db{F}_0^{(k)} & \cdots &
-\db{F}_k^{(k)}\end{array}\right]^T, \quad
-\cdb{F}^{(k)} = \left[\begin{array}{c c c} \cdb{F}_0^{(k)} & \cdots &
-\cdb{F}_k^{(k)}\end{array}\right]^T, \\
-\ell_{F}^{(k)} = \left[\begin{array}{c c c} \ell_{F, 0}^{(k)} & \cdots &
-\ell_{F, k}^{(k)}\end{array}\right]^T, \quad
-\widehat{\ell}_{F}^{(k)} = \left[\begin{array}{c c c}
-\widehat{\ell}_{F, 0}^{(k)} & \cdots &
-\widehat{\ell}_{F, k}^{(k)}\end{array}\right]^T
-\end{gather}
-and the reduction matrices:
-\begin{equation}
-U_k = U_k(s) = \left[\begin{array}{c c c c c c}
-    1 - s  & s      & 0      & \cdots & \cdots & 0      \\
-    0      & 1 - s  & s      & \ddots &        & \vdots \\
-    \vdots & \ddots & \ddots & \ddots & \ddots & \vdots \\
-    \vdots &        & \ddots & \ddots & \ddots & 0 \\
-    0      & \cdots & \cdots & 0      & 1 - s  & s
-\end{array}\right] \in \mathbf{R}^{k \times (k + 1)}.
-\end{equation}
-With this, we can express the compensated de Casteljau algorithm as
-\begin{align}
-b^{(k)} &= U_{k + 1} b^{(k + 1)} \\
-\Longrightarrow b^{(0)} &= U_1 \cdots U_n b^{(n)} \\
-\db{F}^{(k)} &= U_{k + 1} \db{F}^{(k + 1)} + \ell_{F}^{(k)} \\
-\Longrightarrow \db{F}^{(0)} &= \sum_{k = 0}^{n - 1}
+\db{F}^{(k)} = U_{k + 1} \db{F}^{(k + 1)} + \ell_{F}^{(k)}
+\Longrightarrow \db{F}^{(0)} = \sum_{k = 0}^{n - 1}
 U_1 \cdots U_k \ell_F^{(k)} = \sum_{k = 0}^{n - 1}
 \left[\sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\right].
-\end{align}
+\end{equation}
 For the inexact equivalent of these things, first note that
-\(\widehat{r} = (1 - s)(1 + \theta_1)\). Due to this,
+\(\widehat{r} = (1 - s)(1 + \delta)\). Due to this,
 we put the \(\widehat{r}\) term at the end of each update step to reduce
 the amount of round-off:
 \begin{align}
@@ -909,78 +956,109 @@ the amount of round-off:
   \widehat{\ell}_{F}^{(k)} (1 + \theta_2) \\
 \Longrightarrow \cdb{F}^{(0)} &=
   \sum_{k = 0}^{n - 1}
-  U_1 \cdots U_k \widehat{\ell}_F^{(k)} (1 + \theta_{3k - 1})
+  U_1 \cdots U_k \widehat{\ell}_F^{(k)} (1 + \theta_{3k + 2})
   = \sum_{k = 0}^{n - 1}
-  \left[\sum_{j = 0}^k \widehat{\ell}_{F, j}^{(k)} (1 + \theta_{3k - 1})
+  \left[\sum_{j = 0}^k \widehat{\ell}_{F, j}^{(k)} (1 + \theta_{3k + 2})
     B_{j, k}(s)\right].
 \end{align}
-From
+Since
+\begin{equation}
+\db{F + 1}_0^{(0)} = \db{F}_0^{(0)} - \cdb{F}_0^{(0)} = \sum_{k = 0}^{n - 1}
+\sum_{j = 0}^k \left(\ell_{F, j}^{(k)} -
+\widehat{\ell}_{F, j}^{(k)} (1 + \theta_{3k + 2})\right) B_{j, k}(s)
+\end{equation}
+it's useful to put a bound on \(\ell_{F, j}^{(k)} -
+\widehat{\ell}_{F, j}^{(k)} (1 + \theta_{3k + 2})\). Via
 \begin{align}
 \widehat{\ell}_{F, j}^{(k)} &= e_1 \oplus \cdots \oplus e_{5F - 2} \oplus
 \left(\rho \otimes \cdb{F - 1}_j^{(k + 1)}\right) \\
 &= e_1\left(1 + \theta_{5F - 2}\right) + \cdots +
 e_{5F - 2}\left(1 + \theta_2\right) +
-\rho \cdot \cdb{F - 1}_j^{(k + 1)} \left(1 + \theta_2\right) \\
-\Longrightarrow \widehat{\ell}_{F, j}^{(k)}\left(1 + \theta_{3k - 1}\right)
-&= \ell_{F, j}^{(k)} + \left[e_1 \theta_{3k + 5F - 3} + \cdots +
-e_{5F - 2} \theta_{3k + 1} +
-\rho \cdot \cdb{F - 1}_j^{(k + 1)} \theta_{3k + 1}\right] \\
-&\coloneqq \ell_{F, j}^{(k)} + d_{F, j}^{(k)}
+\rho \cdot \cdb{F - 1}_j^{(k + 1)} \left(1 + \theta_2\right)
 \end{align}
 we see that
 \begin{equation}
-\cdb{F}^{(0)} = \db{F}^{(0)} + \sum_{k = 0}^{n - 1}
-  \left[\sum_{j = 0}^k d_{F, j}^{(k)}
-B_{j, k}(s)\right]
+\left|\ell_{F, j}^{(k)} -
+\widehat{\ell}_{F, j}^{(k)} (1 + \theta_{3k + 2})\right| \leq
+\gamma_{3k + 5F} \cdot \widetilde{\ell}_{F, j}^{(k)}
+\Longrightarrow
+\left|\db{F + 1}_0^{(0)}\right| \leq \sum_{k = 0}^{n - 1}
+\gamma_{3k + 5F} \sum_{j = 0}^k \widetilde{\ell}_{F, j}^{(k)} B_{j, k}(s).
 \end{equation}
-hence
+Since Lemma~\ref{lemma:L-and-D-bounds} (in particular \eqref{L-sum-bound})
+tells us that \(\sum_{j = 0}^k \widetilde{\ell}_{F, j}^{(k)} B_{j, k}(s)
+= L_{F, k} = \mathcal{O}\left(\mach^F\right)\) ...
+\end{proof}
+
+\begin{theorem}
+  If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
+  \begin{equation}
+    \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s, K)\right|}{
+      \left|p(s)\right|} \leq \left[\mach + \mathcal{O}\left(\mach^2\right)
+      \right] +
+      \left[\alpha(n) \mach^K + \mathcal{O}\left(
+      \mach^{K + 1}\right)\right] \cond{p, s}.
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+Since
 \begin{equation}
-\left|\db{F + 1}^{(0)}\right| =
-\left|\db{F}^{(0)} - \cdb{F}^{(0)}\right|
-\leq \sum_{j = 0}^k \left|d_{F, j}^{(k)}\right| B_{j, k}(s).
+\mathtt{CompDeCasteljau}(p, s, K) = \widehat{b}_0^{(0)} \oplus
+\cdb{1}_0^{(0)} \oplus \cdots \oplus \cdb{K - 1}_0^{(0)},
 \end{equation}
-To put a bound on this, define the following
-``tilde'' notation for a sum: if \(A = \sum_j \alpha_j\) then
-\(\widetilde{A} = \sum_j \left|\alpha_j\right|\) (similar notation is used
-for \(\widetilde{p}(s)\), which is used in the condition number).
-With this, we must have
+applying Theorem~\ref{thm:sum-k} tells us that
+\begin{equation}\label{sum-k-applied}
+\left|\mathtt{CompDeCasteljau}(p, s, K) - \sum_{F = 0}^{K - 1}
+\cdb{F}_0^{(0)}\right| \leq
+\left(\mach + 3 \gamma_{n - 1}^2\right) \left|\sum_{F = 0}^{K - 1}
+\cdb{F}_0^{(0)}\right| +
+\gamma_{2n - 2}^K \sum_{F = 0}^{K - 1} \left|\cdb{F}_0^{(0)}\right|.
+\end{equation}
+Since
 \begin{equation}
-\left|d_{F, j}^{(k)}\right| =
-\left|e_1 \theta_{3k + 5F - 3} + \cdots +
-e_{5F - 2} \theta_{3k + 1} +
-\rho \cdot \cdb{F - 1}_j^{(k + 1)} \theta_{3k + 1}\right|
-\leq \gamma_{3k + 5F - 3} \cdot \widetilde{\ell}_{F, j}^{(k)}.
+p(s) = b_0^{(0)} = \widehat{b}_0^{(0)} + \db{1}_0^{(0)}
+= \cdots
+= \widehat{b}_0^{(0)} + \cdb{1}_0^{(0)} + \cdots
++ \cdb{K - 1}_0^{(0)} + \db{K}_0^{(0)}
 \end{equation}
-In addition, one can show that
-\begin{alignat}{10}
-\widetilde{\ell}_{1, j}^{(k)} &\leq
-  && &&
-  \gamma_3 \left(
-  (1 - s) \left|\widehat{b}_j\right| +
-  s \left|\widehat{b}_{j + 1}\right|\right) \\
-\widetilde{\ell}_{2, j}^{(k)} &\leq
-  \gamma_5 \cdot
-  \widetilde{\ell}_{1, j}^{(k)} &&+
-  &&
-  \gamma_3 \left(
-  (1 - s) \left|\cdb{1}_j\right| +
-  s \left|\cdb{1}_{j + 1}\right|\right) \\
-\widetilde{\ell}_{3, j}^{(k)} &\leq
-  \gamma_{10} \cdot
-  \widetilde{\ell}_{2, j}^{(k)} &&+
-  &&
-  \gamma_3 \left(
-  (1 - s) \left|\cdb{2}_j\right| +
-  s \left|\cdb{2}_{j + 1}\right|\right) \\
-\widetilde{\ell}_{F + 1, j}^{(k)} &\leq
-  \gamma_{5F} \cdot
-  \widetilde{\ell}_{F, j}^{(k)} &&+
-  &&
-  \gamma_3 \left(
-  (1 - s) \left|\cdb{F}_j\right| +
-  s \left|\cdb{F}_{j + 1}\right|\right).
-\end{alignat}
-To be continued...
+we have
+\begin{gather}
+\left|\sum_{F = 0}^{K - 1} \cdb{F}_0^{(0)}\right|
+\leq \left|p(s)\right| + \left|\db{K}_0^{(0)}\right| \quad \text{and} \\
+\left|\mathtt{CompDeCasteljau}(p, s, K) - p(s)\right| \leq
+\left|\mathtt{CompDeCasteljau}(p, s, K) - \sum_{F = 0}^{K - 1}
+\cdb{F}_0^{(0)}\right| +
+\left|\db{K}_0^{(0)}\right| \label{triangle-ps}.
+\end{gather}
+Due to Lemma~\ref{lemma:k-order}, \(\db{F}_0^{(0)} =
+\mathcal{O}\left(\mach^F\right) \widetilde{p}(s)\), hence
+\begin{align}
+\left(\mach + 3 \gamma_{n - 1}^2\right) \left|\sum_{F = 0}^{K - 1}
+\cdb{F}_0^{(0)}\right| &\leq
+\left[\mach + \mathcal{O}\left(\mach^2\right)\right] \left|p(s)\right| +
+\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s) \\
+\gamma_{2n - 2}^K \sum_{F = 0}^{K - 1} \left|\cdb{F}_0^{(0)}\right| &\leq
+\gamma_{2n - 2}^K \left|\widehat{b}_0^{(0)}\right| +
+\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s) \\
+&\leq
+\gamma_{2n - 2}^K \left[\left|p(s)\right| +
+  \mathcal{O}\left(\mach\right) \widetilde{p}(s)\right] +
+\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s).
+\end{align}
+Combining this with \eqref{sum-k-applied} and \eqref{triangle-ps}, we
+see
+\begin{align}
+\left|\mathtt{CompDeCasteljau}(p, s, K) - p(s)\right| &\leq
+\left[\mach + \mathcal{O}\left(\mach^2\right)\right] \left|p(s)\right| +
+\left|\db{K}_0^{(0)}\right| +
+\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s) \\
+&\leq
+\left[\mach + \mathcal{O}\left(\mach^2\right)\right] \left|p(s)\right| +
+\left[\alpha(n) \mach^K + \mathcal{O}\left(\mach^{K + 1}\right) \right]
+\widetilde{p}(s).
+\end{align}
+Dividing this by \(\left|p(s)\right|\), we have our result.
 \end{proof}
 
 \section{Numerical experiments}\label{sec:numerical}
@@ -1132,6 +1210,43 @@ For processors that provide a fused-multipy-add operator (\texttt{FMA}),
   \end{algorithmic}
 \end{breakablealgorithm}
 
+\noindent The following algorithms from \cite{Ogita2005} can be used as a
+compensated method for computing a sum of \(n\) numbers. The first is a vector
+transformation that is used as a helper:
+
+\begin{breakablealgorithm}
+  \caption{\textit{Error-free vector transformation for summation.}}
+  \label{alg:vec-sum}
+
+  \begin{algorithmic}
+    \Function{\(\mathtt{res} = \mathtt{VecSum}\)}{$p$}
+      \State \(n = \texttt{length}(p)\)
+      \For{\(j = 2, \ldots, n\)}
+        \State \(\left[p_i, p_{i - 1}\right] = \mathtt{TwoSum}\left(
+            p_i, p_{i - 1}\right)\)
+      \EndFor
+    \EndFunction
+  \end{algorithmic}
+\end{breakablealgorithm}
+
+\noindent The second (\texttt{SumK}) computes a sum with results that are as
+accurate as if computed in \(K\) times the working precision. It requires
+\((6K - 5)(n - 1)\) floating point operations.
+
+\begin{breakablealgorithm}
+  \caption{\textit{Summation as in K-fold precision by \((K - 1)\)-fold error-free vector transformation.}}
+  \label{alg:sum-k}
+
+  \begin{algorithmic}
+    \Function{\(\mathtt{res} = \mathtt{SumK}\)}{$p, K$}
+      \For{\(j = 1, \ldots, K - 1\)}
+        \State \(p = \mathtt{VecSum}(p)\)
+      \EndFor
+      \State \(\mathtt{res} = p_1 \oplus p_2 \oplus \cdots \oplus p_n\)
+    \EndFunction
+  \end{algorithmic}
+\end{breakablealgorithm}
+
 \noindent Since the final error \(\cdb{K - 1}\) will not track the errors
 during computation, we have a non-EFT version of
 Algorithm~\ref{alg:local-error-eft}:
@@ -1154,5 +1269,70 @@ Algorithm~\ref{alg:local-error-eft}:
     \EndFunction
   \end{algorithmic}
 \end{breakablealgorithm}
+
+\section{Appendix: Proof Details}\label{sec:appendix-proof-details}
+
+\begin{proof}[Proof of Lemma~\ref{lemma:ell-tilde}]
+Coming soon.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lemma:L-and-D-bounds}]
+First, note that for \textbf{any} sequence \(v_0, \ldots, v_{k + 1}\) we
+must have
+\begin{equation}
+\sum_{j = 0}^k \left[(1 - s) v_j + s v_{j + 1}\right] B_{j, k}(s) =
+\sum_{j = 0}^{k + 1} v_j B_{j, k + 1}(s).
+\end{equation}
+Using this, along with Lemma~\ref{lemma:ell-tilde}, we have
+\begin{align}
+L_{1, k} &\leq \gamma_3 D_{0, k + 1} \label{ell-1-k} \\
+L_{F + 1, k} &\leq \gamma_3 D_{F, k + 1} + \gamma_{5F} L_{F, k}
+\label{ell-F-k}
+\end{align}
+In addition, for \(F \geq 1\) since
+\begin{align}
+\cdb{F}_j^{(k)} &= \widehat{\ell}_{F, j}^{(k)} \oplus \left(
+  s \otimes \cdb{F}_{j + 1}^{(k + 1)}\right) \oplus \left((1 \ominus s) \otimes
+  \cdb{F}_{j}^{(k + 1)}\right) \\
+&= (1 - s) \cdot \cdb{F}_j^{(k + 1)}(1 + \theta_3) +
+  s \cdot \cdb{F}_{j + 1}^{(k + 1)}(1 + \theta_3) +
+  \widehat{\ell}_{F, j}^{(k)} (1 + \theta_2)
+\end{align}
+we have
+\begin{equation}\label{df-first}
+D_{F, k} \leq (1 + \gamma_3) D_{F, k + 1} + (1 + \gamma_2) \sum_{j = 0}^k
+\left|\widehat{\ell}_{F, j}^{(k)}\right| B_{j, k}(s).
+\end{equation}
+Since \(\ell_{F, j}^{(k)}\) has \(5F - 1\) terms (only the last of which
+involves a product), the terms in the computed value will be involved in
+at most \(5F - 2\) flops, hence
+\(\left|\widehat{\ell}_{F, j}^{(k)}\right| \leq
+\left(1 + \gamma_{5F - 2}\right) \widetilde{\ell}_{F, j}^{(k)}.\)
+Combined with \eqref{df-first} and the fact that there is no local error
+when \(F = 0\), this means
+\begin{align}
+D_{0, k} &\leq (1 + \gamma_3) D_{0, k + 1} \label{d-0-k} \\
+D_{F, k} &\leq (1 + \gamma_3) D_{F, k + 1} + (1 + \gamma_{5F}) L_{F, k}.
+\label{d-F-k}
+\end{align}
+The four inequalities \eqref{ell-1-k}, \eqref{ell-F-k}, \eqref{d-0-k}
+and \eqref{d-F-k} allow us to write all bounds in terms of
+\(D_{0, n} = \widetilde{p}(s)\) and \(D_{F, n} = 0\). From \eqref{d-0-k}
+we can conclude that \(D_{0, n - k} \leq \left(1 + \gamma_{3k}\right) \cdot
+\widetilde{p}(s)\) and from \eqref{ell-1-k} that \(L_{1, n - k} \leq
+\gamma_{3k} \cdot \widetilde{p}(s)\).
+
+To see that these inequalities make sense qualitatively, note the
+following. It's clear from \eqref{ell-F-k} that if
+\(D_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot
+\widetilde{p}(s)\) and \(L_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot
+\widetilde{p}(s)\) then \(L_{F + 1, k} = \mathcal{O}\left(
+\mach^{F + 1}\right) \cdot \widetilde{p}(s)\) and \eqref{d-F-k} shows
+that \(D_{F, k} = \mathcal{O}\left(L_{F, k}\right)\). Actually verifying
+the quantitative bounds is quite tedious and does not provide any further
+insight into the behavior of these errors. For example, the bounds above
+are loose bounds and much tighter bounds exist that don't have a compact
+formula.
+\end{proof}
 
 \end{document}

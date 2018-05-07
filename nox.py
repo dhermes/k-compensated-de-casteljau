@@ -113,6 +113,16 @@ def flop_counts(session):
 
 
 @nox.session
+def verify_table(session):
+    # No need to create a virtualenv.
+    session.virtualenv = False
+
+    env = {"PYTHONPATH": get_path("src")}
+    script = get_path("scripts", "verify_table.py")
+    session.run("python", script, env=env)
+
+
+@nox.session
 def make_images(session):
     session.interpreter = SINGLE_INTERP
     # Install all dependencies.
