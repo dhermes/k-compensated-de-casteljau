@@ -91,7 +91,7 @@
 \renewcommand{\qed}{\(\blacksquare\)}
 \newcommand{\cond}[1]{\operatorname{cond}\left(#1\right)}
 \newcommand{\fl}[1]{\operatorname{fl}\left(#1\right)}
-\newcommand{\eps}{\varepsilon}
+\newcommand{\bigO}[1]{\mathcal{O}\left(#1\right)}
 \newcommand{\mach}{\mathbf{u}}
 %% db == ``delta'' b
 \newcommand{\db}[1]{
@@ -144,7 +144,7 @@ evaluation with the de Casteljau algorithm (\texttt{DeCasteljau}) satisfies
 (\cite{Mainar1999}) the following a priori bound:
 \begin{equation}\label{de-casteljau-error}
   \frac{\left|p(s) - \mathtt{DeCasteljau}(p, s)\right|}{\left|p(s)\right|} \leq
-  \cond{p, s} \times \mathcal{O}(\mach).
+  \cond{p, s} \times \bigO{\mach}.
 \end{equation}
 In the right-hand side of this inequality, \(\mach\) is the computing
 precision and the condition number \(\cond{p, s} \geq 1\) only depends
@@ -182,7 +182,7 @@ the compensated de Casteljau algorithm (\texttt{CompDeCasteljau}) satisfies
 \begin{equation}\label{de-casteljau-2-error}
   \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s)\right|}{
     \left|p(s)\right|} \leq \mach + \cond{p, s} \times
-    \mathcal{O}\left(\mach^2\right).
+    \bigO{\mach^2}.
 \end{equation}
 For problems with \(\cond{p, s} < 1 / \mach^2\), the relative error
 is \(\mach\), i.e. accurate to full precision, aside from rounding to the
@@ -228,7 +228,7 @@ that satisfies the following a prior bound for any arbitrary integer \(K\):
 \begin{equation}
   \frac{\left|p(s) - \mathtt{CompDeCasteljauK}(p, s)\right|}{
     \left|p(s)\right|} \leq \mach + \cond{p, s} \times
-    \mathcal{O}\left(\mach^K\right).
+    \bigO{\mach^K}.
 \end{equation}
 This means that the computed value with \texttt{CompDeCasteljauK} is now
 as accurate as the result of the de Casteljau algorithm performed in
@@ -540,7 +540,7 @@ higher than two). For example, the point
 \(s = \frac{1}{2} + 1001\mach\)
 --- which is in the plotted region \(\left|s - \frac{1}{2}\right|
 \leq \frac{3}{2} \cdot 10^{-11}\) --- evaluates to exactly \(0\) when
-it should be \(\mathcal{O}\left(\mach^3\right)\). As shown in
+it should be \(\bigO{\mach^3}\). As shown in
 Table~\ref{tab:exact-computation}, the breakdown occurs because
 \(\widehat{b}_0^{(0)} = -\cdb{1}_0^{(0)} = \mach / 16\).
 
@@ -825,7 +825,7 @@ show that \texttt{CompDeCasteljauK} (Algorithm~\ref{alg:k-comp-de-casteljau})
 requires
 \begin{equation}
 (15K^2 + 11K - 34)T_n + 6K^2 - 11K + 11 =
-\mathcal{O}\left(n^2 K^2\right)
+\bigO{n^2 K^2}
 \end{equation}
 flops to evaluate a degree \(n\) polynomial, where \(T_n\) is the
 \(n\)th triangular number. As a comparison, the non-compensated form of
@@ -881,7 +881,8 @@ The local errors \(\widetilde{\ell}_{F, j}\) satisfy:
 \widetilde{\ell}_{1, j}^{(k)} &\leq
   \gamma_3 \left(
   (1 - s) \left|\widehat{b}_j^{(k + 1)}\right| +
-  s \left|\widehat{b}_{j + 1}^{(k + 1)}\right|\right) \\
+  s \left|\widehat{b}_{j + 1}^{(k + 1)}\right|\right)
+  \label{ell-tilde-1} \\
 \widetilde{\ell}_{F + 1, j}^{(k)} &\leq
   \gamma_3 \left(
   (1 - s) \left|\cdb{F}_j^{(k + 1)}\right| +
@@ -894,32 +895,22 @@ The local errors \(\widetilde{\ell}_{F, j}\) satisfy:
 As we'll see soon (Lemma~\ref{lemma:k-order}), putting a bound on
 sums of the form \(\sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\) will
 be necessary to get an overall bound on the relative error for
-\texttt{CompDeCasteljauK}. So we define
-\(L_{F, k} \coloneqq \sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\) and the
-related
-\(D_{0, k} \coloneqq \sum_{j = 0}^k \left|\widehat{b}_j^{(k)}\right|
-B_{j, k}(s)\) and
-\(D_{F, k} \coloneqq \sum_{j = 0}^k \left|\cdb{F}_j^{(k)}\right| B_{j, k}(s)\).
+\texttt{CompDeCasteljauK}, so we define
+\(L_{F, k} \coloneqq \sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\).
 
 \begin{lemma}\label{lemma:L-and-D-bounds}
-For \(s \in \left[0, 1\right]\), the Bernstein-type sums defined above
-satisfy the following bounds:
-\begin{align}
-D_{0, n - k} &\leq \left(1 + \gamma_{3k}\right) \cdot \widetilde{p}(s) \\
-L_{1, n - k} &\leq \gamma_{3k} \cdot \widetilde{p}(s) \\
-D_{F + 1, n - k} &\leq \binom{k + F}{F + 1} \gamma_3 \gamma_{5} \gamma_{10}
-  \cdots \gamma_{5F} \cdot \left(1 + \gamma_{3k + 5F + 2}\right)
-  \cdot \widetilde{p}(s) \\
-L_{F + 2, n - k} &\leq \binom{k + F}{F + 1} \gamma_3 \gamma_{5} \gamma_{10}
-  \cdots \gamma_{5F} \cdot \gamma_{3k + 5F + 2} \cdot \widetilde{p}(s).
-\label{L-sum-bound}
-\end{align}
+For \(s \in \left[0, 1\right]\), the Bernstein-type sum defined above
+satisfies the following bound:
+\begin{equation}\label{L-sum-bound}
+L_{F, n - k} \leq \left[\left(3^F \binom{k}{F - 1} + \bigO{k^{F - 1}}\right)
+  \mach^F + \bigO{\mach^{F + 1}}\right] \cdot \widetilde{p}(s).
+\end{equation}
 In particular, this means that
-\(D_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot \widetilde{p}(s)\) and
-\(L_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot \widetilde{p}(s)\).
+\(L_{F, k} = \bigO{(3 \mach)^F} \cdot \widetilde{p}(s)\).
 \end{lemma}
 
-See the appendix (Section~\ref{sec:appendix-proof-details}) for details.
+See the appendix (Section~\ref{sec:appendix-proof-details}) for details on
+proving Lemma~\ref{lemma:ell-tilde} and Lemma~\ref{lemma:L-and-D-bounds}.
 
 \begin{lemma}\label{lemma:k-order}
 The \(K\)-order error \(\db{K}^{(0)}_0\) satisfies
@@ -987,17 +978,16 @@ we see that
 \end{equation}
 Since Lemma~\ref{lemma:L-and-D-bounds} (in particular \eqref{L-sum-bound})
 tells us that \(\sum_{j = 0}^k \widetilde{\ell}_{F, j}^{(k)} B_{j, k}(s)
-= L_{F, k} = \mathcal{O}\left(\mach^F\right)\) ...
+= L_{F, k} = \bigO{\mach^F}\) ...
 \end{proof}
 
 \begin{theorem}
   If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
   \begin{equation}
     \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s, K)\right|}{
-      \left|p(s)\right|} \leq \left[\mach + \mathcal{O}\left(\mach^2\right)
+      \left|p(s)\right|} \leq \left[\mach + \bigO{\mach^2}
       \right] +
-      \left[\alpha(n) \mach^K + \mathcal{O}\left(
-      \mach^{K + 1}\right)\right] \cond{p, s}.
+      \left[\alpha(n) \mach^K + \bigO{\mach^{K + 1}}\right] \cond{p, s}.
   \end{equation}
 \end{theorem}
 
@@ -1032,30 +1022,30 @@ we have
 \left|\db{K}_0^{(0)}\right| \label{triangle-ps}.
 \end{gather}
 Due to Lemma~\ref{lemma:k-order}, \(\db{F}_0^{(0)} =
-\mathcal{O}\left(\mach^F\right) \widetilde{p}(s)\), hence
+\bigO{\mach^F} \widetilde{p}(s)\), hence
 \begin{align}
 \left(\mach + 3 \gamma_{n - 1}^2\right) \left|\sum_{F = 0}^{K - 1}
 \cdb{F}_0^{(0)}\right| &\leq
-\left[\mach + \mathcal{O}\left(\mach^2\right)\right] \left|p(s)\right| +
-\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s) \\
+\left[\mach + \bigO{\mach^2}\right] \left|p(s)\right| +
+\bigO{\mach^{K + 1}} \widetilde{p}(s) \\
 \gamma_{2n - 2}^K \sum_{F = 0}^{K - 1} \left|\cdb{F}_0^{(0)}\right| &\leq
 \gamma_{2n - 2}^K \left|\widehat{b}_0^{(0)}\right| +
-\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s) \\
+\bigO{\mach^{K + 1}} \widetilde{p}(s) \\
 &\leq
 \gamma_{2n - 2}^K \left[\left|p(s)\right| +
-  \mathcal{O}\left(\mach\right) \widetilde{p}(s)\right] +
-\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s).
+  \bigO{\mach} \widetilde{p}(s)\right] +
+\bigO{\mach^{K + 1}} \widetilde{p}(s).
 \end{align}
 Combining this with \eqref{sum-k-applied} and \eqref{triangle-ps}, we
 see
 \begin{align}
 \left|\mathtt{CompDeCasteljau}(p, s, K) - p(s)\right| &\leq
-\left[\mach + \mathcal{O}\left(\mach^2\right)\right] \left|p(s)\right| +
+\left[\mach + \bigO{\mach^2}\right] \left|p(s)\right| +
 \left|\db{K}_0^{(0)}\right| +
-\mathcal{O}\left(\mach^{K + 1}\right) \widetilde{p}(s) \\
+\bigO{\mach^{K + 1}} \widetilde{p}(s) \\
 &\leq
-\left[\mach + \mathcal{O}\left(\mach^2\right)\right] \left|p(s)\right| +
-\left[\alpha(n) \mach^K + \mathcal{O}\left(\mach^{K + 1}\right) \right]
+\left[\mach + \bigO{\mach^2}\right] \left|p(s)\right| +
+\left[\alpha(n) \mach^K + \bigO{\mach^{K + 1}} \right]
 \widetilde{p}(s).
 \end{align}
 Dividing this by \(\left|p(s)\right|\), we have our result.
@@ -1123,20 +1113,20 @@ away from \(0\) and because it results in ``random'' changes in the bits of
 \(0.75\) that are impacted by subtracting \((1.3)^j\).}. The curves for
 \texttt{DeCasteljau} and \texttt{CompDeCasteljau} trace the same paths seen
 in \cite{Jiang2010}. In particular, \texttt{CompDeCasteljau} has a relative
-error that is \(\mathcal{O}(\mach)\) until \(\cond{p, s}\) reaches
+error that is \(\bigO{\mach}\) until \(\cond{p, s}\) reaches
 \(1 / \mach\), at which point the relative error increases linearly with
-the condition number until it becomes \(\mathcal{O}(1)\) when
+the condition number until it becomes \(\bigO{1}\) when
 \(\cond{p, s}\) reaches \(1 / \mach^2\).
 Similarly, the relative error in \texttt{CompDeCasteljau3}
 (Algorithm~\ref{alg:k-comp-de-casteljau} with \(K = 3\))
-is \(\mathcal{O}(\mach)\) until \(\cond{p, s}\) reaches
+is \(\bigO{\mach}\) until \(\cond{p, s}\) reaches
 \(1 / \mach^2\) at which point the relative error increases linearly
-to \(\mathcal{O}(1)\) when \(\cond{p, s}\) reaches \(1 / \mach^3\)
+to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^3\)
 and the relative error in \texttt{CompDeCasteljau4}
 (Algorithm~\ref{alg:k-comp-de-casteljau} with \(K = 4\))
-is \(\mathcal{O}(\mach)\) until \(\cond{p, s}\) reaches
+is \(\bigO{\mach}\) until \(\cond{p, s}\) reaches
 \(1 / \mach^3\) at which point the relative error increases linearly
-to \(\mathcal{O}(1)\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
+to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
 
 \bibliography{paper}
 \bibliographystyle{alpha}
@@ -1283,7 +1273,19 @@ must have
 \sum_{j = 0}^k \left[(1 - s) v_j + s v_{j + 1}\right] B_{j, k}(s) =
 \sum_{j = 0}^{k + 1} v_j B_{j, k + 1}(s).
 \end{equation}
-Using this, along with Lemma~\ref{lemma:ell-tilde}, we have
+For example of this in use, via \eqref{ell-tilde-1}, we have
+\begin{equation}
+  L_{1, k} \leq \gamma_3 \sum_{j = 0}^{k + 1} \left|
+  \widehat{b}_j^{(k + 1)}\right| B_{j, k + 1}(s).
+\end{equation}
+In order to work with sums of this form, we define Bernstein-type
+sums related to \(L_{F, k}\):
+\begin{align}
+D_{0, k} &\coloneqq \sum_{j = 0}^k \left|\widehat{b}_j^{(k)}\right|
+B_{j, k}(s) \\
+D_{F, k} &\coloneqq \sum_{j = 0}^k \left|\cdb{F}_j^{(k)}\right| B_{j, k}(s).
+\end{align}
+Hence Lemma~\ref{lemma:ell-tilde} gives
 \begin{align}
 L_{1, k} &\leq \gamma_3 D_{0, k + 1} \label{ell-1-k} \\
 L_{F + 1, k} &\leq \gamma_3 D_{F, k + 1} + \gamma_{5F} L_{F, k}
@@ -1320,19 +1322,57 @@ and \eqref{d-F-k} allow us to write all bounds in terms of
 \(D_{0, n} = \widetilde{p}(s)\) and \(D_{F, n} = 0\). From \eqref{d-0-k}
 we can conclude that \(D_{0, n - k} \leq \left(1 + \gamma_{3k}\right) \cdot
 \widetilde{p}(s)\) and from \eqref{ell-1-k} that \(L_{1, n - k} \leq
-\gamma_{3k} \cdot \widetilde{p}(s)\).
+\gamma_3 \left(1 + \gamma_{3(k - 1)}\right) \cdot \widetilde{p}(s)\).
 
-To see that these inequalities make sense qualitatively, note the
-following. It's clear from \eqref{ell-F-k} that if
-\(D_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot
-\widetilde{p}(s)\) and \(L_{F, k} = \mathcal{O}\left(\mach^F\right) \cdot
-\widetilde{p}(s)\) then \(L_{F + 1, k} = \mathcal{O}\left(
-\mach^{F + 1}\right) \cdot \widetilde{p}(s)\) and \eqref{d-F-k} shows
-that \(D_{F, k} = \mathcal{O}\left(L_{F, k}\right)\). Actually verifying
-the quantitative bounds is quite tedious and does not provide any further
-insight into the behavior of these errors. For example, the bounds above
-are loose bounds and much tighter bounds exist that don't have a compact
-formula.
+To show the bounds for higher values of \(F\), we'll assume we have
+bounds of the form
+\(D_{F, n - k} \leq \left(q_F(k) \mach^F + \bigO{\mach^{F + 1}}\right) \cdot
+\widetilde{p}(s)\) and
+\(L_{F, n - k} \leq \left(r_F(k) \mach^F + \bigO{\mach^{F + 1}}\right) \cdot
+\widetilde{p}(s)\) for two families of polynomials \(q_F(k), r_F(k)\). We
+have \(q_0(k) = 1\) and \(r_1(k) = 3\) as our base cases and can build from
+there. To satisfy \eqref{d-F-k}, we'd like
+\(q_F(k) = q_F(k - 1) + r_F(k)\)
+and for \eqref{ell-F-k}
+\(r_{F + 1}(k) = 3 q_F(k - 1) + 5 F r_F(k)\).
+Since the forward difference \(\Delta q_F(k) = r_F(k + 1)\) is known,
+we can inductively solve for \(q_F\) in terms of \(q_F(0)\). But
+\(D_{F, n} = 0\) gives \(q_F(0) = 0\).
+
+For example, since we have \(r_1(k) = 3 \binom{k}{0}\) we'll have
+\(q_1(k) = 3 \binom{k}{1}\). Once this is known
+\begin{equation}
+r_2(k) = 3 q_1(k - 1) + 5 r_1(k) = 3 \cdot 3 \binom{k - 1}{1} +
+5 \cdot 3 \binom{k}{0} = 9 \binom{k}{1} + 6 \binom{k}{0}.
+\end{equation}
+If we write these polynomials in the ``falling factorial'' basis of
+forward differences, then we can show that
+\begin{equation}
+r_F(k) = 3^F \binom{k}{F} + \cdots
+\end{equation}
+which will complete the proof. To see this, first note that for a polynomial
+in this basis
+\(f(k) = A \binom{k}{d} + B \binom{k}{d - 1} + C \binom{k}{d - 2} +
+D \binom{k}{d - 3} + \cdots\) we have
+\begin{align}
+f(k + 1) &= A \binom{k}{d} + (A + B) \binom{k}{d - 1} +
+  (B + C) \binom{k}{d - 2} + (C + D) \binom{k}{d - 3} + \cdots \\
+f(k - 1) &= A \binom{k}{d} + (B - A) \binom{k}{d - 1} +
+  (C - B + A) \binom{k}{d - 2} + (D - C + B - A) \binom{k}{d - 3} + \cdots
+\end{align}
+Using these, we can show that if
+\(r_F(k) = \sum_{j = 0}^{F - 1} c_j \binom{k}{j}\) then
+\begin{align}
+q_F(k) &= c_{F - 1} \binom{k}{F} + \sum_{j = 1}^{F - 1}
+  (c_j + c_{j - 1}) \binom{k}{j} \\
+r_{F + 1}(k) &= 3 \left[-c_0 \binom{k}{0} +
+  \sum_{j = 1}^F c_{j - 1} \binom{k}{j}\right] +
+(5F) \sum_{j = 0}^{F - 1} c_j \binom{k}{j} =
+3 c_{F - 1} \binom{k}{F} + \cdots
+\end{align}
+Under the inductive hypothesis \(c_{F - 1} = 3^F\) so that
+the lead term in \(r_{F + 1}(k)\) is \(3 c_{F - 1} \binom{k}{F}
+= 3^{F + 1} \binom{k}{F}\).
 \end{proof}
 
 \end{document}
