@@ -16,10 +16,9 @@ import fractions
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
 
 import de_casteljau
-import file_utils
+import plot_utils
 
 
 F = fractions.Fraction
@@ -44,9 +43,8 @@ def main(filename=None):
         exact.append(float(exact_p))
 
     figure, (ax1, ax2) = plt.subplots(1, 2, sharex=True, sharey=True)
-    alpha = 0.75
-    ax1.plot(s_vals, de_casteljau2, color="black", alpha=alpha)
-    ax2.plot(s_vals, exact, color="black", alpha=alpha)
+    ax1.plot(s_vals, de_casteljau2)
+    ax2.plot(s_vals, exact)
 
     # Since ``sharex=True``, ticks only need to be set once.
     ax1.set_xticks(
@@ -77,12 +75,12 @@ def main(filename=None):
             wspace=0.13,
             hspace=0.20,
         )
-        path = file_utils.get_path(filename)
+        path = plot_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white", palette="Greys")
+    plot_utils.set_styles()
     main(filename="compensated_insufficient.pdf")

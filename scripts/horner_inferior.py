@@ -18,11 +18,10 @@ and show that more accuracy produces smoother plots.
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
 
 import de_casteljau
 import horner
-import file_utils
+import plot_utils
 
 # p(s) = (2s - 1)^3 = (-(1 - s) + s)^3
 POLY_COEFFS = (8.0, -12.0, 6.0, -1.0)
@@ -43,9 +42,8 @@ def main(filename=None):
         de_casteljau1.append(de_casteljau.basic(s, BEZIER_COEFFS))
 
     figure, (ax1, ax2) = plt.subplots(1, 2, sharex=True, sharey=True)
-    alpha = 0.75
-    ax1.plot(s_vals, horner1, color="black", alpha=alpha)
-    ax2.plot(s_vals, de_casteljau1, color="black", alpha=alpha)
+    ax1.plot(s_vals, horner1)
+    ax2.plot(s_vals, de_casteljau1)
 
     # Since ``sharex=True``, ticks only need to be set once.
     ax1.set_xticks(
@@ -73,12 +71,12 @@ def main(filename=None):
             wspace=0.13,
             hspace=0.20,
         )
-        path = file_utils.get_path(filename)
+        path = plot_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white", palette="Greys")
+    plot_utils.set_styles()
     main(filename="horner_inferior.pdf")

@@ -21,10 +21,9 @@ import fractions
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
 
 import de_casteljau
-import file_utils
+import plot_utils
 
 
 F = fractions.Fraction
@@ -43,6 +42,7 @@ BEZIER_COEFFS = (
 )
 ROOT = 0.75
 POWER_VAL = 1.3
+ALPHA = 0.25
 
 
 def main(filename=None):
@@ -107,7 +107,6 @@ def main(filename=None):
 
     figure = plt.figure()
     ax = figure.gca()
-    alpha = 0.25
     ax.loglog(
         cond_nums,
         forward_errs1,
@@ -147,28 +146,28 @@ def main(filename=None):
         [min_x, max_x],
         [bound_coeff1 * min_x, bound_coeff1 * max_x],
         color="black",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     ax.loglog(
         [min_x, max_x],
         [bound_coeff2 * min_x, bound_coeff2 * max_x],
         color="black",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     ax.loglog(
         [min_x, max_x],
         [bound_coeff3 * min_x, bound_coeff3 * max_x],
         color="black",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     ax.loglog(
         [min_x, max_x],
         [bound_coeff4 * min_x, bound_coeff4 * max_x],
         color="black",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     # Add the ``x = 1/u^k`` vertical lines.
@@ -180,7 +179,7 @@ def main(filename=None):
             [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
             color="black",
             linestyle="dashed",
-            alpha=alpha,
+            alpha=ALPHA,
             zorder=1,
         )
     # Add the ``y = u`` horizontal lines.
@@ -189,7 +188,7 @@ def main(filename=None):
         [float(U), float(U)],
         color="black",
         linestyle="dashed",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
 
@@ -241,7 +240,7 @@ def main(filename=None):
     if filename is None:
         plt.show()
     else:
-        path = file_utils.get_path(filename)
+        path = plot_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)
@@ -301,7 +300,6 @@ def main_jlcs10(filename=None):
 
     figure = plt.figure()
     ax = figure.gca()
-    alpha = 0.25
     ax.loglog(
         cond_nums,
         forward_errs1,
@@ -325,14 +323,14 @@ def main_jlcs10(filename=None):
         [min_x, max_x],
         [bound_coeff1 * min_x, bound_coeff1 * max_x],
         color="black",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     ax.loglog(
         [min_x, max_x],
         [bound_coeff2 * min_x, bound_coeff2 * max_x],
         color="black",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     # Add the ``x = 1/u^k`` vertical lines.
@@ -344,7 +342,7 @@ def main_jlcs10(filename=None):
             [min_y - 0.05 * delta_y, max_y + 0.05 * delta_y],
             color="black",
             linestyle="dashed",
-            alpha=alpha,
+            alpha=ALPHA,
             zorder=1,
         )
     # Add the ``y = u`` and ``y = 1`` horizontal lines.
@@ -353,7 +351,7 @@ def main_jlcs10(filename=None):
         [float(U), float(U)],
         color="black",
         linestyle="dashed",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
     ax.loglog(
@@ -361,7 +359,7 @@ def main_jlcs10(filename=None):
         [1.0, 1.0],
         color="black",
         linestyle="dashed",
-        alpha=alpha,
+        alpha=ALPHA,
         zorder=1,
     )
 
@@ -404,13 +402,13 @@ def main_jlcs10(filename=None):
     if filename is None:
         plt.show()
     else:
-        path = file_utils.get_path(filename)
+        path = plot_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white", palette="Greys")
+    plot_utils.set_styles()
     main(filename="de_casteljau_rel_error.pdf")
     main_jlcs10(filename="jlcs10_plot.pdf")

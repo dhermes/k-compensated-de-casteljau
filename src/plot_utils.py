@@ -10,9 +10,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Helper(s) for dealing with files."""
+"""Shared utilities and settings for plotting."""
+
 
 import os
+
+import seaborn
+
+
+def set_styles():
+    """Set the styles used for plotting."""
+    seaborn.set(style="white", palette="gray")
 
 
 def get_path(filename):

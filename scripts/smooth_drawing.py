@@ -18,10 +18,9 @@ and show that more accuracy produces smoother plots.
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn
 
 import de_casteljau
-import file_utils
+import plot_utils
 
 
 # p(s) = (s - 1) (s - 3/4)^7
@@ -57,10 +56,9 @@ def main(filename=None):
         evaluated3.append(b3)
 
     figure, (ax1, ax2, ax3) = plt.subplots(1, 3, sharex=True)
-    alpha = 0.75
-    ax1.plot(s_vals, evaluated1, color="black", alpha=alpha)
-    ax2.plot(s_vals, evaluated2, color="black", alpha=alpha)
-    ax3.plot(s_vals, evaluated3, color="black", alpha=alpha)
+    ax1.plot(s_vals, evaluated1)
+    ax2.plot(s_vals, evaluated2)
+    ax3.plot(s_vals, evaluated3)
 
     # Since ``sharex=True``, ticks only need to be set once.
     ax1.set_xticks(
@@ -89,12 +87,12 @@ def main(filename=None):
             wspace=0.15,
             hspace=0.19,
         )
-        path = file_utils.get_path(filename)
+        path = plot_utils.get_path(filename)
         figure.savefig(path, bbox_inches="tight")
         print("Saved {}".format(filename))
         plt.close(figure)
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white", palette="Greys")
+    plot_utils.set_styles()
     main(filename="de_casteljau_smooth_drawing.pdf")
