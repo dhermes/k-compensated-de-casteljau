@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Performs Horner's method.
+r"""Performs Horner's method.
 
 Horner's method computes
 

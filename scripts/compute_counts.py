@@ -101,7 +101,7 @@ def count_horner_basic():
 
 
 def horner_expected_total(K, n):
-    """Get the expected flop count for compensated Horner's method.
+    r"""Get the expected flop count for compensated Horner's method.
 
     When using FMA, the count is
 
@@ -113,7 +113,7 @@ def horner_expected_total(K, n):
 
 
 def horner_expected_fma(K, n):
-    """Get the FMA count for compensated Horner's method.
+    r"""Get the FMA count for compensated Horner's method.
 
     When using FMA, the count is
 

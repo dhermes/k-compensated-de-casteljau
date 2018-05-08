@@ -10,7 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Performs de Casteljau's method.
+r"""Performs de Casteljau's method.
 
 de Casteljau's method evaluates a function in Bernstein-Bezier form
 
@@ -42,6 +42,7 @@ import eft
 
 
 def basic(s, coeffs):
+    """Performs the "standard" de Casteljau algorithm."""
     r = 1.0 - s
 
     degree = len(coeffs) - 1
