@@ -57,9 +57,10 @@ def main(filename=None):
         evaluated3.append(b3)
 
     figure, (ax1, ax2, ax3) = plt.subplots(1, 3, sharex=True)
-    ax1.plot(s_vals, evaluated1)
-    ax2.plot(s_vals, evaluated2)
-    ax3.plot(s_vals, evaluated3)
+    alpha = 0.75
+    ax1.plot(s_vals, evaluated1, color="black", alpha=alpha)
+    ax2.plot(s_vals, evaluated2, color="black", alpha=alpha)
+    ax3.plot(s_vals, evaluated3, color="black", alpha=alpha)
 
     # Since ``sharex=True``, ticks only need to be set once.
     ax1.set_xticks(
@@ -95,5 +96,5 @@ def main(filename=None):
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white")
+    seaborn.set(style="white", palette="Greys")
     main(filename="de_casteljau_smooth_drawing.pdf")

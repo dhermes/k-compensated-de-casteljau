@@ -411,6 +411,6 @@ def main_jlcs10(filename=None):
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white")
+    seaborn.set(style="white", palette="Greys")
     main(filename="de_casteljau_rel_error.pdf")
     main_jlcs10(filename="jlcs10_plot.pdf")

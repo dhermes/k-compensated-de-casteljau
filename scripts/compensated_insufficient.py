@@ -44,9 +44,9 @@ def main(filename=None):
         exact.append(float(exact_p))
 
     figure, (ax1, ax2) = plt.subplots(1, 2, sharex=True, sharey=True)
-
-    ax1.plot(s_vals, de_casteljau2)
-    ax2.plot(s_vals, exact)
+    alpha = 0.75
+    ax1.plot(s_vals, de_casteljau2, color="black", alpha=alpha)
+    ax2.plot(s_vals, exact, color="black", alpha=alpha)
 
     # Since ``sharex=True``, ticks only need to be set once.
     ax1.set_xticks(
@@ -84,5 +84,5 @@ def main(filename=None):
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white")
+    seaborn.set(style="white", palette="Greys")
     main(filename="compensated_insufficient.pdf")

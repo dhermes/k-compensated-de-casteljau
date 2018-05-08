@@ -43,8 +43,9 @@ def main(filename=None):
         de_casteljau1.append(de_casteljau.basic(s, BEZIER_COEFFS))
 
     figure, (ax1, ax2) = plt.subplots(1, 2, sharex=True, sharey=True)
-    ax1.plot(s_vals, horner1)
-    ax2.plot(s_vals, de_casteljau1)
+    alpha = 0.75
+    ax1.plot(s_vals, horner1, color="black", alpha=alpha)
+    ax2.plot(s_vals, de_casteljau1, color="black", alpha=alpha)
 
     # Since ``sharex=True``, ticks only need to be set once.
     ax1.set_xticks(
@@ -79,5 +80,5 @@ def main(filename=None):
 
 
 if __name__ == "__main__":
-    seaborn.set(style="white")
+    seaborn.set(style="white", palette="Greys")
     main(filename="horner_inferior.pdf")
