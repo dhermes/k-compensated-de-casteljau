@@ -226,7 +226,7 @@ factor of \(\mach\) for every error group added. So we derive
 \texttt{CompDeCasteljauK}, a \(K\)-fold compensated de Casteljau algorithm
 that satisfies the following a prior bound for any arbitrary integer \(K\):
 \begin{equation}
-  \frac{\left|p(s) - \mathtt{CompDeCasteljauK}(p, s)\right|}{
+  \frac{\left|p(s) - \mathtt{CompDeCasteljauK}(p, s, K)\right|}{
     \left|p(s)\right|} \leq \mach + \cond{p, s} \times
     \bigO{\mach^K}.
 \end{equation}
@@ -249,8 +249,7 @@ give numerical tests to illustrate the practical efficiency of our algorithms.
 
 \subsection{Floating Point and Forward Error Analysis}
 
-Throughout this paper we assume that the computation in floating point
-arithmetic obeys the model
+We assume all floating point operations obey
 \begin{equation}
   a \star b = \fl{a \circ b} = (a \circ b)(1 + \delta_1) =
   (a \circ b) / (1 + \delta_2)
@@ -258,11 +257,11 @@ arithmetic obeys the model
 where \(\star \in \left\{\oplus, \ominus, \otimes, \oslash\right\}\), \(\circ
 \in \left\{+, -, \times, \div\right\}\) and \(\left|\delta_1\right|,
 \left|\delta_2\right| \leq \mach\). The symbol \(\mach\) is the unit round-off
-and \(\star\) represents the floating point computation, e.g.
+and \(\star\) is a floating point operation, e.g.
 \(a \oplus b = \fl{a + b}\). (For IEEE-754 floating point double precision,
 \(\mach = 2^{-53}\).) We denote the computed result of
 \(\alpha \in \mathbf{R}\) in floating point arithmetic by
-\(\widehat{\alpha}\) or \(\fl{\alpha}\) and \(\mathbf{F}\) denotes the set of
+\(\widehat{\alpha}\) or \(\fl{\alpha}\) and use \(\mathbf{F}\) as the set of
 all floating point numbers (see \cite{Higham2002} for more details).
 Following \cite{Higham2002}, we will use the following classic properties in
 error analysis.
@@ -281,30 +280,26 @@ error analysis.
 
 \subsection{Error-Free Transformation}
 
-Now let us introduce some results concerning error-free transformation (EFT).
-For a pair floating point numbers \(a, b \in \mathbf{F}\), there exists
-\(y \in \mathbf{F}\) satisfying \(a \circ b = x + y\) where
-\(x = \fl{a \circ b}\) and \(\circ \in \left\{+, -, \times\right\}\).
-The transformation \((a, b) \longrightarrow (x, y)\) is regarded as an
-error-free transformation. The error-free transformation algorithms of the
-sum and product of two floating point numbers used later in this paper are
+An error-free transformation is a computational method where both
+the computed result and the round-off error are returned. It
+is considered ``free'' of error if the round-off can be represented
+exactly as an element of \(\mathbf{F}\).
+The error-free transformations used in this paper are
 the \texttt{TwoSum} algorithm by Knuth \cite{Knuth1997} and \texttt{TwoProd}
-algorithm by Dekker \cite{Dekker1971}, respectively. The following theorem
-exhibits the important properties of \texttt{TwoSum} and \texttt{TwoProd}
-algorithms (see \cite{Ogita2005}).
+algorithm by Dekker \cite{Dekker1971}, respectively.
 
 \begin{theorem}[\cite{Ogita2005}]\label{thm:eft}
 For \(a, b \in \mathbf{F}\) and \(P, \pi, S, \sigma \in \mathbf{F}\),
 \texttt{TwoSum} and \texttt{TwoProd} satisfy
-\begin{itemize}
-  \item \(\left[S, \sigma\right] = \mathtt{TwoSum}(a, b)\), \(x = \fl{a + b}\),
-      \(S + \sigma = a + b\), \(\sigma \leq \mach \left|S\right|\),
-      \(\sigma \leq \mach \left|a + b\right|\)
-  \item \(\left[P, \pi\right] = \mathtt{TwoProd}(a, b)\),
-      \(P = \fl{a \times b}\), \(P + \pi = a \times b\),
-      \(\pi \leq \mach \left|P\right|\),
-      \(\pi \leq \mach \left|a \times b\right|\).
-\end{itemize}
+\begin{alignat}{4}
+\left[S, \sigma\right] &= \mathtt{TwoSum}(a, b), & \, S &= \fl{a + b},
+  S + \sigma &= a + b, \sigma &\leq \mach \left|S\right|,
+  & \, \sigma &\leq \mach \left|a + b\right| \\
+\left[P, \pi\right] &= \mathtt{TwoProd}(a, b),
+  & \, P &= \fl{a \times b}, P + \pi &= a \times b,
+  \pi &\leq \mach \left|P\right|,
+  & \, \pi &\leq \mach \left|a \times b\right|.
+\end{alignat}
 The letters \(\sigma\) and \(\pi\) are used to indicate that the
 errors came from sum and product, respectively. See the appendix
 (Section~\ref{sec:appendix-algo}) for implementation details.
@@ -359,7 +354,7 @@ b_j B_{j, n}(s)\) in Bernstein form used in this paper is (see
 \begin{equation}
 \cond{p, s} = \frac{\widetilde{p}(s)}{\left|p(s)\right|},
 \end{equation}
-where \(B_{j, n}(s) \geq 0\) and
+where \(B_{j, n}(s) = \binom{n}{j} (1 - s)^{n - j} s^j \geq 0\) and
 \(\widetilde{p}(s) \coloneqq \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s)\).
 
 To be able to express the algorithm in matrix form, we define
@@ -755,7 +750,10 @@ the process:
 
 \noindent With this EFT in place\footnote{And the related
 \texttt{LocalError} in Algorithm~\ref{alg:local-error}}, we can
-perform \((K - 1)\) error filtrations:
+perform \((K - 1)\) error filtrations. Once we've computed the \(K\) stages
+of global errors, they can be combined with
+\texttt{SumK} (Algorithm~\ref{alg:sum-k}) to produce a sum that is as
+accurate as if computed in \(K\) times the working precision.
 
 \begin{breakablealgorithm}
   \caption{\(K\)-\textit{compensated de Casteljau algorithm.}}
@@ -871,7 +869,7 @@ to understand the difference between the exact local errors \(\ell_{F, j}\)
 and the computed equivalents \(\widehat{\ell}_{F, j}\). To do this, we define
 \begin{equation}
 \widetilde{\ell}_{F, j} \coloneqq \left|e_1\right| +
- + \cdots + \left|e_{5F - 2}\right| + \left|\rho \cdot
+\cdots + \left|e_{5F - 2}\right| + \left|\rho \cdot
 \cdb{F - 1}_j^{(k + 1)}\right|.
 \end{equation}
 
@@ -1005,8 +1003,8 @@ If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
 \begin{proof}
 Since
 \begin{equation}
-\mathtt{CompDeCasteljau}(p, s, K) = \widehat{b}_0^{(0)} \oplus
-\cdb{1}_0^{(0)} \oplus \cdots \oplus \cdb{K - 1}_0^{(0)},
+\mathtt{CompDeCasteljau}(p, s, K) = \mathtt{SumK}\left(\left[
+  \widehat{b}_0^{(0)}, \ldots, \cdb{K - 1}_0^{(0)}\right], K\right),
 \end{equation}
 applying Theorem~\ref{thm:sum-k} tells us that
 \begin{equation}\label{sum-k-applied}
@@ -1133,7 +1131,8 @@ is no longer accurate.
 
 Figure~\ref{fig:compensated-k} shows the relative forward errors compared
 against the condition number. To compute relative errors, each input and
-coefficient is converted to a fraction (i.e. infinite precision) and then
+coefficient is converted to a fraction (i.e. infinite precision) and
+\(p(s)\) is computed exactly as a fraction, then
 compared to the corresponding computed values. Similar tools are used to
 \textbf{exactly} compute the condition number, though here we can rely
 on the fact that \(\widetilde{p}(s) = (s - 1)
@@ -1170,7 +1169,7 @@ to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
 
 Find here concrete implementation details on the EFTs described
 in Theorem~\ref{thm:eft}. They do not use branches, nor access to the
-mantissa that can be time-consuming
+mantissa that can be time-consuming.
 
 \begin{breakablealgorithm}
   \caption{\textit{EFT of the sum of two floating point numbers.}}
@@ -1236,7 +1235,7 @@ For processors that provide a fused-multipy-add operator (\texttt{FMA}),
 \end{breakablealgorithm}
 
 \noindent The following algorithms from \cite{Ogita2005} can be used as a
-compensated method for computing a sum of \(n\) numbers. The first is a vector
+compensated method for computing a sum of numbers. The first is a vector
 transformation that is used as a helper:
 
 \begin{breakablealgorithm}
@@ -1247,8 +1246,8 @@ transformation that is used as a helper:
     \Function{\(\mathtt{res} = \mathtt{VecSum}\)}{$p$}
       \State \(n = \texttt{length}(p)\)
       \For{\(j = 2, \ldots, n\)}
-        \State \(\left[p_i, p_{i - 1}\right] = \mathtt{TwoSum}\left(
-            p_i, p_{i - 1}\right)\)
+        \State \(\left[p_j, p_{j - 1}\right] = \mathtt{TwoSum}\left(
+            p_j, p_{j - 1}\right)\)
       \EndFor
     \EndFunction
   \end{algorithmic}
@@ -1337,8 +1336,8 @@ on the result and the bound on the error are. Thus
 \end{align}
 For \(\widetilde{\ell}_{F + 1}\), we want to relate the ``current'' errors
 \(e_1, \ldots, e_{5F + 3}\) to the ``previous'' errors \(e_1',
-\ldots, e_{5F - 2}'\). In the same fashion as above, we track where
-the current errors come from:
+\ldots, e_{5F - 2}'\) that show up in \(\widetilde{\ell}_F\). In the same
+fashion as above, we track where the current errors come from:
 \begin{align}
 \left[S_1, e_1\right] &= \mathtt{TwoSum}\left(e_1', e_2'\right) \\
 \left[S_2, e_2\right] &= \mathtt{TwoSum}\left(S_1, e_3'\right) \\
@@ -1466,8 +1465,8 @@ forward differences, then we can show that
 \begin{equation}
 r_F(k) = 3^F \binom{k}{F} + \cdots
 \end{equation}
-which will complete the proof. To see this, first note that for a polynomial
-in this basis
+which will complete the proof of the first inequality. To see this, first
+note that for a polynomial in this basis
 \(f(k) = A \binom{k}{d} + B \binom{k}{d - 1} + C \binom{k}{d - 2} +
 D \binom{k}{d - 3} + \cdots\) we have
 \begin{align}
@@ -1483,7 +1482,7 @@ q_F(k) &= c_{F - 1} \binom{k}{F} + \sum_{j = 1}^{F - 1}
   (c_j + c_{j - 1}) \binom{k}{j} \\
 r_{F + 1}(k) &= 3 \left[-c_0 \binom{k}{0} +
   \sum_{j = 1}^F c_{j - 1} \binom{k}{j}\right] +
-(5F) \sum_{j = 0}^{F - 1} c_j \binom{k}{j} =
+5F \left[\sum_{j = 0}^{F - 1} c_j \binom{k}{j}\right] =
 3 c_{F - 1} \binom{k}{F} + \cdots
 \end{align}
 Under the inductive hypothesis \(c_{F - 1} = 3^F\) so that
@@ -1499,7 +1498,7 @@ For the second inequality, we'll show that
 and then we'll have our result since we showed above that
 \(q_{F + 1}(n) = 3^{F + 1} \binom{n}{F + 1} + \bigO{n^F}\). Since
 \(\gamma_{3k + 5F} L_{F, k} \leq (3k + 5F) L_{F, k} \mach +
-\bigO{\mach^{F + 1}} \widetilde{p}(s)\) it's enough to consider
+\bigO{\mach^{F + 2}} \widetilde{p}(s)\) it's enough to consider
 \begin{equation}
 \sum_{k = 0}^{n - 1} (3k + 5F) r_F(n - k) =
 \sum_{k = 1}^n (3(n - k) + 5F) r_F(k).
