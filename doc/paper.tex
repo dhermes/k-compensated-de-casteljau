@@ -235,15 +235,16 @@ as accurate as the result of the de Casteljau algorithm performed in
 \(K\) times the working precision with a final rounding back to the
 working precision.
 
-The paper is organized as follows. Section~\ref{sec:notation} introduces some
-basic notation and results about floating point arithmetic, error-free
-transformations and the de Casteljau algorithm. In
-Section~\ref{sec:compensated-2},
+The paper is organized as follows. Section~\ref{sec:notation} establishes
+notation for error analysis with floating point operations, reviews
+results about error-free transformations and reviews the
+de Casteljau algorithm. In Section~\ref{sec:compensated-2},
 the compensated algorithm for polynomial evaluation from \cite{Jiang2010} is
 reviewed and notation is established for the expansion. In
-Section~\ref{sec:compensated-k}, the \(K\) compensated algorithm is provided and
-a forward error analysis is performed. Finally, in Section~\ref{sec:numerical} we
-give numerical tests to illustrate the practical efficiency of our algorithms.
+Section~\ref{sec:compensated-k}, the \(K\) compensated algorithm is provided
+and a forward error analysis is performed. Finally, in
+Section~\ref{sec:numerical} we perform two numerical experiments to
+give practical examples of the theoretical error bounds.
 
 \section{Basic notation and results}\label{sec:notation}
 
@@ -283,7 +284,7 @@ error analysis.
 An error-free transformation is a computational method where both
 the computed result and the round-off error are returned. It
 is considered ``free'' of error if the round-off can be represented
-exactly as an element of \(\mathbf{F}\).
+exactly as an element or elements of \(\mathbf{F}\).
 The error-free transformations used in this paper are
 the \texttt{TwoSum} algorithm by Knuth \cite{Knuth1997} and \texttt{TwoProd}
 algorithm by Dekker \cite{Dekker1971}, respectively.
@@ -318,7 +319,7 @@ algorithm. For example, we use \(b_j^{(n - 2)}\) instead of
   \label{alg:de-casteljau}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{DeCasteljau}\)}{$b, s$}
+    \Function{\(\mathtt{result} = \mathtt{DeCasteljau}\)}{$b, s$}
       \State \(n = \texttt{length}(b) - 1\)
       \State \(\widehat{r} = 1 \ominus s\)
       \\
@@ -329,12 +330,12 @@ algorithm. For example, we use \(b_j^{(n - 2)}\) instead of
       \For{\(k = n - 1, \ldots, 0\)}
         \For{\(j = 0, \ldots, k\)}
           \State \(\widehat{b}_j^{(k)} = \left(
-              r \otimes \widehat{b}_j^{(k + 1)}\right) \oplus
+              \widehat{r} \otimes \widehat{b}_j^{(k + 1)}\right) \oplus
               \left(s \otimes \widehat{b}_{j + 1}^{(k + 1)}\right)\)
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = \widehat{b}_0^{(0)}\)
+      \State \(\mathtt{result} = \widehat{b}_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
 \end{breakablealgorithm}
@@ -381,10 +382,10 @@ b^{(k)} = U_{k + 1} b^{(k + 1)}
 \Longrightarrow b^{(0)} = U_1 \cdots U_n b^{(n)}.
 \end{equation}
 
-In general, for a sequence \(v_0, \ldots, v_n\) we'll use the notation
+In general, for a sequence \(v_0, \ldots, v_n\) we'll refer to \(v\)
+as the vector containing all of the values:
 \(v = \left[\begin{array}{c c c} v_0 & \cdots &
-    v_n\end{array}\right]^T\) to indicate the vector containing all of
-the values.
+    v_n\end{array}\right]^T.\)
 
 \section{Compensated de Casteljau}\label{sec:compensated-2}
 
@@ -468,7 +469,7 @@ of the global error with floating point operations:
   \label{alg:comp-de-casteljau}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljau}\)}{$b, s$}
+    \Function{\(\mathtt{result} = \mathtt{CompDeCasteljau}\)}{$b, s$}
       \State \(n = \texttt{length}(b) - 1\)
       \State \(\left[\widehat{r}, \rho\right] = \mathtt{TwoSum}(1, -s)\)
       \\
@@ -497,7 +498,7 @@ of the global error with floating point operations:
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = \widehat{b}_0^{(0)} \oplus
+      \State \(\mathtt{result} = \widehat{b}_0^{(0)} \oplus
           \cdb{1}_0^{(0)}\)
     \EndFunction
   \end{algorithmic}
@@ -760,7 +761,7 @@ accurate as if computed in \(K\) times the working precision.
   \label{alg:k-comp-de-casteljau}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{CompDeCasteljauK}\)}{$b, s, K$}
+    \Function{\(\mathtt{result} = \mathtt{CompDeCasteljauK}\)}{$b, s, K$}
       \State \(n = \texttt{length}(b) - 1\)
       \State \(\left[\widehat{r}, \rho\right] = \mathtt{TwoSum}(1, -s)\)
       \\
@@ -812,7 +813,7 @@ accurate as if computed in \(K\) times the working precision.
         \EndFor
       \EndFor
       \\
-      \State \(\mathtt{res} = \mathtt{SumK}\left(\left[
+      \State \(\mathtt{result} = \mathtt{SumK}\left(\left[
         \widehat{b}_0^{(0)}, \ldots, \cdb{K - 1}_0^{(0)}\right], K\right)\)
     \EndFunction
   \end{algorithmic}
@@ -833,9 +834,10 @@ FMA, \texttt{TwoProdFMA} (Algorithm~\ref{alg:two-prod-fma}) can be used
 instead, lowering the flop count by \(15(3K - 4)T_n\). Another way
 to lower the total flop count is to just use
 \(\widehat{b}_0^{(0)} \oplus \cdots \oplus \cdb{K - 1}_0^{(0)}\)
-instead of \texttt{SumK}. This will reduce the total by
-\(6(K - 1)^2\) flops, however the results produced are (empirically)
-identical. This makes sense: the whole point of \texttt{SumK}
+instead of \texttt{SumK}; this will reduce the total by
+\(6(K - 1)^2\) flops. When using a standard sum, the results produced
+are (empirically) identical to those with \texttt{SumK}. This makes
+sense: the whole point of \texttt{SumK}
 is to filter errors in a summation so that the final operation produces
 a sum of the form \(v_1 \oplus \cdots \oplus v_K\) where each
 term is smaller than the previous by a factor of \(\mach\). This
@@ -874,7 +876,7 @@ and the computed equivalents \(\widehat{\ell}_{F, j}\). To do this, we define
 \end{equation}
 
 \begin{lemma}\label{lemma:ell-tilde}
-The local errors \(\widetilde{\ell}_{F, j}\) satisfy:
+The local error bounds \(\widetilde{\ell}_{F, j}\) satisfy:
 \begin{align}
 \widetilde{\ell}_{1, j}^{(k)} &\leq
   \gamma_3 \left(
@@ -897,7 +899,7 @@ be useful to get an overall bound on the relative error for
 \(L_{F, k} \coloneqq \sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\).
 
 \begin{lemma}\label{lemma:L-and-D-bounds}
-For \(s \in \left[0, 1\right]\), the Bernstein-type sum defined above
+For \(s \in \left[0, 1\right]\), the Bernstein-type error sum defined above
 satisfies the following bounds:
 \begin{align}
 L_{F, n - k} &\leq \left[\left(3^F \binom{k}{F - 1} + \bigO{k^{F - 1}}\right)
@@ -1243,7 +1245,7 @@ transformation that is used as a helper:
   \label{alg:vec-sum}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{VecSum}\)}{$p$}
+    \Function{\(\mathtt{VecSum}\)}{$p$}
       \State \(n = \texttt{length}(p)\)
       \For{\(j = 2, \ldots, n\)}
         \State \(\left[p_j, p_{j - 1}\right] = \mathtt{TwoSum}\left(
@@ -1262,11 +1264,11 @@ accurate as if computed in \(K\) times the working precision. It requires
   \label{alg:sum-k}
 
   \begin{algorithmic}
-    \Function{\(\mathtt{res} = \mathtt{SumK}\)}{$p, K$}
+    \Function{\(\mathtt{result} = \mathtt{SumK}\)}{$p, K$}
       \For{\(j = 1, \ldots, K - 1\)}
         \State \(p = \mathtt{VecSum}(p)\)
       \EndFor
-      \State \(\mathtt{res} = p_1 \oplus p_2 \oplus \cdots \oplus p_n\)
+      \State \(\mathtt{result} = p_1 \oplus p_2 \oplus \cdots \oplus p_n\)
     \EndFunction
   \end{algorithmic}
 \end{breakablealgorithm}
