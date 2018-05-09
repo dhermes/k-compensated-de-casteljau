@@ -82,6 +82,8 @@ def build_tex_file(session, base, new_id, extensions=(), with_bibtex=False):
 
 @nox.session
 def build_tex(session):
+    session.interpreter = SINGLE_INTERP
+
     if py.path.local.sysfind("pdflatex") is None:
         session.skip("`pdflatex` must be installed")
 

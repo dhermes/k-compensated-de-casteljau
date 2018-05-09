@@ -31,7 +31,8 @@ Available sessions:
 * make_images
 ```
 
-To run ``nox -s build_tex`` (i.e. to build the PDF), ``pdflatex`` is required.
+To run ``nox -s build_tex`` (i.e. to build the PDF), ``pdflatex`` and
+``bibtex`` are required.
 
 ## Plots
 
