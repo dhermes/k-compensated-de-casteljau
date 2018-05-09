@@ -70,6 +70,12 @@ class Float(object):
             return other.value
         elif isinstance(other, float):
             return other
+        elif isinstance(other, int):
+            other_float = float(other)
+            if other == other_float:
+                return other_float
+            else:
+                return None
         else:
             return None
 
@@ -116,6 +122,22 @@ class Float(object):
         self.computation.mul_count += 1
         return Float(self.value * value, self.computation)
 
+    def __rmul__(self, other):
+        value = self._get_value(other)
+        if value is None:
+            return NotImplemented
+
+        self.computation.mul_count += 1
+        return Float(value * self.value, self.computation)
+
+    def __truediv__(self, other):
+        value = self._get_value(other)
+        if value is None:
+            return NotImplemented
+
+        self.computation.mul_count += 1
+        return Float(self.value / value, self.computation)
+
     def fma(self, val1, val2, val3):
         float1 = self._get_value(val1)
         float2 = self._get_value(val2)
@@ -129,3 +151,25 @@ class Float(object):
         frac3 = fractions.Fraction(float3)
         result = float(frac1 * frac2 + frac3)
         return Float(result, self.computation)
+
+
+def as_type(value, typed_value):
+    """Converts a basic float to a type.
+
+    Args:
+        value (float): The value to convert to a type.
+        typed_value (object): The type to match (and the value
+            may contain come metadata).
+
+    Returns:
+        object: A wrapper of ``value`` with the same type as ``typed_value``.
+
+    Raises:
+        TypeError: If ``typed_value`` is not a ``float`` or ``Float``.
+    """
+    if isinstance(typed_value, float):
+        return value
+    elif isinstance(typed_value, Float):
+        return Float(value, typed_value.computation)
+    else:
+        raise TypeError("Unexpected type", typed_value)

@@ -18,6 +18,7 @@ import de_casteljau
 import eft
 import horner
 import operation_count
+import vs_method
 
 
 SEPARATOR = "-" * 80
@@ -86,6 +87,21 @@ def count_sum_k():
             assert total.value == float(size_p)
             assert parent.count == (6 * k - 5) * (size_p - 1)
             print("    |p| = {}:    {}".format(size_p, parent.display))
+
+
+def count_vs_method_basic():
+    print("vs_method.basic() (7n - 2):")
+    for degree in range(1, 5 + 1):
+        parent = operation_count.Computation()
+        x = operation_count.Float(0.25, parent)
+        coeffs = tuple(
+            operation_count.Float((-1.0) ** k, parent)
+            for k in range(degree + 1)
+        )
+        p = vs_method.basic(x, coeffs)
+        assert p.value == 0.5 ** degree
+        assert parent.count == 7 * degree - 2
+        print("  degree {}:     {}".format(degree, parent.display))
 
 
 def count_horner_basic():
@@ -337,6 +353,8 @@ def main():
     count__vec_sum()
     print(SEPARATOR)
     count_sum_k()
+    print(SEPARATOR)
+    count_vs_method_basic()
     print(SEPARATOR)
     count_horner_basic()
     print(SEPARATOR)

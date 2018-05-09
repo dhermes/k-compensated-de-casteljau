@@ -224,7 +224,7 @@ We describe how to defer rounding into progressively
 smaller error groups and improve the accuracy of the computed result by a
 factor of \(\mach\) for every error group added. So we derive
 \texttt{CompDeCasteljauK}, a \(K\)-fold compensated de Casteljau algorithm
-that satisfies the following a prior bound for any arbitrary integer \(K\):
+that satisfies the following a priori bound for any arbitrary integer \(K\):
 \begin{equation}
   \frac{\left|p(s) - \mathtt{CompDeCasteljauK}(p, s, K)\right|}{
     \left|p(s)\right|} \leq \mach + \cond{p, s} \times
