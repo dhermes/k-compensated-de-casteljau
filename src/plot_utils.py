@@ -20,7 +20,7 @@ import seaborn
 
 def set_styles():
     """Set the styles used for plotting."""
-    seaborn.set(style="white", palette="gray")
+    seaborn.set(style="white")
 
 
 def get_path(filename):
