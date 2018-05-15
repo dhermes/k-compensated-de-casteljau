@@ -255,8 +255,8 @@ def main_jlcs10(filename=None):
     code could be shared, but it isn't worth the effort).
 
     This seeks to recreate the plot from the original paper, but to show
-    what happens as the exponent on ``1.3`` decreases from ``-44`` down to
-    ``-64``. In particular, it shows that the compensated de Casteljau
+    what happens as the exponent on ``POWER_VAL`` decreases from ``-44`` down
+    to ``-64``. In particular, it shows that the compensated de Casteljau
     algorithm produces exactly zero.
     """
     n = 8

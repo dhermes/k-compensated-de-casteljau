@@ -1,6 +1,5 @@
-\documentclass[letterpaper,10pt]{article}
-
-\usepackage[margin=1in]{geometry}
+\documentclass[1p]{elsarticle}
+\geometry{margin=1in}
 
 \usepackage{amsthm,amssymb,amsmath}
 %% https://tex.stackexchange.com/a/396829/32270
@@ -44,8 +43,10 @@
 %% H/T: https://tex.stackexchange.com/a/202047/32270
 %%      https://tex.stackexchange.com/a/32463/32270
 \usepackage[labelfont=bf]{caption}
-%% H/T: https://tex.stackexchange.com/a/71153/32270
-\usepackage[nottoc,notlot,notlof]{tocbibind}
+%% H/T: https://tex.stackexchange.com/a/163250/32270
+\usepackage{adjustbox}
+%% H/T: https://tex.stackexchange.com/a/26348/32270
+\renewcommand*{\appendixname}{}
 
 \theoremstyle{definition}
 \newtheorem{theorem}{Theorem}[section]
@@ -55,9 +56,6 @@
 \usepackage{hyperref}
 \hypersetup{
   colorlinks=true,
-  urlcolor=blue,
-  linkcolor=MidnightBlue,
-  citecolor=ForestGreen,
   pdfinfo={
     CreationDate={D:20180425160342},
     ModDate={D:20180425160342},
@@ -79,15 +77,6 @@
   text centered, text height=0.001\textwidth]
 \tikzstyle{line} = [draw, -latex']
 
-\usepackage{embedfile}
-\embedfile{\jobname.tex}
-
-\usepackage{fancyhdr}
-\pagestyle{fancy}
-\lhead{\(K\)-compensated de Casteljau}
-\rhead{Danny Hermes}
-
-\renewcommand{\headrulewidth}{0pt}
 \renewcommand{\qed}{\(\blacksquare\)}
 \newcommand{\cond}[1]{\operatorname{cond}\left(#1\right)}
 \newcommand{\fl}[1]{\operatorname{fl}\left(#1\right)}
@@ -106,7 +95,20 @@
              {\widehat{\partial^{#1} b}}
 }
 
+\journal{Applied Mathematics and Computation}
+
 \begin{document}
+%% H/T: https://tex.stackexchange.com/a/263503/32270
+\hypersetup{
+  linkcolor=MidnightBlue,
+  citecolor=ForestGreen,
+}
+
+\begin{frontmatter}
+
+\title{\(K\)-compensated de Casteljau}
+\author[djh]{Danny Hermes}\ead{dhermes@berkeley.edu}
+\address[djh]{UC Berkeley, 970 Evans Hall \#3840, Berkeley, CA 94720-3840 USA}
 
 \begin{abstract}
 In computer aided geometric design a polynomial is usually represented in
@@ -122,7 +124,13 @@ analysis and numerical experiments illustrate the accuracy of this family
 of algorithms.
 \end{abstract}
 
-\tableofcontents
+\begin{keyword}
+Polynomial evaluation \sep Compensated algorithm \sep
+Floating-point arithmetic \sep Bernstein polynomial \sep
+Error-free transformation \sep Round-off error
+\end{keyword}
+
+\end{frontmatter}
 
 \section{Introduction}
 
@@ -241,7 +249,7 @@ results about error-free transformations and reviews the
 de Casteljau algorithm. In Section~\ref{sec:compensated-2},
 the compensated algorithm for polynomial evaluation from \cite{Jiang2010} is
 reviewed and notation is established for the expansion. In
-Section~\ref{sec:compensated-k}, the \(K\) compensated algorithm is provided
+Section~\ref{sec:compensated-k}, the \(K\)-compensated algorithm is provided
 and a forward error analysis is performed. Finally, in
 Section~\ref{sec:numerical} we perform two numerical experiments to
 give practical examples of the theoretical error bounds.
@@ -543,6 +551,7 @@ Table~\ref{tab:exact-computation}, the breakdown occurs because
 \begin{table}
   %% See: ``scripts/verify_table.py``.
   \centering
+  \begin{adjustbox}{max width=\textwidth}
   \begin{tabular}{>{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$} >{$}c<{$}}
     \toprule
     k & j & \widehat{b}_j^{(k)} & \cdb{1}_j^{(k)} & \db{1}_j^{(k)} - \cdb{1}_j^{(k)} \\
@@ -562,6 +571,7 @@ Table~\ref{tab:exact-computation}, the breakdown occurs because
     0 & 0 & 0.0625 \mach & -0.0625 \mach & -4 (1001 \mach)^3 + 8 (1001 \mach)^4 \\
     \bottomrule
   \end{tabular}
+  \end{adjustbox}
   \captionsetup{width=.75\linewidth}
   \caption{Terms computed by \texttt{CompDeCasteljau} when evaluating \\
     \(p(s) = (2s - 1)^3 (s - 1)\) at the point
@@ -569,7 +579,7 @@ Table~\ref{tab:exact-computation}, the breakdown occurs because
   \label{tab:exact-computation}
 \end{table}
 
-\section{\texorpdfstring{\(K\)}{K} Compensated de Casteljau}\label{sec:compensated-k}
+\section{\texorpdfstring{\(K\)}{K}-Compensated de Casteljau}\label{sec:compensated-k}
 
 \subsection{Algorithm Specified}
 
@@ -1167,7 +1177,9 @@ to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
 \bibliography{paper}
 \bibliographystyle{alpha}
 
-\section{Appendix: Algorithms}\label{sec:appendix-algo}
+\appendix
+
+\section{Algorithms}\label{sec:appendix-algo}
 
 Find here concrete implementation details on the EFTs described
 in Theorem~\ref{thm:eft}. They do not use branches, nor access to the
@@ -1297,7 +1309,7 @@ Algorithm~\ref{alg:local-error-eft}:
   \end{algorithmic}
 \end{breakablealgorithm}
 
-\section{Appendix: Proof Details}\label{sec:appendix-proof-details}
+\section{Proof Details}\label{sec:appendix-proof-details}
 
 \begin{proof}[Proof of Lemma~\ref{lemma:ell-tilde}]
 We'll start with the \(F = 1\) case. Recall where the terms originate:
