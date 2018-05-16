@@ -30,14 +30,14 @@ MATPLOTLIB_DEPS = (
     "matplotlib == 2.2.2",
     "numpy == 1.14.3",
     "pyparsing == 2.2.0",
-    "python-dateutil == 2.7.2",
+    "python-dateutil == 2.7.3",
     "pytz == 2018.4",
     "six == 1.11.0",
 )
 DEPS = {
     "matplotlib": MATPLOTLIB_DEPS,
     "seaborn": MATPLOTLIB_DEPS
-    + ("pandas == 0.22.0", "scipy == 1.1.0", "seaborn == 0.8.1"),
+    + ("pandas == 0.23.0", "scipy == 1.1.0", "seaborn == 0.8.1"),
 }
 
 
@@ -57,17 +57,22 @@ class Remove(object):
             os.remove(path)
 
 
-def build_tex_file(session, base, new_id, extensions=()):
+def build_tex_file(session, base, new_id, extensions=(), with_bibtex=False):
     # NOTE: This assumes that ``session.chdir(get_path('doc'))``
     #       has been called.
     modify_id = get_path("scripts", "modify_pdf_id.py")
 
-    session.run("pdflatex", base)
-    session.run("bibtex", base)
-    session.run("pdflatex", base)
-    session.run("bibtex", base)
-    session.run("pdflatex", base)
-    session.run("pdflatex", base)
+    if with_bibtex:
+        session.run("pdflatex", base)
+        session.run("bibtex", base)
+        session.run("pdflatex", base)
+        session.run("bibtex", base)
+        session.run("pdflatex", base)
+        session.run("pdflatex", base)
+    else:
+        session.run("pdflatex", base)
+        session.run("pdflatex", base)
+        session.run("pdflatex", base)
 
     path = get_path("doc", base)
     remove = Remove(path, extensions)
@@ -95,6 +100,14 @@ def build_tex(session):
         "paper",
         "F092359D979FDC08931DA1922F3E123E",
         extensions=("aux", "bbl", "blg", "log", "out", "spl"),
+        with_bibtex=True,
+    )
+
+    build_tex_file(
+        session,
+        "cover_letter",
+        "BACA8D659970198BDF7D11B67FEA6299",
+        extensions=("aux", "log", "out"),
     )
 
 

@@ -1,0 +1,150 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Professional Formal Letter
+% LaTeX Template
+% Version 1.0 (28/12/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Brian Moses (http://www.ms.uky.edu/~math/Resources/Templates/LaTeX/)
+% with extensive modifications by Vel (vel@latextemplates.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt,a4paper]{letter}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  pdfinfo={
+    CreationDate={D:20180516090844},
+    ModDate={D:20180516090844},
+  },
+}
+
+% Create a new command for the horizontal rule in the document
+% which allows thickness specification
+\makeatletter
+\def\vhrulefill#1{\leavevmode\leaders\hrule\@height#1\hfill \kern\z@}
+\makeatother
+
+%------------------
+% DOCUMENT MARGINS
+%------------------
+
+\textwidth 6.75in
+\textheight 9.25in
+\oddsidemargin -.25in
+\evensidemargin -.25in
+\topmargin -1in
+\longindentation 0.50\textwidth
+\parindent 0.4in
+
+%--------------------
+% SENDER INFORMATION
+%--------------------
+
+\def\Who{Danny Hermes}
+\def\School{UC Berkeley}
+\def\Where{Department of Mathematics}
+\def\Address{970 Evans Hall \#3840}
+\def\CityZip{Berkeley CA 94720-3840}
+\def\Email{dhermes@berkeley.edu}
+
+%-----------------------------------
+% HEADER AND FROM ADDRESS STRUCTURE
+%-----------------------------------
+
+\address{
+\includegraphics[width=1in]{uc_berkeley_seal.pdf} % Include the logo of your institution
+\hspace{5.1in} % Position of the institution logo, increase to move left, decrease to move right
+\vskip -1.07in~\\ % Position of the text in relation to the institution logo, increase to move down, decrease to move up
+\Large\hspace{1.5in}UNIVERSITY \hfill ~\\[0.05in] % First line of institution name, adjust hspace if your logo is wide
+\hspace{1.5in}OF CALIFORNIA \hfill \normalsize % Second line of institution name, adjust hspace if your logo is wide
+\makebox[0ex][r]{\bf \Who}\hspace{0.08in} % Print your name and title with a little whitespace to the right
+~\\[-0.11in] % Reduce the whitespace above the horizontal rule
+\hspace{1.5in}\vhrulefill{1pt} \\ % Horizontal rule, adjust hspace if your logo is wide and \vhrulefill for the thickness of the rule
+\hspace{\fill}\parbox[t]{2.85in}{ % Create a box for your details underneath the horizontal rule on the right
+\footnotesize % Use a smaller font size for the details
+\textit{\School}  \\
+\textit{\Where}   \\
+\textit{\Address} \\
+\textit{\CityZip} \\
+\textit{\Email}   \\
+}
+\hspace{-1.4in} % Horizontal position of this block, increase to move left, decrease to move right
+\vspace{-1in} % Move the letter content up for a more compact look
+}
+
+%----------------------
+% TO ADDRESS STRUCTURE
+%----------------------
+
+\def\opening#1{\thispagestyle{empty}
+{\centering\fromaddress \vspace{0.6in} \\ % Print the header and from address here, add whitespace to move date down
+\hspace*{\longindentation}\today\hspace*{\fill}\par} % Print today's date, remove \today to not display it
+{\raggedright \toname \\ \toaddress \par} % Print the to name and address
+\vspace{0.4in} % White space after the to address
+\noindent #1 % Print the opening line
+}
+
+\signature{
+  \includegraphics[width=2.5in]{daniel_hermes_signature.jpg}
+}
+
+\long\def\closing#1{
+\vspace{0.1in} % Some whitespace after the letter content and before the signature
+\noindent % Stop paragraph indentation
+\hspace*{\longindentation} % Move the signature right
+\parbox{\indentedwidth}{\raggedright
+#1 % Print the signature text
+\vskip 0.05in % Whitespace between the signature text and your name
+\fromsig}} % Print your name and title
+
+\begin{document}
+
+\begin{letter}
+{Editors \\
+Applied Mathematics and Computation}
+
+\opening{Dear Editors,}
+
+I am pleased to submit the original research article
+``Compensated de Casteljau algorithm in \(K\) times the working precision''
+for consideration for publication in Applied Mathematics and Computation.
+This manuscript builds on prior work of Jiang et al in evaluating a polynomial
+in Bernstein form with greater accuracy. It follows Graillat et al in
+producing a method for evaluation that produces results as accurate as if
+performed in \(K\) times the working precision, then rounded back into the
+working precision.
+
+In this manuscript, error-free transformations for the sum and product
+are used to track the \textbf{exact} round-off error throughout the
+de Casteljau algorithm. At each stage of computation, round-off error is
+passed on to first order errors, then to second order errors, and so on.
+After the computation has been ``filtered'' \((K - 1)\) times via this
+process, the resulting output is as accurate as the de Casteljau algorithm
+performed in \(K\) times the working precision.
+
+I believe that this manuscript is appropriate for publication by
+Applied Mathematics and Computation because it describes a computational
+method for extending the accuracy of a well-studied algorithm to
+arbitrarily high precision. The accompanying error analysis confirms
+the numerical results.
+
+I confirm that this manuscript has not been published elsewhere and is not
+under consideration by another journal. All authors have approved the
+manuscript and agree with its submission to Applied Mathematics and
+Computation.
+
+Thank you for your consideration!
+
+\closing{Sincerely,}
+
+\end{letter}
+\end{document}

@@ -53,9 +53,9 @@ def main(filename=None):
     bound_coeff2 = float(bound_coeff2)
     bound_coeff3 = 3 * n * (3 * n ** 2 + 36 * n + 61) * U ** 3 / 2
     bound_coeff3 = float(bound_coeff3)
-    bound_coeff4 = 9 * n * (
-        3 * n ** 3 + 102 * n ** 2 + 773 * n + 1122
-    ) * U ** 4 / 8
+    bound_coeff4 = (
+        9 * n * (3 * n ** 3 + 102 * n ** 2 + 773 * n + 1122) * U ** 4 / 8
+    )
     bound_coeff4 = float(bound_coeff4)
 
     cond_nums = []
