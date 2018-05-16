@@ -67,6 +67,7 @@ def build_tex_file(session, base, new_id, extensions=()):
     session.run("pdflatex", base)
     session.run("bibtex", base)
     session.run("pdflatex", base)
+    session.run("pdflatex", base)
 
     path = get_path("doc", base)
     remove = Remove(path, extensions)

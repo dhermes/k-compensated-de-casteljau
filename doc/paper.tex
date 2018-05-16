@@ -1,5 +1,5 @@
-\documentclass[1p]{elsarticle}
-\geometry{margin=1in}
+\documentclass[3p, authoryear, square]{elsarticle}
+\bibliographystyle{elsarticle-harv}
 
 \usepackage{amsthm,amssymb,amsmath}
 %% https://tex.stackexchange.com/a/396829/32270
@@ -100,13 +100,14 @@
 \begin{document}
 %% H/T: https://tex.stackexchange.com/a/263503/32270
 \hypersetup{
+  urlcolor=MidnightBlue,
   linkcolor=MidnightBlue,
   citecolor=ForestGreen,
 }
 
 \begin{frontmatter}
 
-\title{\(K\)-compensated de Casteljau}
+\title{Compensated de Casteljau algorithm in \(K\) times the working precision}
 \author[djh]{Danny Hermes}\ead{dhermes@berkeley.edu}
 \address[djh]{UC Berkeley, 970 Evans Hall \#3840, Berkeley, CA 94720-3840 USA}
 
@@ -139,7 +140,7 @@ Bernstein form. Polynomials in this form are usually evaluated by the
 de Casteljau algorithm. This algorithm has a round-off error bound
 which grows only linearly with degree, even though the number of
 arithmetic operations grows quadratically. The Bernstein basis is
-optimally suited (\cite{Farouki1987}, \cite{Delgado2015}, \cite{Mainar2005})
+optimally suited (\cite{Farouki1987, Delgado2015, Mainar2005})
 for polynomial evaluation; it is
 typically more accurate than the monomial basis, for example in
 Figure~\ref{fig:horner-inferior} evaluation via Horner's method produces
@@ -177,7 +178,7 @@ In some cases, even the order of magnitude of the computed value
 of \(p(s)\) can be incorrect.
 
 To address ill-conditioned problems, error-free transformations (EFT) can
-be applied in \textit{compensated algorithms} to account for roundoff.
+be applied in \textit{compensated algorithms} to account for round-off.
 Error-free transformations were studied in great detail in \cite{Ogita2005}
 and open a large number of applications.
 In \cite{langlois_et_al:DSP:2006:442}, a compensated Horner's algorithm was
@@ -215,7 +216,7 @@ with error-free transformations and interpret the errors as coefficients of new
 polynomials. They then evaluate the error polynomials, which (recursively)
 generate second order error polynomials and so on. This recursive property
 causes the number of operations to grow exponentially in \(K\). Here, we
-instead have a fixed number of error groups, each corresponding to roundoff
+instead have a fixed number of error groups, each corresponding to round-off
 from the group above it. For example, when
 \((1 - s) b_j^{(n)} + s b_{j + 1}^{(n)}\) is computed in floating point, any
 error is filtered down to the error group below it.
@@ -310,8 +311,8 @@ For \(a, b \in \mathbf{F}\) and \(P, \pi, S, \sigma \in \mathbf{F}\),
   & \, \pi &\leq \mach \left|a \times b\right|.
 \end{alignat}
 The letters \(\sigma\) and \(\pi\) are used to indicate that the
-errors came from sum and product, respectively. See the appendix
-(Section~\ref{sec:appendix-algo}) for implementation details.
+errors came from sum and product, respectively. See
+Appendix~\ref{sec:appendix-algo} for implementation details.
 \end{theorem}
 
 \subsection{de Casteljau Algorithm}
@@ -728,7 +729,7 @@ After each stage, we'll always have
 \end{equation}
 where the terms \(e_1, \ldots, e_{5F - 2}\) come from using \texttt{TwoSum}
 and \texttt{TwoProd} when computing \(\cdb{F - 1}_j^{(k)}\)
-and the \(\rho\) term comes from the roundoff
+and the \(\rho\) term comes from the round-off
 in \(1 \ominus s\) when multiplying \((1 - s)\) by
 \(\cdb{F - 1}_j^{(k + 1)}\). With this in mind, we
 can define an EFT (\texttt{LocalErrorEFT}) that computes
@@ -924,7 +925,7 @@ In particular, this means that
 \bigO{(3 n \mach)^{F + 1}} \cdot \widetilde{p}(s)\).
 \end{lemma}
 
-See the appendix (Section~\ref{sec:appendix-proof-details}) for details on
+See Appendix~\ref{sec:appendix-proof-details} for details on
 proving Lemma~\ref{lemma:ell-tilde} and Lemma~\ref{lemma:L-and-D-bounds}.
 
 \begin{lemma}\label{lemma:k-order}
@@ -1174,8 +1175,9 @@ is \(\bigO{\mach}\) until \(\cond{p, s}\) reaches
 \(1 / \mach^3\) at which point the relative error increases linearly
 to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
 
+%% H/T: https://tex.stackexchange.com/a/137379/32270
+\section*{\refname}
 \bibliography{paper}
-\bibliographystyle{alpha}
 
 \appendix
 
