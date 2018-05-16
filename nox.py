@@ -110,6 +110,20 @@ def build_tex(session):
         extensions=("aux", "log", "out"),
     )
 
+    build_tex_file(
+        session,
+        "tikz_local_err",
+        "EF7ADBEFE6118EFEE506836A7AFF7C9E",
+        extensions=("aux", "log", "out"),
+    )
+
+    build_tex_file(
+        session,
+        "tikz_filtration",
+        "52F169AADDA4C4C85C6D5038361816C9",
+        extensions=("aux", "log", "out"),
+    )
+
 
 @nox.session
 def flop_counts(session):
