@@ -33,7 +33,11 @@ def verify_id_snippet(id_snippet):
     """
     if len(id_snippet) != 69:
         raise ValueError(id_snippet, "Invalid length")
+
     actual_id = id_snippet[:32].decode("ascii")
+    if not (set(actual_id) <= set("0123456789ABCDEF")):
+        raise ValueError(actual_id, "ID is not composed of hex characters.")
+
     expected_line = ID_LINE.format(actual_id).encode("ascii")
     if id_snippet != expected_line:
         raise ValueError(
