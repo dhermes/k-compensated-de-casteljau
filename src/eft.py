@@ -26,7 +26,7 @@ def add_eft(val1, val2):
 
 def _split(val):
     # Helper for ``multiply_eft``.
-    scaled = val * 67108865.0  # 67108865 == 2^{26} + 1.
+    scaled = val * 134217729.0  # 134217729 == 2^{27} + 1.
     high_bits = scaled - (scaled - val)
     low_bits = val - high_bits
     return high_bits, low_bits
