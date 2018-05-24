@@ -151,25 +151,3 @@ class Float(object):
         frac3 = fractions.Fraction(float3)
         result = float(frac1 * frac2 + frac3)
         return Float(result, self.computation)
-
-
-def as_type(value, typed_value):
-    """Converts a basic float to a type.
-
-    Args:
-        value (float): The value to convert to a type.
-        typed_value (object): The type to match (and the value
-            may contain come metadata).
-
-    Returns:
-        object: A wrapper of ``value`` with the same type as ``typed_value``.
-
-    Raises:
-        TypeError: If ``typed_value`` is not a ``float`` or ``Float``.
-    """
-    if isinstance(typed_value, float):
-        return value
-    elif isinstance(typed_value, Float):
-        return Float(value, typed_value.computation)
-    else:
-        raise TypeError("Unexpected type", typed_value)

@@ -54,10 +54,8 @@ def multiply_eft(val1, val2, use_fma=True):
     else:
         high1, low1 = _split(val1)
         high2, low2 = _split(val2)
-        error = (
-            low1
-            * low2
-            - (((product - high1 * high2) - low1 * high2) - high1 * low2)
+        error = low1 * low2 - (
+            ((product - high1 * high2) - low1 * high2) - high1 * low2
         )
 
     return product, error

@@ -19,24 +19,59 @@ This method has been described in the 1D case in a `survey`_
 paper that followed the original formulation.
 """
 
+import fractions
+import math
 
-import operation_count
+import eft
+
+
+def binomial(n, k):
+    numerator = math.factorial(n)
+    denominator = math.factorial(k) * math.factorial(n - k)
+    result = fractions.Fraction(numerator, denominator)
+    if float(result) != result:
+        raise ValueError(n, k)
+    return float(result)
 
 
 def basic(s, coeffs):
-    degree = len(coeffs) - 1
+    n = len(coeffs) - 1
     r = 1.0 - s
 
-    result = r * coeffs[0]
+    result = coeffs[0]
 
-    binom_val = operation_count.as_type(1.0, s)
-    s_pow = operation_count.as_type(1.0, s)
-    for j in range(1, degree):
+    s_pow = 1.0
+    for j in range(1, n + 1):
         s_pow = s * s_pow
-        binom_val = binom_val * (degree - j + 1)
-        binom_val = binom_val / j
-        result = result + binom_val * s_pow * coeffs[j]
-        result = result * r
+        binom_val = binomial(n, j)
+        result = r * result + binom_val * s_pow * coeffs[j]
 
-    result = result + s * s_pow * coeffs[degree]
     return result
+
+
+def compensated(s, coeffs):
+    n = len(coeffs) - 1
+    r, rho = eft.add_eft(1.0, -s)
+
+    pk = coeffs[0]
+    dpk = 0.0
+
+    s_pow = 1.0
+    ds = 0.0
+    for j in range(1, n + 1):
+        # Update ``s^k``, using
+        #   s^k = s_pow + ds ==> s^{k + 1} = s(s_pow) + s(ds)
+        s_pow, pi_s = eft.multiply_eft(s, s_pow)
+        ds = s * ds + pi_s
+        # Now, update ``pk`` and ``dpk``.
+        P1, pi1 = eft.multiply_eft(r, pk)
+        local_err = pi1 + rho * pk
+        P2, pi2 = eft.multiply_eft(coeffs[j], binomial(n, j))
+        local_err += P2 * ds + pi2 * s_pow
+        P3, pi3 = eft.multiply_eft(P2, s_pow)
+        local_err += pi3
+        pk, sigma4 = eft.add_eft(P1, P3)
+        local_err += sigma4
+        dpk = r * dpk + local_err
+
+    return pk + dpk
