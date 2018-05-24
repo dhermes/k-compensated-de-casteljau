@@ -268,7 +268,7 @@ error analysis.
       \(\prod_{i = 1}^n (1 + \delta_i)^{\rho_i} = 1 + \theta_n\),
   \item \(\left|\theta_n\right| \leq \gamma_n \coloneqq
       n \mach / (1 - n \mach)\),
-  \item \((1 + \theta_k)(1 + \theta_j) \leq 1 + \theta_{k + j}\),
+  \item \((1 + \theta_k)(1 + \theta_j) = 1 + \theta_{k + j}\),
   \item \(\gamma_k + \gamma_j + \gamma_k \gamma_j \leq \gamma_{k + j}
     \Longleftrightarrow (1 + \gamma_k)(1 + \gamma_j) \leq 1 + \gamma_{k + j}\),
   \item \((1 + \mach)^j \leq 1 / (1 - j \mach) \Longleftrightarrow
@@ -282,10 +282,11 @@ the computed result and the round-off error are returned. It
 is considered ``free'' of error if the round-off can be represented
 exactly as an element or elements of \(\mathbf{F}\).
 The error-free transformations used in this paper are
-the \texttt{TwoSum} algorithm by Knuth \cite{Knuth1997} and \texttt{TwoProd}
-algorithm by Dekker \cite{Dekker1971}, respectively.
+the \texttt{TwoSum} algorithm by Knuth (\cite{Knuth1997}) and
+\texttt{TwoProd} algorithm by Dekker (\cite{Dekker1971}, Section 5),
+respectively.
 
-\begin{theorem}[\cite{Ogita2005}]\label{thm:eft}
+\begin{theorem}[\cite{Ogita2005}, Theorem 3.4]\label{thm:eft}
 For \(a, b \in \mathbf{F}\) and \(P, \pi, S, \sigma \in \mathbf{F}\),
 \texttt{TwoSum} and \texttt{TwoProd} satisfy
 \begin{alignat}{4}
@@ -336,11 +337,14 @@ algorithm. For example, we use \(b_j^{(n - 2)}\) instead of
   \end{algorithmic}
 \end{breakablealgorithm}
 
-\begin{theorem}[\cite{Mainar1999}]
+\begin{theorem}[\cite{Mainar1999}, Corollary 3.2]
 If \(p(s) = \sum_{j = 0}^n b_j B_{j, n}(s)\) and \(\mathtt{DeCasteljau}(p, s)\)
-is the value computed by the de Casteljau algorithm then
+is the value computed by the de Casteljau algorithm then\footnote{In the
+original paper the factor on \(\widetilde{p}(s)\) is \(\gamma_{2n}\),
+but the authors did not consider round-off when computing
+\(1 \ominus s\).}
 \begin{equation}
-\left|p(s) - \mathtt{DeCasteljau}(p, s)\right| \leq \gamma_{2n}
+\left|p(s) - \mathtt{DeCasteljau}(p, s)\right| \leq \gamma_{3n}
 \sum_{j = 0}^n \left|b_j\right| B_{j, n}(s).
 \end{equation}
 \end{theorem}
@@ -481,7 +485,7 @@ round-off error when computing \(\db{1}^{(0)}\), the algorithm can
 be shown to be as accurate as if the computations were done in twice
 the working precision:
 
-\begin{theorem}[\cite{Jiang2010}]
+\begin{theorem}[\cite{Jiang2010}, Theorem 5]
   If no underflow occurs, \(n \geq 2\) and \(s \in \left[0, 1\right]\)
   \begin{equation}
     \frac{\left|p(s) - \mathtt{CompDeCasteljau}(p, s)\right|}{
@@ -574,7 +578,7 @@ the cascade:
 \end{alignat}
 
 \begin{figure}
-  \includegraphics[width=0.9375\textwidth]{tikz_filtration.pdf}
+  \includegraphics[width=0.875\textwidth]{tikz_filtration.pdf}
   \centering
   \captionsetup{width=.75\linewidth}
   \caption{Filtering errors}
@@ -763,7 +767,7 @@ practice the \(K\)-compensated summation is likely not needed.
 
 \subsection{Error bound for polynomial evaluation}
 
-\begin{theorem}[\cite{Ogita2005}]\label{thm:sum-k}
+\begin{theorem}[\cite{Ogita2005}, Proposition 4.10]\label{thm:sum-k}
 A summation can be computed (\texttt{SumK}, Algorithm~\ref{alg:sum-k})
 with results that are as accurate as if computed in \(K\) times the
 working precision. When computed this way, the result satisfies:
@@ -774,11 +778,13 @@ working precision. When computed this way, the result satisfies:
 \end{equation}
 \end{theorem}
 
-\begin{lemma}[\cite{Jiang2010}]\label{lemma:db-lemma}
-The second order error \(\db{2}^{(0)}_0\) satisfies
+\begin{lemma}[\cite{Jiang2010}, Theorem 4]\label{lemma:db-lemma}
+The second order error \(\db{2}^{(0)}_0\) satisfies\footnote{The authors
+  missed one round-off error so used \(\gamma_{3n + 1}\) where
+  \(\gamma_{3n + 2}\) would have followed from their arguments.}
 \begin{equation}
   \left|\db{1}^{(0)}_0 - \cdb{1}^{(0)}_0\right| =
-  \left|\db{2}^{(0)}_0\right| \leq 2 \gamma_{3n + 1} \gamma_{3(n - 1)}
+  \left|\db{2}^{(0)}_0\right| \leq 2 \gamma_{3n + 2} \gamma_{3(n - 1)}
   \widetilde{p}(s).
 \end{equation}
 \end{lemma}
