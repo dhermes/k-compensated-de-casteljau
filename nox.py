@@ -31,7 +31,6 @@ def get_path(*names):
 
 
 class Remove(object):
-
     def __init__(self, prefix, extensions):
         self.prefix = prefix
         self.extensions = extensions
