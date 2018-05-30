@@ -24,21 +24,6 @@ import py.path
 
 NOX_DIR = os.path.abspath(os.path.dirname(__file__))
 SINGLE_INTERP = "python3.6"
-MATPLOTLIB_DEPS = (
-    "cycler == 0.10.0",
-    "kiwisolver == 1.0.1",
-    "matplotlib == 2.2.2",
-    "numpy == 1.14.3",
-    "pyparsing == 2.2.0",
-    "python-dateutil == 2.7.3",
-    "pytz == 2018.4",
-    "six == 1.11.0",
-)
-DEPS = {
-    "matplotlib": MATPLOTLIB_DEPS,
-    "seaborn": MATPLOTLIB_DEPS
-    + ("pandas == 0.23.0", "scipy == 1.1.0", "seaborn == 0.8.1"),
-}
 
 
 def get_path(*names):
@@ -149,7 +134,7 @@ def verify_table(session):
 def make_images(session):
     session.interpreter = SINGLE_INTERP
     # Install all dependencies.
-    session.install(*DEPS["seaborn"])
+    session.install("--requirement", "make-images-requirements.txt")
     # Run the script(s).
     # Make sure
     # - Custom ``matplotlibrc`` is used
@@ -169,3 +154,22 @@ def make_images(session):
     for name in names:
         script = get_path("scripts", name)
         session.run("python", script, env=env)
+
+
+@nox.session
+def update_requirements(session):
+    session.interpreter = SINGLE_INTERP
+
+    if py.path.local.sysfind("git") is None:
+        session.skip("`git` must be installed")
+
+    # Install all dependencies.
+    session.install("pip-tools")
+
+    # Update all of the requirements file(s).
+    names = ("make-images",)
+    for name in names:
+        in_name = "{}-requirements.in".format(name)
+        txt_name = "{}-requirements.txt".format(name)
+        session.run("pip-compile", "--output-file", txt_name, in_name)
+        session.run("git", "add", txt_name)
