@@ -170,5 +170,7 @@ def update_requirements(session):
     for name in names:
         in_name = "{}-requirements.in".format(name)
         txt_name = "{}-requirements.txt".format(name)
-        session.run("pip-compile", "--output-file", txt_name, in_name)
+        session.run(
+            "pip-compile", "--upgrade", "--output-file", txt_name, in_name
+        )
         session.run("git", "add", txt_name)
