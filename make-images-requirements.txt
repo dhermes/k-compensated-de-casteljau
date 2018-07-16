@@ -8,10 +8,10 @@ cycler==0.10.0            # via matplotlib
 kiwisolver==1.0.1         # via matplotlib
 matplotlib==2.2.2         # via seaborn
 numpy==1.14.5             # via matplotlib, pandas, scipy, seaborn
-pandas==0.23.1            # via seaborn
+pandas==0.23.3            # via seaborn
 pyparsing==2.2.0          # via matplotlib
 python-dateutil==2.7.3    # via matplotlib, pandas
-pytz==2018.4              # via matplotlib, pandas
+pytz==2018.5              # via matplotlib, pandas
 scipy==1.1.0              # via seaborn
 seaborn==0.8.1
 six==1.11.0               # via cycler, matplotlib, python-dateutil
