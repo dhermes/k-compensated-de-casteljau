@@ -18,33 +18,12 @@
 
 int main()
 {
-    int i;
+    size_t i, j, F, K;
     double s, evaluated;
-    std::vector<double> coeffs1, coeffs2, coeffs3;
+    std::vector<double> compensated;
+    std::vector<std::vector<double>> coeffs;
     std::pair<double, double> eft_result;
 
-    coeffs1 = { 3.0, 2.0 };
-    std::cout << "p1(s) = 3(1 - s) + 2s" << std::endl;
-    coeffs2 = { 3.0, 2.5, 0.0 };
-    std::cout << "p2(s) = 3(1 - s)^2 + 2.5[2(1 - s)s]" << std::endl;
-    coeffs3 = { 4.0, 0.0, 0.0, -1.0 };
-    std::cout << "p3(s) = 4(1 - s)^3 - s^3" << std::endl;
-    std::cout << std::string(60, '=') << std::endl;
-
-    for (i = -2; i < 3; ++i) {
-        s = 1.5 * i;
-        evaluated = de_casteljau::basic(s, coeffs1);
-        std::cout << "p1(" << s << ") = " << evaluated << std::endl;
-        evaluated = de_casteljau::basic(s, coeffs2);
-        std::cout << "p2(" << s << ") = " << evaluated << std::endl;
-        evaluated = de_casteljau::basic(s, coeffs3);
-        std::cout << "p3(" << s << ") = " << evaluated << std::endl;
-        if (i < 2) {
-            std::cout << std::string(30, '*') << std::endl;
-        }
-    }
-
-    std::cout << std::string(60, '=') << std::endl;
     eft_result = eft::two_prod(1.0 - pow(0.5, 27), 1.0 + pow(0.5, 27));
     std::cout << "two_prod(1 - 2^{-27}, 1 + 2^{-27}) = P + pi, where"
               << std::endl;
@@ -59,5 +38,45 @@ int main()
               << " / 2^{51}" << std::endl;
     std::cout << "sigma = " << eft_result.second * pow(2.0, 53) << " / 2^{53}"
               << std::endl;
+
+    std::cout << std::string(60, '=') << std::endl;
+    coeffs.resize(3);
+    coeffs[0] = { 3.0, 2.0 };
+    std::cout << "p1(s) = 3(1 - s) + 2s" << std::endl;
+    coeffs[1] = { 3.0, 2.5, 0.0 };
+    std::cout << "p2(s) = 3(1 - s)^2 + 2.5[2(1 - s)s]" << std::endl;
+    coeffs[2] = { 4.0, 0.0, 0.0, -1.0 };
+    std::cout << "p3(s) = 4(1 - s)^3 - s^3" << std::endl;
+
+    std::cout << std::string(60, '=') << std::endl;
+    std::cout << "DeCasteljau:" << std::endl;
+    for (i = 0; i < 5; ++i) {
+        s = 1.5 * i - 3.0;
+        for (j = 0; j < 3; ++j) {
+            evaluated = de_casteljau::basic(s, coeffs[j]);
+            std::cout << "p" << j + 1 << "(" << s << ") = " << evaluated
+                      << std::endl;
+        }
+        std::cout << std::string(30, '*') << std::endl;
+    }
+
+    for (K = 2; K <= 4; ++K) {
+        std::cout << std::string(60, '=') << std::endl;
+        std::cout << "CompDeCasteljau" << K << ":" << std::endl;
+        for (i = 0; i < 5; ++i) {
+            s = 1.5 * i - 3.0 + pow(0.5, 26);
+            for (j = 0; j < 3; ++j) {
+                compensated = de_casteljau::compensated_k(s, coeffs[j], K);
+                std::cout << "p" << j + 1 << "(" << s
+                          << ") = " << compensated[0];
+                for (F = 1; F < K; ++F) {
+                    std::cout << " + (" << compensated[F] << ")";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::string(30, '*') << std::endl;
+        }
+    }
+
     return 0;
 }
