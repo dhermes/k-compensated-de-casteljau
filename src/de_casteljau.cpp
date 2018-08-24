@@ -97,7 +97,7 @@ std::vector<double> compensated_k(
     size_t degree, F, j, k;
     std::vector<double> b_hat, errors;
     std::vector<std::vector<double>> bk;
-    double r, rho, val1, val2, error, delta_b, l_hat;
+    double r, rho, val1, val2, error, delta_b;
 
     std::tie(r, rho) = eft::two_sum(1.0, -s);
 
@@ -125,13 +125,13 @@ std::vector<double> compensated_k(
             std::tie(bk[0][j], errors[2]) = eft::two_sum(val1, val2);
 
             for (F = 1; F < K - 1; ++F) {
-                l_hat = de_casteljau::local_error_eft(errors, rho, delta_b);
+                val1 = de_casteljau::local_error_eft(errors, rho, delta_b);
                 delta_b = bk[F][j];
 
-                std::tie(val1, error) = eft::two_prod(s, bk[F][j + 1]);
+                std::tie(val2, error) = eft::two_prod(s, bk[F][j + 1]);
                 errors.push_back(error);
 
-                std::tie(val1, error) = eft::two_sum(l_hat, val1);
+                std::tie(val1, error) = eft::two_sum(val1, val2);
                 errors.push_back(error);
 
                 std::tie(val2, error) = eft::two_prod(r, bk[F][j]);
@@ -142,8 +142,8 @@ std::vector<double> compensated_k(
             }
 
             // Update the "level 2" stuff.
-            l_hat = de_casteljau::local_error(errors, rho, delta_b);
-            bk[K - 1][j] = l_hat + s * bk[K - 1][j + 1] + r * bk[K - 1][j];
+            val1 = de_casteljau::local_error(errors, rho, delta_b);
+            bk[K - 1][j] = val1 + s * bk[K - 1][j + 1] + r * bk[K - 1][j];
         }
     }
 
