@@ -29,6 +29,8 @@ Available sessions:
 * flop_counts
 * verify_table
 * make_images
+* update_requirements
+* verify_cpp
 ```
 
 To run ``nox -s build_tex`` (i.e. to build the PDF), ``pdflatex`` and

@@ -174,3 +174,24 @@ def update_requirements(session):
             "pip-compile", "--upgrade", "--output-file", txt_name, in_name
         )
         session.run("git", "add", txt_name)
+
+
+@nox.session
+def verify_cpp(session):
+    if py.path.local.sysfind("g++") is None:
+        session.skip("`g++` must be installed")
+
+    # No need to create a virtualenv.
+    session.virtualenv = False
+    session.run(
+        "g++",
+        "-o",
+        "main",
+        os.path.join("scripts", "tests.cpp"),
+        os.path.join("src", "de_casteljau.cpp"),
+        "-I",
+        "src",
+    )
+    main_exe = os.path.join(".", "main")
+    session.run(os.system, main_exe)
+    session.run(os.remove, main_exe)
