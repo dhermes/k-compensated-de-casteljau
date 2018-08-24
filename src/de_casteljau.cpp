@@ -37,12 +37,13 @@ std::pair<double, double> two_sum(double val1, double val2)
 
 namespace de_casteljau {
 
-double basic(double s, std::vector<double>& coeffs)
+double basic(double s, const std::vector<double>& coeffs)
 {
     size_t degree, j, k;
     double r;
-    std::vector<double> pk(coeffs);
+    std::vector<double> pk;
 
+    pk = coeffs;
     r = 1.0 - s;
     degree = coeffs.size() - 1;
     for (k = 0; k < degree; ++k) {
@@ -55,7 +56,8 @@ double basic(double s, std::vector<double>& coeffs)
     return pk[0];
 }
 
-double local_error(std::vector<double>& errors, double rho, double delta_b)
+double local_error(
+    const std::vector<double>& errors, double rho, double delta_b)
 {
     double l_hat;
 
@@ -68,25 +70,87 @@ double local_error(std::vector<double>& errors, double rho, double delta_b)
     return l_hat;
 }
 
-std::pair<std::vector<double>, double> local_error_eft(
-    std::vector<double>& errors, double rho, double delta_b)
+double local_error_eft(std::vector<double>& errors, double rho, double delta_b)
 {
     size_t num_errs, j;
-    std::vector<double> new_errors;
     double l_hat, prod;
 
     num_errs = errors.size();
-    new_errors.reserve(num_errs + 1);
+    errors.resize(num_errs + 1);
 
     // NOTE: This **assumes** ``num_errs >= 2``.
-    std::tie(l_hat, new_errors[0]) = eft::two_sum(errors[0], errors[1]);
+    std::tie(l_hat, errors[0]) = eft::two_sum(errors[0], errors[1]);
     for (j = 2; j < num_errs; ++j) {
-        std::tie(l_hat, new_errors[j - 1]) = eft::two_sum(l_hat, errors[j]);
+        std::tie(l_hat, errors[j - 1]) = eft::two_sum(l_hat, errors[j]);
     }
 
-    std::tie(prod, new_errors[num_errs - 1]) = eft::two_prod(rho, delta_b);
-    std::tie(l_hat, new_errors[num_errs]) = eft::two_sum(l_hat, prod);
+    std::tie(prod, errors[num_errs - 1]) = eft::two_prod(rho, delta_b);
+    std::tie(l_hat, errors[num_errs]) = eft::two_sum(l_hat, prod);
 
-    return std::make_pair(new_errors, l_hat);
+    return l_hat;
+}
+
+std::vector<double> compensated_k(
+    double s, const std::vector<double>& coeffs, size_t K)
+{
+    // NOTE: This function **assumes** ``K >= 2``.
+    size_t degree, F, j, k;
+    std::vector<double> b_hat, errors;
+    std::vector<std::vector<double>> bk;
+    double r, rho, P1, pi1, P2, pi2, S3, sigma3, delta_b, l_hat, S2, sigma2,
+        P3, pi3, S, sigma4;
+
+    std::tie(r, rho) = eft::two_sum(1.0, -s);
+
+    errors.reserve(5 * K - 7);
+    bk.resize(K);
+    // NOTE: This **assumes** ``degree >= 0``.
+    degree = coeffs.size() - 1;
+
+    // Initialize ``bk``.
+    bk[0] = coeffs;
+    for (F = 1; F < K; ++F) {
+        bk[F].resize(degree + 1, 0.0);
+    }
+
+    for (k = 0; k < degree; ++k) {
+        for (j = 0; j < degree - k; ++j) {
+            // Update the "level 0" stuff.
+            std::tie(P1, pi1) = eft::two_prod(r, bk[0][j]);
+            std::tie(P2, pi2) = eft::two_prod(s, bk[0][j + 1]);
+            std::tie(S3, sigma3) = eft::two_sum(P1, P2);
+
+            delta_b = bk[0][j];
+            bk[0][j] = S3;
+
+            // NOTE: The ``size()`` of ``errors`` is important since it is
+            //       used by ``local_error_eft()``.
+            errors.resize(0);
+            errors.insert(errors.end(), { pi1, pi2, sigma3 });
+
+            for (F = 1; F < K - 1; ++F) {
+                l_hat = de_casteljau::local_error_eft(errors, rho, delta_b);
+                std::tie(P1, pi1) = eft::two_prod(s, bk[F][j + 1]);
+                std::tie(S2, sigma2) = eft::two_sum(l_hat, P1);
+                std::tie(P3, pi3) = eft::two_prod(r, bk[F][j]);
+                std::tie(S, sigma4) = eft::two_prod(S2, P3);
+
+                delta_b = bk[F][j];
+                errors.insert(errors.end(), { pi1, sigma2, pi3, sigma4 });
+
+                bk[F][j] = S;
+            }
+
+            // Update the "level 2" stuff.
+            l_hat = de_casteljau::local_error(errors, rho, delta_b);
+            bk[K - 1][j] = l_hat + s * bk[K - 1][j + 1] + r * bk[K - 1][j];
+        }
+    }
+
+    b_hat.resize(K);
+    for (j = 0; j < K; ++j) {
+        b_hat[j] = bk[j][0];
+    }
+    return b_hat;
 }
 }

@@ -19,8 +19,11 @@ std::pair<double, double> two_sum(double val1, double val2);
 }
 
 namespace de_casteljau {
-double basic(double s, std::vector<double>& coeffs);
-double local_error(std::vector<double>& errors, double rho, double delta_b);
-std::pair<std::vector<double>, double> local_error_eft(
+double basic(double s, const std::vector<double>& coeffs);
+double local_error(
+    const std::vector<double>& errors, double rho, double delta_b);
+double local_error_eft(
     std::vector<double>& errors, double rho, double delta_b);
+std::vector<double> compensated_k(
+    double s, const std::vector<double>& coeffs, size_t K);
 }
