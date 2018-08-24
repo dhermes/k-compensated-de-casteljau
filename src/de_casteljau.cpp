@@ -137,7 +137,7 @@ std::vector<double> compensated_k(
                 std::tie(val2, error) = eft::two_prod(r, bk[F][j]);
                 errors.push_back(error);
 
-                std::tie(bk[F][j], error) = eft::two_prod(val1, val2);
+                std::tie(bk[F][j], error) = eft::two_sum(val1, val2);
                 errors.push_back(error);
             }
 

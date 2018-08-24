@@ -65,7 +65,7 @@ int main()
         std::cout << std::string(60, '=') << std::endl;
         std::cout << "CompDeCasteljau" << K << ":" << std::endl;
         for (i = 0; i < 5; ++i) {
-            s = 1.5 * i - 3.0 + pow(0.5, 12);
+            s = 1.5 * i - 3.0 + pow(0.5, 50);
             for (j = 0; j < 3; ++j) {
                 compensated = de_casteljau::compensated_k(s, coeffs[j], K);
                 std::cout << "p" << j + 1 << "(" << s
