@@ -33,6 +33,35 @@ std::pair<double, double> two_sum(double val1, double val2)
     error = (val1 - (sum - almost_val2)) + (val2 - almost_val2);
     return std::make_pair(sum, error);
 }
+
+void vec_sum(std::vector<double>& vec)
+{
+    size_t n, i;
+
+    n = vec.size();
+    for (i = 1; i < n; ++i) {
+        std::tie(vec[i], vec[i - 1]) = eft::two_sum(vec[i], vec[i - 1]);
+    }
+}
+
+double sum_k(const std::vector<double>& vec, size_t K)
+{
+    size_t i;
+    std::vector<double> workspace;
+    double result;
+
+    workspace = vec;
+    for (i = 0; i < K - 1; ++i) {
+        eft::vec_sum(workspace);
+    }
+
+    result = 0.0;
+    for (double const& element : workspace) {
+        result += element;
+    }
+
+    return result;
+}
 }
 
 namespace de_casteljau {
