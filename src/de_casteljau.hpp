@@ -18,6 +18,9 @@ std::pair<double, double> two_prod(double val1, double val2);
 std::pair<double, double> two_sum(double val1, double val2);
 void vec_sum(std::vector<double>& vec);
 double sum_k(const std::vector<double>& vec, size_t K);
+double compensated(double s, const std::vector<double>& coeffs);
+double compensated3(double s, const std::vector<double>& coeffs);
+double compensated4(double s, const std::vector<double>& coeffs);
 }
 
 namespace de_casteljau {

@@ -182,4 +182,28 @@ std::vector<double> compensated_k(
     }
     return b_hat;
 }
+
+double compensated(double s, const std::vector<double>& coeffs)
+{
+    std::vector<double> terms;
+
+    terms = de_casteljau::compensated_k(s, coeffs, 2);
+    return eft::sum_k(terms, 2);
+}
+
+double compensated3(double s, const std::vector<double>& coeffs)
+{
+    std::vector<double> terms;
+
+    terms = de_casteljau::compensated_k(s, coeffs, 3);
+    return eft::sum_k(terms, 3);
+}
+
+double compensated4(double s, const std::vector<double>& coeffs)
+{
+    std::vector<double> terms;
+
+    terms = de_casteljau::compensated_k(s, coeffs, 4);
+    return eft::sum_k(terms, 4);
+}
 }
