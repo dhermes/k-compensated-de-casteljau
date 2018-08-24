@@ -97,8 +97,7 @@ std::vector<double> compensated_k(
     size_t degree, F, j, k;
     std::vector<double> b_hat, errors;
     std::vector<std::vector<double>> bk;
-    double r, rho, P1, pi1, P2, pi2, S3, sigma3, delta_b, l_hat, S2, sigma2,
-        P3, pi3, S, sigma4;
+    double r, rho, val1, val2, error, delta_b, l_hat;
 
     std::tie(r, rho) = eft::two_sum(1.0, -s);
 
@@ -115,30 +114,31 @@ std::vector<double> compensated_k(
 
     for (k = 0; k < degree; ++k) {
         for (j = 0; j < degree - k; ++j) {
-            // Update the "level 0" stuff.
-            std::tie(P1, pi1) = eft::two_prod(r, bk[0][j]);
-            std::tie(P2, pi2) = eft::two_prod(s, bk[0][j + 1]);
-            std::tie(S3, sigma3) = eft::two_sum(P1, P2);
-
-            delta_b = bk[0][j];
-            bk[0][j] = S3;
-
             // NOTE: The ``size()`` of ``errors`` is important since it is
             //       used by ``local_error_eft()``.
-            errors.resize(0);
-            errors.insert(errors.end(), { pi1, pi2, sigma3 });
+            errors.resize(3);
+            delta_b = bk[0][j];
+
+            // Update the "level 0" stuff.
+            std::tie(val1, errors[0]) = eft::two_prod(r, bk[0][j]);
+            std::tie(val2, errors[1]) = eft::two_prod(s, bk[0][j + 1]);
+            std::tie(bk[0][j], errors[2]) = eft::two_sum(val1, val2);
 
             for (F = 1; F < K - 1; ++F) {
                 l_hat = de_casteljau::local_error_eft(errors, rho, delta_b);
-                std::tie(P1, pi1) = eft::two_prod(s, bk[F][j + 1]);
-                std::tie(S2, sigma2) = eft::two_sum(l_hat, P1);
-                std::tie(P3, pi3) = eft::two_prod(r, bk[F][j]);
-                std::tie(S, sigma4) = eft::two_prod(S2, P3);
-
                 delta_b = bk[F][j];
-                errors.insert(errors.end(), { pi1, sigma2, pi3, sigma4 });
 
-                bk[F][j] = S;
+                std::tie(val1, error) = eft::two_prod(s, bk[F][j + 1]);
+                errors.push_back(error);
+
+                std::tie(val1, error) = eft::two_sum(l_hat, val1);
+                errors.push_back(error);
+
+                std::tie(val2, error) = eft::two_prod(r, bk[F][j]);
+                errors.push_back(error);
+
+                std::tie(bk[F][j], error) = eft::two_prod(val1, val2);
+                errors.push_back(error);
             }
 
             // Update the "level 2" stuff.
