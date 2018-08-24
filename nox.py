@@ -178,13 +178,26 @@ def update_requirements(session):
 
 @nox.session
 def verify_cpp(session):
+    if py.path.local.sysfind("clang-format") is None:
+        session.skip("`clang-format` must be installed")
     if py.path.local.sysfind("g++") is None:
         session.skip("`g++` must be installed")
 
     # No need to create a virtualenv.
     session.virtualenv = False
+
+    session.run(
+        "clang-format",
+        "-i",
+        "-style=file",
+        os.path.join("scripts", "tests.cpp"),
+        os.path.join("src", "de_casteljau.hpp"),
+        os.path.join("src", "de_casteljau.cpp"),
+    )
+
     session.run(
         "g++",
+        "-std=c++11",
         "-o",
         "main",
         os.path.join("scripts", "tests.cpp"),

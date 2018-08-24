@@ -40,7 +40,7 @@ int main()
         evaluated = de_casteljau::basic(s, coeffs3);
         std::cout << "p3(" << s << ") = " << evaluated << std::endl;
         if (i < 2) {
-          std::cout << std::string(30, '*') << std::endl;
+            std::cout << std::string(30, '*') << std::endl;
         }
     }
 
@@ -49,15 +49,15 @@ int main()
     std::cout << "two_prod(1 - 2^{-27}, 1 + 2^{-27}) = P + pi, where"
               << std::endl;
     std::cout << "P  = " << eft_result.first << std::endl;
-    std::cout << "pi = " << eft_result.second * pow(2.0, 54)
-              << " / 2^{54}" << std::endl;
+    std::cout << "pi = " << eft_result.second * pow(2.0, 54) << " / 2^{54}"
+              << std::endl;
 
     eft_result = eft::two_sum(1.0 + pow(0.5, 52), pow(0.5, 53));
     std::cout << "two_sum(1 + 2^{-52}, 2^{-53}) = S + sigma, where"
               << std::endl;
     std::cout << "S     = 1 + " << (eft_result.first - 1.0) * pow(2.0, 51)
               << " / 2^{51}" << std::endl;
-    std::cout << "sigma = " << eft_result.second * pow(2.0, 53)
-              << " / 2^{53}" << std::endl;
+    std::cout << "sigma = " << eft_result.second * pow(2.0, 53) << " / 2^{53}"
+              << std::endl;
     return 0;
 }

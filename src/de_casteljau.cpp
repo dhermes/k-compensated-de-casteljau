@@ -11,6 +11,7 @@
 // limitations under the License.
 
 #include <cmath>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -50,6 +51,42 @@ double basic(double s, std::vector<double>& coeffs)
         }
     }
 
+    // NOTE: This **assumes** ``degree >= 0``.
     return pk[0];
+}
+
+double local_error(std::vector<double>& errors, double rho, double delta_b)
+{
+    double l_hat;
+
+    l_hat = 0.0;
+    for (double const& error : errors) {
+        l_hat += error;
+    }
+    l_hat += rho * delta_b;
+
+    return l_hat;
+}
+
+std::pair<std::vector<double>, double> local_error_eft(
+    std::vector<double>& errors, double rho, double delta_b)
+{
+    size_t num_errs, j;
+    std::vector<double> new_errors;
+    double l_hat, prod;
+
+    num_errs = errors.size();
+    new_errors.reserve(num_errs + 1);
+
+    // NOTE: This **assumes** ``num_errs >= 2``.
+    std::tie(l_hat, new_errors[0]) = eft::two_sum(errors[0], errors[1]);
+    for (j = 2; j < num_errs; ++j) {
+        std::tie(l_hat, new_errors[j - 1]) = eft::two_sum(l_hat, errors[j]);
+    }
+
+    std::tie(prod, new_errors[num_errs - 1]) = eft::two_prod(rho, delta_b);
+    std::tie(l_hat, new_errors[num_errs]) = eft::two_sum(l_hat, prod);
+
+    return std::make_pair(new_errors, l_hat);
 }
 }
