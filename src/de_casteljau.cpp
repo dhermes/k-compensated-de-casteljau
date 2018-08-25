@@ -18,15 +18,12 @@ namespace de_casteljau {
 
 double basic(double s, const std::vector<double>& coeffs)
 {
-    size_t degree, j, k;
-    double r;
-    std::vector<double> pk;
+    std::vector<double> pk = coeffs;
 
-    pk = coeffs;
-    r = 1.0 - s;
-    degree = coeffs.size() - 1;
-    for (k = 0; k < degree; ++k) {
-        for (j = 0; j < degree - k; ++j) {
+    double r = 1.0 - s;
+    size_t degree = coeffs.size() - 1;
+    for (size_t k = 0; k < degree; ++k) {
+        for (size_t j = 0; j < degree - k; ++j) {
             pk[j] = r * pk[j] + s * pk[j + 1];
         }
     }
@@ -38,9 +35,7 @@ double basic(double s, const std::vector<double>& coeffs)
 double local_error(
     const std::vector<double>& errors, double rho, double delta_b)
 {
-    double l_hat;
-
-    l_hat = 0.0;
+    double l_hat = 0.0;
     for (double const& error : errors) {
         l_hat += error;
     }
@@ -51,18 +46,17 @@ double local_error(
 
 double local_error_eft(std::vector<double>& errors, double rho, double delta_b)
 {
-    size_t num_errs, j;
-    double l_hat, prod;
-
-    num_errs = errors.size();
+    size_t num_errs = errors.size();
     errors.resize(num_errs + 1);
 
     // NOTE: This **assumes** ``num_errs >= 2``.
+    double l_hat;
     std::tie(l_hat, errors[0]) = eft::two_sum(errors[0], errors[1]);
-    for (j = 2; j < num_errs; ++j) {
+    for (size_t j = 2; j < num_errs; ++j) {
         std::tie(l_hat, errors[j - 1]) = eft::two_sum(l_hat, errors[j]);
     }
 
+    double prod;
     std::tie(prod, errors[num_errs - 1]) = eft::two_prod(rho, delta_b);
     std::tie(l_hat, errors[num_errs]) = eft::two_sum(l_hat, prod);
 
@@ -73,26 +67,23 @@ std::vector<double> compensated_k(
     double s, const std::vector<double>& coeffs, size_t K)
 {
     // NOTE: This function **assumes** ``K >= 2``.
-    size_t degree, F, j, k;
-    std::vector<double> b_hat, errors;
-    std::vector<std::vector<double>> bk;
-    double r, rho, val1, val2, error, delta_b;
-
+    double r, rho;
     std::tie(r, rho) = eft::two_sum(1.0, -s);
 
-    errors.reserve(5 * K - 7);
-    bk.resize(K);
+    std::vector<double> errors(5 * K - 7);
+    std::vector<std::vector<double>> bk(K);
     // NOTE: This **assumes** ``degree >= 0``.
-    degree = coeffs.size() - 1;
+    size_t degree = coeffs.size() - 1;
 
     // Initialize ``bk``.
     bk[0] = coeffs;
-    for (F = 1; F < K; ++F) {
+    for (size_t F = 1; F < K; ++F) {
         bk[F].resize(degree + 1, 0.0);
     }
 
-    for (k = 0; k < degree; ++k) {
-        for (j = 0; j < degree - k; ++j) {
+    for (size_t k = 0; k < degree; ++k) {
+        for (size_t j = 0; j < degree - k; ++j) {
+            double val1, val2, delta_b;
             // NOTE: The ``size()`` of ``errors`` is important since it is
             //       used by ``local_error_eft()``.
             errors.resize(3);
@@ -103,7 +94,8 @@ std::vector<double> compensated_k(
             std::tie(val2, errors[1]) = eft::two_prod(s, bk[0][j + 1]);
             std::tie(bk[0][j], errors[2]) = eft::two_sum(val1, val2);
 
-            for (F = 1; F < K - 1; ++F) {
+            for (size_t F = 1; F < K - 1; ++F) {
+                double error;
                 val1 = local_error_eft(errors, rho, delta_b);
                 delta_b = bk[F][j];
 
@@ -126,8 +118,8 @@ std::vector<double> compensated_k(
         }
     }
 
-    b_hat.resize(K);
-    for (j = 0; j < K; ++j) {
+    std::vector<double> b_hat(K);
+    for (size_t j = 0; j < K; ++j) {
         b_hat[j] = bk[j][0];
     }
     return b_hat;
@@ -135,25 +127,19 @@ std::vector<double> compensated_k(
 
 double compensated(double s, const std::vector<double>& coeffs)
 {
-    std::vector<double> terms;
-
-    terms = compensated_k(s, coeffs, 2);
+    std::vector<double> terms = compensated_k(s, coeffs, 2);
     return eft::sum_k(terms, 2);
 }
 
 double compensated3(double s, const std::vector<double>& coeffs)
 {
-    std::vector<double> terms;
-
-    terms = compensated_k(s, coeffs, 3);
+    std::vector<double> terms = compensated_k(s, coeffs, 3);
     return eft::sum_k(terms, 3);
 }
 
 double compensated4(double s, const std::vector<double>& coeffs)
 {
-    std::vector<double> terms;
-
-    terms = compensated_k(s, coeffs, 4);
+    std::vector<double> terms = compensated_k(s, coeffs, 4);
     return eft::sum_k(terms, 4);
 }
 }
