@@ -75,7 +75,7 @@ std::vector<double> compensated_k(
     size_t degree = coeffs.size() - 1;
     std::vector<double> bk((degree + 1) * K, 0.0);
 
-    // Initialize ``bk``.
+    // Initialize ``bk`` (everything after ``F = 0`` is zero).
     for (size_t j = 0; j <= degree; ++j) {
         bk[j] = coeffs[j];
     }
