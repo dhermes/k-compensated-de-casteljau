@@ -11,6 +11,7 @@
 // limitations under the License.
 
 #include "de_casteljau.hpp"
+#include "eft.hpp"
 #include <cmath>
 #include <iostream>
 #include <string>

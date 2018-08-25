@@ -190,9 +190,11 @@ def verify_cpp(session):
         "clang-format",
         "-i",
         "-style=file",
-        os.path.join("scripts", "tests.cpp"),
-        os.path.join("src", "de_casteljau.hpp"),
         os.path.join("src", "de_casteljau.cpp"),
+        os.path.join("src", "de_casteljau.hpp"),
+        os.path.join("src", "eft.cpp"),
+        os.path.join("src", "eft.hpp"),
+        os.path.join("scripts", "tests.cpp"),
     )
 
     session.run(
@@ -202,6 +204,7 @@ def verify_cpp(session):
         "main",
         os.path.join("scripts", "tests.cpp"),
         os.path.join("src", "de_casteljau.cpp"),
+        os.path.join("src", "eft.cpp"),
         "-I",
         "src",
     )

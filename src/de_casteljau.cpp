@@ -10,59 +10,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cmath>
+#include "eft.hpp"
 #include <tuple>
-#include <utility>
 #include <vector>
-
-namespace eft {
-
-std::pair<double, double> two_prod(double val1, double val2)
-{
-    double product, error;
-    product = val1 * val2;
-    error = std::fma(val1, val2, -product);
-    return std::make_pair(product, error);
-}
-
-std::pair<double, double> two_sum(double val1, double val2)
-{
-    double sum, almost_val2, error;
-    sum = val1 + val2;
-    almost_val2 = sum - val1;
-    error = (val1 - (sum - almost_val2)) + (val2 - almost_val2);
-    return std::make_pair(sum, error);
-}
-
-void vec_sum(std::vector<double>& vec)
-{
-    size_t n, i;
-
-    n = vec.size();
-    for (i = 1; i < n; ++i) {
-        std::tie(vec[i], vec[i - 1]) = eft::two_sum(vec[i], vec[i - 1]);
-    }
-}
-
-double sum_k(const std::vector<double>& vec, size_t K)
-{
-    size_t i;
-    std::vector<double> workspace;
-    double result;
-
-    workspace = vec;
-    for (i = 0; i < K - 1; ++i) {
-        eft::vec_sum(workspace);
-    }
-
-    result = 0.0;
-    for (double const& element : workspace) {
-        result += element;
-    }
-
-    return result;
-}
-}
 
 namespace de_casteljau {
 
@@ -154,7 +104,7 @@ std::vector<double> compensated_k(
             std::tie(bk[0][j], errors[2]) = eft::two_sum(val1, val2);
 
             for (F = 1; F < K - 1; ++F) {
-                val1 = de_casteljau::local_error_eft(errors, rho, delta_b);
+                val1 = local_error_eft(errors, rho, delta_b);
                 delta_b = bk[F][j];
 
                 std::tie(val2, error) = eft::two_prod(s, bk[F][j + 1]);
@@ -171,7 +121,7 @@ std::vector<double> compensated_k(
             }
 
             // Update the "level 2" stuff.
-            val1 = de_casteljau::local_error(errors, rho, delta_b);
+            val1 = local_error(errors, rho, delta_b);
             bk[K - 1][j] = val1 + s * bk[K - 1][j + 1] + r * bk[K - 1][j];
         }
     }
@@ -187,7 +137,7 @@ double compensated(double s, const std::vector<double>& coeffs)
 {
     std::vector<double> terms;
 
-    terms = de_casteljau::compensated_k(s, coeffs, 2);
+    terms = compensated_k(s, coeffs, 2);
     return eft::sum_k(terms, 2);
 }
 
@@ -195,7 +145,7 @@ double compensated3(double s, const std::vector<double>& coeffs)
 {
     std::vector<double> terms;
 
-    terms = de_casteljau::compensated_k(s, coeffs, 3);
+    terms = compensated_k(s, coeffs, 3);
     return eft::sum_k(terms, 3);
 }
 
@@ -203,7 +153,7 @@ double compensated4(double s, const std::vector<double>& coeffs)
 {
     std::vector<double> terms;
 
-    terms = de_casteljau::compensated_k(s, coeffs, 4);
+    terms = compensated_k(s, coeffs, 4);
     return eft::sum_k(terms, 4);
 }
 }

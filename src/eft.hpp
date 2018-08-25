@@ -10,13 +10,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <utility>
 #include <vector>
 
-namespace de_casteljau {
-double basic(double s, const std::vector<double>& coeffs);
-std::vector<double> compensated_k(
-    double s, const std::vector<double>& coeffs, size_t K);
-double compensated(double s, const std::vector<double>& coeffs);
-double compensated3(double s, const std::vector<double>& coeffs);
-double compensated4(double s, const std::vector<double>& coeffs);
+namespace eft {
+std::pair<double, double> two_prod(double val1, double val2);
+std::pair<double, double> two_sum(double val1, double val2);
+double sum_k(const std::vector<double>& vec, size_t K);
 }
