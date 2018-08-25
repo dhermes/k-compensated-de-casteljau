@@ -83,13 +83,13 @@ std::vector<double> compensated_k(
 
     for (size_t k = 0; k < degree; ++k) {
         for (size_t j = 0; j < degree - k; ++j) {
-            double val1, val2, delta_b;
             // NOTE: The ``size()`` of ``errors`` is important since it is
             //       used by ``local_error_eft()``.
             errors.resize(3);
-            delta_b = bk[0][j];
+            double delta_b = bk[0][j];
 
             // Update the "level 0" stuff.
+            double val1, val2;
             std::tie(val1, errors[0]) = eft::two_prod(r, bk[0][j]);
             std::tie(val2, errors[1]) = eft::two_prod(s, bk[0][j + 1]);
             std::tie(bk[0][j], errors[2]) = eft::two_sum(val1, val2);
@@ -125,7 +125,7 @@ std::vector<double> compensated_k(
     return b_hat;
 }
 
-double compensated(double s, const std::vector<double>& coeffs)
+double compensated2(double s, const std::vector<double>& coeffs)
 {
     std::vector<double> terms = compensated_k(s, coeffs, 2);
     return eft::sum_k(terms, 2);

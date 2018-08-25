@@ -16,7 +16,7 @@ namespace de_casteljau {
 double basic(double s, const std::vector<double>& coeffs);
 std::vector<double> compensated_k(
     double s, const std::vector<double>& coeffs, size_t K);
-double compensated(double s, const std::vector<double>& coeffs);
+double compensated2(double s, const std::vector<double>& coeffs);
 double compensated3(double s, const std::vector<double>& coeffs);
 double compensated4(double s, const std::vector<double>& coeffs);
 }
