@@ -71,14 +71,13 @@ std::vector<double> compensated_k(
     std::tie(r, rho) = eft::two_sum(1.0, -s);
 
     std::vector<double> errors(5 * K - 7);
-    std::vector<std::vector<double>> bk(K);
     // NOTE: This **assumes** ``degree >= 0``.
     size_t degree = coeffs.size() - 1;
+    std::vector<double> bk((degree + 1) * K, 0.0);
 
     // Initialize ``bk``.
-    bk[0] = coeffs;
-    for (size_t F = 1; F < K; ++F) {
-        bk[F].resize(degree + 1, 0.0);
+    for (size_t j = 0; j <= degree; ++j) {
+        bk[j] = coeffs[j];
     }
 
     for (size_t k = 0; k < degree; ++k) {
@@ -86,41 +85,48 @@ std::vector<double> compensated_k(
             // NOTE: The ``size()`` of ``errors`` is important since it is
             //       used by ``local_error_eft()``.
             errors.resize(3);
-            double delta_b = bk[0][j];
+            double delta_b = bk[j];
 
             // Update the "level 0" stuff.
             double val1, val2;
-            std::tie(val1, errors[0]) = eft::two_prod(r, bk[0][j]);
-            std::tie(val2, errors[1]) = eft::two_prod(s, bk[0][j + 1]);
-            std::tie(bk[0][j], errors[2]) = eft::two_sum(val1, val2);
+            std::tie(val1, errors[0]) = eft::two_prod(r, bk[j]);
+            std::tie(val2, errors[1]) = eft::two_prod(s, bk[j + 1]);
+            std::tie(bk[j], errors[2]) = eft::two_sum(val1, val2);
 
+            size_t index_shift = degree + 1;
             for (size_t F = 1; F < K - 1; ++F) {
-                double error;
                 val1 = local_error_eft(errors, rho, delta_b);
-                delta_b = bk[F][j];
+                delta_b = bk[index_shift + j];
 
-                std::tie(val2, error) = eft::two_prod(s, bk[F][j + 1]);
+                double error;
+                std::tie(val2, error)
+                    = eft::two_prod(s, bk[index_shift + j + 1]);
                 errors.push_back(error);
 
                 std::tie(val1, error) = eft::two_sum(val1, val2);
                 errors.push_back(error);
 
-                std::tie(val2, error) = eft::two_prod(r, bk[F][j]);
+                std::tie(val2, error) = eft::two_prod(r, bk[index_shift + j]);
                 errors.push_back(error);
 
-                std::tie(bk[F][j], error) = eft::two_sum(val1, val2);
+                std::tie(bk[index_shift + j], error)
+                    = eft::two_sum(val1, val2);
                 errors.push_back(error);
+
+                // Update the index shift for the next iteration.
+                index_shift += degree + 1;
             }
 
             // Update the "level 2" stuff.
             val1 = local_error(errors, rho, delta_b);
-            bk[K - 1][j] = val1 + s * bk[K - 1][j + 1] + r * bk[K - 1][j];
+            bk[index_shift + j]
+                = val1 + s * bk[index_shift + j + 1] + r * bk[index_shift + j];
         }
     }
 
     std::vector<double> b_hat(K);
-    for (size_t j = 0; j < K; ++j) {
-        b_hat[j] = bk[j][0];
+    for (size_t F = 0; F < K; ++F) {
+        b_hat[F] = bk[(degree + 1) * F];
     }
     return b_hat;
 }
