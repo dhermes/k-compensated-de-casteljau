@@ -211,3 +211,41 @@ def verify_cpp(session):
     main_exe = os.path.join(".", "main")
     session.run(os.system, main_exe)
     session.run(os.remove, main_exe)
+
+
+@nox.session
+def verify_c(session):
+    if py.path.local.sysfind("clang-format") is None:
+        session.skip("`clang-format` must be installed")
+    if py.path.local.sysfind("gcc") is None:
+        session.skip("`gcc` must be installed")
+
+    # No need to create a virtualenv.
+    session.virtualenv = False
+
+    session.run(
+        "clang-format",
+        "-i",
+        "-style=file",
+        os.path.join("src", "de_casteljau.c"),
+        os.path.join("src", "de_casteljau.h"),
+        os.path.join("src", "eft.c"),
+        os.path.join("src", "eft.h"),
+        os.path.join("scripts", "tests.c"),
+    )
+
+    session.run(
+        "gcc",
+        "-std=c99",
+        "-o",
+        "main",
+        os.path.join("scripts", "tests.c"),
+        os.path.join("src", "de_casteljau.c"),
+        os.path.join("src", "eft.c"),
+        "-I",
+        "src",
+        "-lm",
+    )
+    main_exe = os.path.join(".", "main")
+    session.run(os.system, main_exe)
+    session.run(os.remove, main_exe)
