@@ -20,6 +20,8 @@ extern "C" {
 #endif
 
 double basic(double s, const double* coeffs, double* pk, size_t degree);
+void compensated(double s, const double* coeffs, size_t degree, size_t K,
+    double* errors, double* bk, double* result);
 
 #if defined(__cplusplus)
 }

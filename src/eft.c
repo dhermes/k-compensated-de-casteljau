@@ -28,6 +28,7 @@ void two_sum(double val1, double val2, double* sum, double* error)
 
 void vec_sum(double* vec, size_t n)
 {
+    // NOTE: This assumes that ``length(vec) == n``.
     for (size_t i = 1; i < n; ++i) {
         double sum, error;
         two_sum(vec[i], vec[i - 1], &sum, &error);
@@ -38,6 +39,7 @@ void vec_sum(double* vec, size_t n)
 
 double sum_k(double* vec, double* workspace, size_t n, size_t K)
 {
+    // NOTE: This assumes that ``length(vec) == n``.
     // NOTE: This requires ``length(workspace) >= length(vec)``.
     for (size_t i = 0; i < n; ++i) {
         workspace[i] = vec[i];
