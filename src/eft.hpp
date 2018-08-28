@@ -10,6 +10,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef EFT_HPP
+#define EFT_HPP
+
 #include <utility>
 #include <vector>
 
@@ -18,3 +21,5 @@ std::pair<double, double> two_prod(double val1, double val2);
 std::pair<double, double> two_sum(double val1, double val2);
 double sum_k(const std::vector<double>& vec, size_t K);
 }
+
+#endif /* EFT_HPP */

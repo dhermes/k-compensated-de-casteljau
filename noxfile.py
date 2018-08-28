@@ -183,6 +183,8 @@ def verify_cpp(session):
     session.run(
         "g++",
         "-std=c++11",
+        "-O3",
+        "-march=native",
         "-o",
         "main",
         os.path.join("scripts", "tests.cpp"),
@@ -217,6 +219,8 @@ def verify_c(session):
     session.run(
         "gcc",
         "-std=c99",
+        "-O3",
+        "-march=native",
         "-o",
         "main",
         os.path.join("scripts", "tests.c"),

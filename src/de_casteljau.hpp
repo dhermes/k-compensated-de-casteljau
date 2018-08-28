@@ -10,6 +10,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef DE_CASTELJAU_HPP
+#define DE_CASTELJAU_HPP
+
 #include "eft.hpp"
 #include <array>
 #include <tuple>
@@ -90,3 +93,5 @@ std::array<double, K> compensated(
     return b_hat;
 }
 }
+
+#endif /* DE_CASTELJAU_HPP */
