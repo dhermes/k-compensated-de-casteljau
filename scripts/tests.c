@@ -58,9 +58,9 @@ int main(void)
         print_small_sep();
     }
 
-    double errors[13];  // length(errors) >= 5K - 7; K <= 4;
-    double bk[16];  // length(bk) >= K(degree + 1); K <= 4; degree <= 3;
-    double result[4];  // length(result) >= K; K <= 4
+    double errors[13]; // length(errors) >= 5K - 7; K <= 4;
+    double bk[16]; // length(bk) >= K(degree + 1); K <= 4; degree <= 3;
+    double result[4]; // length(result) >= K; K <= 4
 
     print_sep();
     printf("CompDeCasteljau:\n");

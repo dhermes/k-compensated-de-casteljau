@@ -14,10 +14,10 @@ This repository is laid out in a manner described in
 
 The code used to build the manuscript, generate images and verify
 computations is written in Python. To run the code, Python 3.6
-should be installed, along with ``nox-automation``:
+should be installed, along with ``nox``:
 
 ```
-python -m pip install --upgrade nox-automation
+python -m pip install --upgrade nox
 ```
 
 Once installed, the various build jobs can be listed. For example:
@@ -28,9 +28,10 @@ Available sessions:
 * build_tex
 * flop_counts
 * verify_table
-* make_images
-* update_requirements
+* make_images-3.6
+* update_requirements-3.6
 * verify_cpp
+* verify_c
 ```
 
 To run ``nox -s build_tex`` (i.e. to build the PDF), ``pdflatex`` and

@@ -23,7 +23,7 @@ import py.path
 
 
 NOX_DIR = os.path.abspath(os.path.dirname(__file__))
-SINGLE_INTERP = "python3.6"
+DEFAULT_INTERPRETER = "3.6"
 
 
 def get_path(*names):
@@ -64,18 +64,13 @@ def build_tex_file(session, base, new_id, extensions=(), with_bibtex=False):
     session.run("python", modify_id, "--base", path, "--id", new_id)
 
 
-@nox.session
+@nox.session(py=False)
 def build_tex(session):
-    session.interpreter = SINGLE_INTERP
-
     if py.path.local.sysfind("pdflatex") is None:
         session.skip("`pdflatex` must be installed")
 
     if py.path.local.sysfind("bibtex") is None:
         session.skip("`bibtex` must be installed")
-
-    # No need to create a virtualenv.
-    session.virtualenv = False
 
     session.chdir(get_path("doc"))
 
@@ -109,29 +104,22 @@ def build_tex(session):
     )
 
 
-@nox.session
+@nox.session(py=False)
 def flop_counts(session):
-    # No need to create a virtualenv.
-    session.virtualenv = False
-
     env = {"PYTHONPATH": get_path("src")}
     compute_counts = get_path("scripts", "compute_counts.py")
     session.run("python", compute_counts, env=env)
 
 
-@nox.session
+@nox.session(py=False)
 def verify_table(session):
-    # No need to create a virtualenv.
-    session.virtualenv = False
-
     env = {"PYTHONPATH": get_path("src")}
     script = get_path("scripts", "verify_table.py")
     session.run("python", script, env=env)
 
 
-@nox.session
+@nox.session(py=DEFAULT_INTERPRETER)
 def make_images(session):
-    session.interpreter = SINGLE_INTERP
     # Install all dependencies.
     session.install("--requirement", "make-images-requirements.txt")
     # Run the script(s).
@@ -155,10 +143,8 @@ def make_images(session):
         session.run("python", script, env=env)
 
 
-@nox.session
+@nox.session(py=DEFAULT_INTERPRETER)
 def update_requirements(session):
-    session.interpreter = SINGLE_INTERP
-
     if py.path.local.sysfind("git") is None:
         session.skip("`git` must be installed")
 
@@ -176,15 +162,12 @@ def update_requirements(session):
         session.run("git", "add", txt_name)
 
 
-@nox.session
+@nox.session(py=False)
 def verify_cpp(session):
     if py.path.local.sysfind("clang-format") is None:
         session.skip("`clang-format` must be installed")
     if py.path.local.sysfind("g++") is None:
         session.skip("`g++` must be installed")
-
-    # No need to create a virtualenv.
-    session.virtualenv = False
 
     session.run(
         "clang-format",
@@ -213,15 +196,12 @@ def verify_cpp(session):
     session.run(os.remove, main_exe)
 
 
-@nox.session
+@nox.session(py=False)
 def verify_c(session):
     if py.path.local.sysfind("clang-format") is None:
         session.skip("`clang-format` must be installed")
     if py.path.local.sysfind("gcc") is None:
         session.skip("`gcc` must be installed")
-
-    # No need to create a virtualenv.
-    session.virtualenv = False
 
     session.run(
         "clang-format",
