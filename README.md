@@ -10,6 +10,40 @@ The paper demonstrates how to evaluate de Casteljau's Algorithm in
 This repository is laid out in a manner described in
 [Good Enough Practices in Scientific Computing][2].
 
+## Implementation
+
+The ``K``-compensated de Casteljau algorithm is implemented in C, C++ and
+Python in this repository. The implementations are contained in the
+following source files:
+
+### C
+
+```
+src/
+├── de_casteljau.c
+├── de_casteljau.h
+├── eft.c
+└── eft.h
+```
+
+### C++
+
+```
+src/
+├── de_casteljau.cpp
+├── de_casteljau.hpp
+├── eft.cpp
+└── eft.hpp
+```
+
+### Python
+
+```
+src/
+├── de_casteljau.py
+└── eft.py
+```
+
 ## Installation
 
 The code used to build the manuscript, generate images and verify

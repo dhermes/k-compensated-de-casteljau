@@ -282,7 +282,7 @@ the computed result and the round-off error are returned. It
 is considered ``free'' of error if the round-off can be represented
 exactly as an element or elements of \(\mathbf{F}\).
 The error-free transformations used in this paper are
-the \texttt{TwoSum} algorithm by Knuth (\cite{Knuth1997}) and
+the \texttt{TwoSum} algorithm by Knuth (\cite{Knuth1969}) and
 \texttt{TwoProd} algorithm by Dekker (\cite{Dekker1971}, Section 5),
 respectively.
 
@@ -816,10 +816,10 @@ The local error bounds \(\widetilde{\ell}_{F, j}\) satisfy:
 \end{lemma}
 
 As we'll see soon (Lemma~\ref{lemma:k-order}), putting a bound on
-sums of the form \(\sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\) will
+sums of the form \(\sum_{j = 0}^k \widetilde{\ell}_{F, j}^{(k)} B_{j, k}(s)\) will
 be useful to get an overall bound on the relative error for
 \texttt{CompDeCasteljauK}, so we define
-\(L_{F, k} \coloneqq \sum_{j = 0}^k \ell_{F, j}^{(k)} B_{j, k}(s)\).
+\(L_{F, k} \coloneqq \sum_{j = 0}^k \widetilde{\ell}_{F, j}^{(k)} B_{j, k}(s)\).
 
 \begin{lemma}\label{lemma:L-and-D-bounds}
 For \(s \in \left[0, 1\right]\), the Bernstein-type error sum defined above
@@ -1085,6 +1085,16 @@ and the relative error in \texttt{CompDeCasteljau4}
 is \(\bigO{\mach}\) until \(\cond{p, s}\) reaches
 \(1 / \mach^3\) at which point the relative error increases linearly
 to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
+
+\section{Acknowledgements}
+
+The author would like to thank \cite{Ogita2005}, \cite{Graillat2009} and
+\cite{Jiang2010} for their papers that motivated this work. In particular,
+the work of \cite{Ogita2005} reignited the path to compensated algorithms set
+forth in \cite{Babuska1968}, \cite{Knuth1969} and \cite{Dekker1971}.
+
+The family of algorithms described in this paper have been implemented in
+C, C++ and Python by the author (\cite{KCompensatedGitHub}).
 
 %% H/T: https://tex.stackexchange.com/a/137379/32270
 \section*{\refname}
