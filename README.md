@@ -1,5 +1,7 @@
 # ``K``-compensated de Casteljau
 
+[![DOI](https://zenodo.org/badge/131072021.svg)](https://zenodo.org/badge/latestdoi/131072021)
+
 This is the repository for my ``K``-compensated de Casteljau
 paper. If you'd just like to read the [paper][1], feel
 free.
