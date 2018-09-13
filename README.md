@@ -10,7 +10,8 @@ This repository is laid out in a manner described in
 [Good Enough Practices in Scientific Computing][2].
 
 The content itself has been uploaded to the [arXiv][3] and submitted to
-the journal [AMC][4] in May 2018.
+the journal [AMC][4] in May 2018. (The initial submission and first
+revision are both on the arXiv.)
 
 ## Abstract
 
