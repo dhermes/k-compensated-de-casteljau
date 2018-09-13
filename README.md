@@ -6,11 +6,25 @@ This is the repository for my ``K``-compensated de Casteljau
 paper. If you'd just like to read the [paper][1], feel
 free.
 
-The paper demonstrates how to evaluate de Casteljau's Algorithm in
-``K``-times the working precision.
-
 This repository is laid out in a manner described in
 [Good Enough Practices in Scientific Computing][2].
+
+The content itself has been uploaded to the [arXiv][3] and submitted to
+the journal [AMC][4] in May 2018.
+
+## Abstract
+
+In computer aided geometric design a polynomial is usually represented in
+Bernstein form. This paper presents a family of compensated algorithms to
+accurately evaluate a polynomial in Bernstein form with floating point
+coefficients. The principle is to apply error-free transformations to
+improve the traditional de Casteljau algorithm. At each stage of computation,
+round-off error is passed on to first order errors, then to second order
+errors, and so on. After the computation has been "filtered" `(K - 1)`
+times via this process, the resulting output is as accurate as the de Casteljau
+algorithm performed in `K` times the working precision. Forward error
+analysis and numerical experiments illustrate the accuracy of this family
+of algorithms.
 
 ## Implementation
 
@@ -90,3 +104,5 @@ These table values are verified via ``nox -s verify_table``.
 
 [1]: doc/paper.pdf
 [2]: https://arxiv.org/pdf/1609.00037.pdf
+[3]: https://arxiv.org/abs/1808.10387
+[4]: https://www.journals.elsevier.com/applied-mathematics-and-computation
