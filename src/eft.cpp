@@ -11,6 +11,7 @@
 // limitations under the License.
 
 #include <cmath>
+#include <numeric>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -47,11 +48,7 @@ double sum_k(const std::vector<double>& vec, size_t K)
         vec_sum(workspace);
     }
 
-    double result = 0.0;
-    for (double const& element : workspace) {
-        result += element;
-    }
-
+    double result = std::accumulate(workspace.begin(), workspace.end(), 0.0);
     return result;
 }
 }
