@@ -364,13 +364,13 @@ def main_jlcs10(filename=None):
     )
 
     # Make sure the ``y``-limit stays set (the bounds lines exceed).
-    ax.set_ylim(min_y, 10.0 ** 18)
+    ax.set_ylim(min_y, 10.0)
     ax.set_xlim(min_x, max_x)
     # Add the legend.
     ax.legend(loc="lower right", framealpha=1.0, frameon=True)
     # Set "nice" ticks.
     ax.set_xticks([10.0 ** n for n in range(5, 45 + 5, 5)])
-    ax.set_yticks([10.0 ** n for n in range(-18, 14 + 4, 4)])
+    ax.set_yticks([10.0 ** n for n in range(-20, 0 + 4, 4)])
     # Set special ``xticks`` for ``1/u`` and ``1/u^2``.
     ax.set_xticks([1.0 / float(U), 1.0 / float(U) ** 2], minor=True)
     ax.set_xticklabels([r"$1/\mathbf{u}$", r"$1/\mathbf{u}^2$"], minor=True)
