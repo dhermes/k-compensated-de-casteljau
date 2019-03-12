@@ -1086,15 +1086,21 @@ is \(\bigO{\mach}\) until \(\cond{p, s}\) reaches
 \(1 / \mach^3\) at which point the relative error increases linearly
 to \(\bigO{1}\) when \(\cond{p, s}\) reaches \(1 / \mach^4\).
 
+\section{Future Work}
+
+The family of algorithms described in this paper have been implemented in
+C, C++ and Python by the author (\cite{KCompensatedGitHub}). A more complete
+compensated algorithms library (similar to \cite{Barrio2018}) could be quite
+useful. For example, such a library could include the algorithms in the
+existing literature such as the \(K\)-compensated algorithm for Horner's method
+from \cite{Graillat2009}.
+
 \section{Acknowledgements}
 
 The author would like to thank \cite{Ogita2005}, \cite{Graillat2009} and
 \cite{Jiang2010} for their papers that motivated this work. In particular,
 the work of \cite{Ogita2005} reignited the path to compensated algorithms set
 forth in \cite{Babuska1968}, \cite{Knuth1969} and \cite{Dekker1971}.
-
-The family of algorithms described in this paper have been implemented in
-C, C++ and Python by the author (\cite{KCompensatedGitHub}).
 
 %% H/T: https://tex.stackexchange.com/a/137379/32270
 \section*{\refname}
