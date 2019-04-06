@@ -1,6 +1,8 @@
 # ``K``-compensated de Casteljau
 
-[![DOI](https://zenodo.org/badge/131072021.svg)](https://zenodo.org/badge/latestdoi/131072021)
+| Cite paper           | Cite code      |
+| -------------------- | -------------- |
+| [![Paper DOI][7]][5] | [![DOI][8]][9] |
 
 This is the repository for my ``K``-compensated de Casteljau
 paper. If you'd just like to read the [paper][1], feel
@@ -109,3 +111,6 @@ These table values are verified via ``nox -s verify_table``.
 [4]: https://www.journals.elsevier.com/applied-mathematics-and-computation
 [5]: https://doi.org/10.1016/j.amc.2019.03.047
 [6]: doc/1-s2.0-S0096300319302541-main.pdf
+[7]: https://img.shields.io/badge/DOI-10.1016%2Fj.amc.2019.03.047-blue.svg
+[8]: https://zenodo.org/badge/131072021.svg
+[9]: https://zenodo.org/badge/latestdoi/131072021
