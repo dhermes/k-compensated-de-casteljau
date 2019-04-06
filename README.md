@@ -29,6 +29,38 @@ algorithm performed in `K` times the working precision. Forward error
 analysis and numerical experiments illustrate the accuracy of this family
 of algorithms.
 
+## Citation
+
+To cite this paper:
+
+```
+@article{Hermes2019,
+  doi = {10.1016/j.amc.2019.03.047},
+  url = {https://doi.org/10.1016/j.amc.2019.03.047},
+  year = {2019},
+  month = {Sep},
+  publisher = {Elsevier {BV}},
+  volume = {357},
+  pages = {57--74},
+  author = {Danny Hermes},
+  title = {Compensated de {C}asteljau algorithm in {$K$} times the working precision},
+  journal = {Applied Mathematics and Computation}
+}
+```
+
+To cite the code in this repository:
+
+```
+@misc{KCompensatedGitHub,
+  doi = {10.5281/zenodo.1405259},
+  url = {https://zenodo.org/record/1405259},
+  author = {Danny Hermes},
+  title = {dhermes/k-compensated-de-casteljau: 2018.08.28},
+  publisher = {Zenodo},
+  year = {2018}
+}
+```
+
 ## Implementation
 
 The ``K``-compensated de Casteljau algorithm is implemented in C, C++ and
