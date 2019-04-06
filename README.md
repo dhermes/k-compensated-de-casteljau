@@ -9,9 +9,9 @@ free.
 This repository is laid out in a manner described in
 [Good Enough Practices in Scientific Computing][2].
 
-The content itself has been uploaded to the [arXiv][3] and submitted to
-the journal [AMC][4] in May 2018. (The initial submission and first
-revision are both on the arXiv.)
+The content itself has been uploaded to the [arXiv][3] and was submitted to
+the journal [AMC][4] in May 2018. The paper has been accepted and was
+[published][5] [on][6] April 5, 2019.
 
 ## Abstract
 
@@ -68,7 +68,7 @@ computations is written in Python. To run the code, Python 3.6
 should be installed, along with ``nox``:
 
 ```
-python -m pip install --upgrade nox
+python -m pip install --upgrade 'nox >= 2018.10.17'
 ```
 
 Once installed, the various build jobs can be listed. For example:
@@ -79,8 +79,8 @@ Available sessions:
 * build_tex
 * flop_counts
 * verify_table
-* make_images-3.6
-* update_requirements-3.6
+* make_images
+* update_requirements
 * verify_cpp
 * verify_c
 ```
@@ -107,3 +107,5 @@ These table values are verified via ``nox -s verify_table``.
 [2]: https://arxiv.org/pdf/1609.00037.pdf
 [3]: https://arxiv.org/abs/1808.10387
 [4]: https://www.journals.elsevier.com/applied-mathematics-and-computation
+[5]: https://doi.org/10.1016/j.amc.2019.03.047
+[6]: doc/1-s2.0-S0096300319302541-main.pdf
